@@ -200,6 +200,7 @@ public class NativeTestActivity extends AppCompatActivity implements View.OnClic
             String line;
             while ((line = br.readLine()) != null) {
                 if (line.contains(BuildConfig.APPLICATION_ID)) {
+                    LogUtil.d(TAG, "line: " + line);
                     return false;
                 }
                 LogUtil.d(TAG, line);

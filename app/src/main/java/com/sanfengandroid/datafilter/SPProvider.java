@@ -17,6 +17,7 @@
 
 package com.sanfengandroid.datafilter;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Build;
@@ -65,7 +66,8 @@ public class SPProvider {
     private static ProcessMode processMode;
     private static boolean rootConfig = false;
 
-    private static final int XP_DATA_MODE = Build.VERSION.SDK_INT > 32 ? Context.MODE_PRIVATE : Context.MODE_WORLD_READABLE;
+    @SuppressLint("WorldReadableFiles")
+    private static final int XP_DATA_MODE = Build.VERSION.SDK_INT >= 28 ? Context.MODE_PRIVATE : Context.MODE_WORLD_READABLE;
 
     public static void setDataMode(XpDataMode mode) {
         SPProvider.mode = mode;

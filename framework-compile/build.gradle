@@ -20,22 +20,25 @@ plugins {
 }
 
 android {
-    compileSdkVersion 30
-
+    compileSdk 31
     defaultConfig {
-        minSdkVersion 21
-        targetSdkVersion 30
+        minSdkVersion 28
+        targetSdkVersion 31
         versionCode 1
         versionName "1.0"
-
         consumerProguardFiles "consumer-rules.pro"
     }
-
     buildTypes {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+    }
+    buildToolsVersion '30.0.2'
+    ndkVersion '24.0.8215888'
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 

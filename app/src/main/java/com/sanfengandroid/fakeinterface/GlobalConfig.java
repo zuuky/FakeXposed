@@ -323,8 +323,6 @@ public class GlobalConfig {
                 }
             }
         }
-        // edxposed 有时获取不到,默认添加至黑名单
-        packageBlacklist.put(DefaultLists.EDXPOSED_PACKAGE, DefaultLists.EDXPOSED_PACKAGE);
     }
 
     public static Map<String, Set<ShowDataModel>> transformBundle(Bundle bundle) {

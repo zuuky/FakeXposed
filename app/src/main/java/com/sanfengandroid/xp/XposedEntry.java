@@ -20,6 +20,7 @@ package com.sanfengandroid.xp;
 import android.annotation.SuppressLint;
 import android.app.ActivityThread;
 import android.content.Context;
+import android.content.ContextParams;
 import android.content.pm.ApplicationInfo;
 import android.os.Build;
 import android.util.Log;
@@ -46,7 +47,6 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage;
 
 /**
  * @author sanfengAndroid
- * @date 2020/10/30
  */
 public class XposedEntry implements IXposedHookLoadPackage {
     private static final String TAG = XposedEntry.class.getSimpleName();
@@ -67,7 +67,8 @@ public class XposedEntry implements IXposedHookLoadPackage {
                 }
             }
         });
-        LogUtil.setLogMode(BuildConfig.DEBUG ? LogUtil.LogMode.CALLBACK_AND_PRINT : LogUtil.LogMode.ONLY_CALLBACK);
+        LogUtil.setLogMode(BuildConfig.DEBUG ? LogUtil.LogMode.CALLBACK_AND_PRINT
+                                             : LogUtil.LogMode.ONLY_CALLBACK);
         LogUtil.minLogLevel = BuildConfig.DEBUG ? Log.VERBOSE : Log.DEBUG;
     }
 
@@ -76,7 +77,8 @@ public class XposedEntry implements IXposedHookLoadPackage {
         try {
             LogUtil.v(TAG, "process: %s, package: %s", lpparam.processName, lpparam.packageName);
             if (hasHook) {
-                LogUtil.v(TAG, "current process: %s, package: %s has been hooed", lpparam.processName, lpparam.packageName);
+                LogUtil.v(TAG, "current process: %s, package: %s has been hooked",
+                        lpparam.processName, lpparam.packageName);
                 return;
             }
             if ("android".equals(lpparam.processName)) {
@@ -97,19 +99,21 @@ public class XposedEntry implements IXposedHookLoadPackage {
                 }
                 return;
             }
-            LogUtil.w(TAG, "targetSDK: %d, current class loader: %s", lpparam.appInfo.targetSdkVersion, XposedEntry.class.getClassLoader());
+            LogUtil.w(TAG, "targetSDK: %d, current class loader: %s",
+                    lpparam.appInfo.targetSdkVersion, XposedEntry.class.getClassLoader());
             Context contextImpl = createAppContext(lpparam.appInfo);
-            XpDataMode mode;
             // 使用自身ContentProvider如果未启动则手动启动,这样会增加很长的启动时间
-            mode = XpConfigAgent.xSharedPreferencesAvailable() ? XpDataMode.X_SP : XpDataMode.APP_CALL;
-            XpConfigAgent.setDataMode(mode);
+            XpDataMode mode = XpConfigAgent.xSharedPreferencesAvailable() ? XpDataMode.X_SP
+                                                                          : XpDataMode.APP_CALL;
             LogUtil.d(TAG, "current data mode: %s", mode.name());
             XposedBridge.log(TAG + " current data mode: " + mode.name());
+            XpConfigAgent.setDataMode(mode);
             XpConfigAgent.setProcessMode(ProcessMode.HOOK_APP);
             if (!XpConfigAgent.getHookAppEnable(contextImpl, lpparam.packageName)) {
                 return;
             }
-            Map<String, Set<ShowDataModel>> map = XpConfigAgent.getAppConfig(contextImpl, lpparam.packageName);
+            Map<String, Set<ShowDataModel>> map = XpConfigAgent.getAppConfig(contextImpl,
+                    lpparam.packageName);
             if (map == null) {
                 LogUtil.e(TAG, "get package: " + lpparam.packageName + " configuration failed.");
                 return;
@@ -133,17 +137,33 @@ public class XposedEntry implements IXposedHookLoadPackage {
         Context contextImpl;
         ActivityThread activityThread = ActivityThread.currentActivityThread();
         Object loadedApk = activityThread.getPackageInfoNoCheck(ai, null);
+        ContextParams params = null;
+        if (Build.VERSION.SDK_INT >= 31) {
+            params = new ContextParams.Builder().build();
+        }
+        LogUtil.v(TAG, "ContextParams params", params);
         switch (Build.VERSION.SDK_INT) {
+            case 32:
             case 31:
+                  /* 12
+                    private ContextImpl(@Nullable ContextImpl container, @NonNull ActivityThread mainThread,
+                    @NonNull LoadedApk packageInfo, @NonNull ContextParams params,
+                    @Nullable String attributionTag, @Nullable AttributionSource nextAttributionSource,
+                    @Nullable String splitName, @Nullable IBinder token, @Nullable UserHandle user,
+                    int flags, @Nullable ClassLoader classLoader, @Nullable String overrideOpPackageName)
+                * */
+                contextImpl = (Context) ctor.newInstance(null, activityThread, loadedApk, params,
+                        null, null, null, null, null, 0, null, null);
+                break;
             case 30:
-                /*
+                /*  11
                 *  private ContextImpl(@Nullable ContextImpl container, @NonNull ActivityThread mainThread,
                     @NonNull LoadedApk packageInfo, @Nullable String attributionTag,
                     @Nullable String splitName, @Nullable IBinder activityToken, @Nullable UserHandle user,
                     int flags, @Nullable ClassLoader classLoader, @Nullable String overrideOpPackageName)
                 * */
-                contextImpl = (Context) ctor.newInstance(null, activityThread, loadedApk,
-                        null, null, null, null, 0, null, null);
+                contextImpl = (Context) ctor.newInstance(null, activityThread, loadedApk, null,
+                        null, null, null, 0, null, null);
                 break;
             case 29:
                 /*
@@ -154,7 +174,8 @@ public class XposedEntry implements IXposedHookLoadPackage {
                     @Nullable ClassLoader classLoader, @Nullable String overrideOpPackageName)
                 *
                 * */
-                contextImpl = (Context) ctor.newInstance(null, activityThread, loadedApk, null, null, null, 0, null, null);
+                contextImpl = (Context) ctor.newInstance(null, activityThread, loadedApk, null,
+                        null, null, 0, null, null);
                 break;
             case 28:
             case 27:
@@ -165,7 +186,8 @@ public class XposedEntry implements IXposedHookLoadPackage {
                     @Nullable IBinder activityToken, @Nullable UserHandle user, int flags,
                     @Nullable ClassLoader classLoader)
                 * */
-                contextImpl = (Context) ctor.newInstance(null, activityThread, loadedApk, null, null, null, 0, null);
+                contextImpl = (Context) ctor.newInstance(null, activityThread, loadedApk, null,
+                        null, null, 0, null);
                 break;
             case 25:
             case 24:
@@ -174,7 +196,8 @@ public class XposedEntry implements IXposedHookLoadPackage {
                 LoadedApk packageInfo, IBinder activityToken, UserHandle user, int flags,
                 Display display, Configuration overrideConfiguration, int createDisplayWithId)
                 * */
-                contextImpl = (Context) ctor.newInstance(null, activityThread, loadedApk, null, null, 0, null, null, -1);
+                contextImpl = (Context) ctor.newInstance(null, activityThread, loadedApk, null,
+                        null, 0, null, null, -1);
                 break;
             case 23:
                 /*
@@ -182,7 +205,8 @@ public class XposedEntry implements IXposedHookLoadPackage {
                     LoadedApk packageInfo, IBinder activityToken, UserHandle user, boolean restricted,
                     Display display, Configuration overrideConfiguration, int createDisplayWithId)
                 * */
-                contextImpl = (Context) ctor.newInstance(null, activityThread, loadedApk, null, null, false, null, null, -1);
+                contextImpl = (Context) ctor.newInstance(null, activityThread, loadedApk, null,
+                        null, false, null, null, -1);
                 break;
             case 22:
             case 21:
@@ -191,10 +215,12 @@ public class XposedEntry implements IXposedHookLoadPackage {
                 LoadedApk packageInfo, IBinder activityToken, UserHandle user, boolean restricted,
                 Display display, Configuration overrideConfiguration)
                 * */
-                contextImpl = (Context) ctor.newInstance(null, activityThread, loadedApk, null, null, false, null, null);
+                contextImpl = (Context) ctor.newInstance(null, activityThread, loadedApk, null,
+                        null, false, null, null);
                 break;
             default:
-                throw new UnsupportedOperationException("Unsupported version " + Build.VERSION.SDK_INT);
+                throw new UnsupportedOperationException(
+                        "Unsupported version " + Build.VERSION.SDK_INT);
 
         }
 
@@ -202,12 +228,14 @@ public class XposedEntry implements IXposedHookLoadPackage {
     }
 
     private void hookSelf(ClassLoader loader) throws ClassNotFoundException {
-        XposedHelpers.findAndHookMethod(loader.loadClass("com.sanfengandroid.datafilter.ui.fragments.MainFragment"), "isActive", new XC_MethodHook() {
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                param.setResult(true);
-            }
-        });
+        XposedHelpers.findAndHookMethod(
+                loader.loadClass("com.sanfengandroid.datafilter.ui.fragments.MainFragment"),
+                "isActive", new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        param.setResult(true);
+                    }
+                });
         LogUtil.v(TAG, "hook myself");
     }
 }

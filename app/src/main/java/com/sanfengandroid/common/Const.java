@@ -24,7 +24,7 @@ import com.sanfengandroid.datafilter.BuildConfig;
 public class Const {
     public static final String GLOBAL_PACKAGE = "all";
     public static final int JAVA_MONITOR_STATE = 1;
-    private static final String XP_REMOTE_PATH = "xp";
-    public static final Uri XP_CONTENT_URI = Uri.parse("content://" + BuildConfig.APPLICATION_ID + "/" + XP_REMOTE_PATH);
+    public static final Uri XP_CONTENT_URI = Uri.parse(
+            "content://" + BuildConfig.APPLICATION_ID + "/xp");
 
 }
