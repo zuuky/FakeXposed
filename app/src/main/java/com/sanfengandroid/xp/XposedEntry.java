@@ -25,7 +25,6 @@ import android.content.pm.ApplicationInfo;
 import android.os.Build;
 import android.util.Log;
 
-import com.sanfengandroid.common.Const;
 import com.sanfengandroid.common.model.base.ShowDataModel;
 import com.sanfengandroid.common.util.LogUtil;
 import com.sanfengandroid.datafilter.BuildConfig;
@@ -60,20 +59,17 @@ public class XposedEntry implements IXposedHookLoadPackage {
             }
         });
         LogUtil.addCallback(Log.WARN, (state, level, tag, msg, throwable) -> {
-            if (state == Const.JAVA_MONITOR_STATE) {
-                XposedBridge.log(tag + ": " + msg);
-                if (throwable != null) {
-                    XposedBridge.log(throwable);
-                }
+            XposedBridge.log(tag + ": " + msg);
+            if (throwable != null) {
+                XposedBridge.log(throwable);
             }
         });
-        LogUtil.setLogMode(BuildConfig.DEBUG ? LogUtil.LogMode.CALLBACK_AND_PRINT
-                                             : LogUtil.LogMode.ONLY_CALLBACK);
-        LogUtil.minLogLevel = BuildConfig.DEBUG ? Log.VERBOSE : Log.DEBUG;
+        LogUtil.setLogMode(LogUtil.LogMode.CALLBACK_AND_PRINT);
+        LogUtil.minLogLevel = Log.VERBOSE;
     }
 
     @Override
-    public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
+    public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpparam) {
         try {
             LogUtil.v(TAG, "process: %s, package: %s", lpparam.processName, lpparam.packageName);
             if (hasHook) {
@@ -142,88 +138,50 @@ public class XposedEntry implements IXposedHookLoadPackage {
             params = new ContextParams.Builder().build();
         }
         LogUtil.v(TAG, "ContextParams params", params);
+        LogUtil.v(TAG, "Build.VERSION.SDK_INT: " + Build.VERSION.SDK_INT);
         switch (Build.VERSION.SDK_INT) {
             case 32:
+                contextImpl = (Context) ctor.newInstance(null, activityThread, loadedApk, params,
+                        null, null, null, null, null, 0, null, null);
+                break;
             case 31:
-                  /* 12
-                    private ContextImpl(@Nullable ContextImpl container, @NonNull ActivityThread mainThread,
-                    @NonNull LoadedApk packageInfo, @NonNull ContextParams params,
-                    @Nullable String attributionTag, @Nullable AttributionSource nextAttributionSource,
-                    @Nullable String splitName, @Nullable IBinder token, @Nullable UserHandle user,
-                    int flags, @Nullable ClassLoader classLoader, @Nullable String overrideOpPackageName)
-                * */
                 contextImpl = (Context) ctor.newInstance(null, activityThread, loadedApk, params,
                         null, null, null, null, null, 0, null, null);
                 break;
             case 30:
-                /*  11
-                *  private ContextImpl(@Nullable ContextImpl container, @NonNull ActivityThread mainThread,
-                    @NonNull LoadedApk packageInfo, @Nullable String attributionTag,
-                    @Nullable String splitName, @Nullable IBinder activityToken, @Nullable UserHandle user,
-                    int flags, @Nullable ClassLoader classLoader, @Nullable String overrideOpPackageName)
-                * */
                 contextImpl = (Context) ctor.newInstance(null, activityThread, loadedApk, null,
                         null, null, null, 0, null, null);
                 break;
             case 29:
-                /*
-                *  Android 10
-                    private ContextImpl(@Nullable ContextImpl container, @NonNull ActivityThread mainThread,
-                    @NonNull LoadedApk packageInfo, @Nullable String splitName,
-                    @Nullable IBinder activityToken, @Nullable UserHandle user, int flags,
-                    @Nullable ClassLoader classLoader, @Nullable String overrideOpPackageName)
-                *
-                * */
                 contextImpl = (Context) ctor.newInstance(null, activityThread, loadedApk, null,
                         null, null, 0, null, null);
                 break;
             case 28:
+                contextImpl = (Context) ctor.newInstance(null, activityThread, loadedApk, null,
+                        null, null, 0, null);
+                break;
             case 27:
+                contextImpl = (Context) ctor.newInstance(null, activityThread, loadedApk, null,
+                        null, null, 0, null);
+                break;
             case 26:
-                /*
-                * private ContextImpl(@Nullable ContextImpl container, @NonNull ActivityThread mainThread,
-                    @NonNull LoadedApk packageInfo, @Nullable String splitName,
-                    @Nullable IBinder activityToken, @Nullable UserHandle user, int flags,
-                    @Nullable ClassLoader classLoader)
-                * */
                 contextImpl = (Context) ctor.newInstance(null, activityThread, loadedApk, null,
                         null, null, 0, null);
                 break;
             case 25:
-            case 24:
-                /*
-                * private ContextImpl(ContextImpl container, ActivityThread mainThread,
-                LoadedApk packageInfo, IBinder activityToken, UserHandle user, int flags,
-                Display display, Configuration overrideConfiguration, int createDisplayWithId)
-                * */
                 contextImpl = (Context) ctor.newInstance(null, activityThread, loadedApk, null,
                         null, 0, null, null, -1);
                 break;
-            case 23:
-                /*
-                * private ContextImpl(ContextImpl container, ActivityThread mainThread,
-                    LoadedApk packageInfo, IBinder activityToken, UserHandle user, boolean restricted,
-                    Display display, Configuration overrideConfiguration, int createDisplayWithId)
-                * */
+            case 24:
                 contextImpl = (Context) ctor.newInstance(null, activityThread, loadedApk, null,
-                        null, false, null, null, -1);
-                break;
-            case 22:
-            case 21:
-                /*
-                * private ContextImpl(ContextImpl container, ActivityThread mainThread,
-                LoadedApk packageInfo, IBinder activityToken, UserHandle user, boolean restricted,
-                Display display, Configuration overrideConfiguration)
-                * */
-                contextImpl = (Context) ctor.newInstance(null, activityThread, loadedApk, null,
-                        null, false, null, null);
+                        null, 0, null, null, -1);
                 break;
             default:
                 throw new UnsupportedOperationException(
                         "Unsupported version " + Build.VERSION.SDK_INT);
 
         }
-
+        LogUtil.v(TAG, "ContextParams contextImpl", contextImpl);
         return contextImpl;
     }
 

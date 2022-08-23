@@ -24,6 +24,7 @@ import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
 
+import com.alibaba.fastjson.JSONObject;
 import com.sanfengandroid.common.reflection.ReflectUtil;
 import com.sanfengandroid.common.util.LogUtil;
 import com.sanfengandroid.common.util.Util;
@@ -51,9 +52,11 @@ public final class NativeHook {
 
     private static native int nativeAddIntBlackList(int type, String name, int value, boolean add);
 
-    private static native int nativeAddIntBlackLists(int type, String[] names, int[] values, boolean add);
+    private static native int nativeAddIntBlackLists(int type, String[] names, int[] values,
+            boolean add);
 
-    private static native int nativeAddStringBlackList(int type, String name, String value, boolean add);
+    private static native int nativeAddStringBlackList(int type, String name, String value,
+            boolean add);
 
     private static native int nativeSetHookOptionInt(String name, int value);
 
@@ -83,10 +86,12 @@ public final class NativeHook {
 
     private static native int nativeSetJniMonitorLib(String name, boolean contain, boolean add);
 
-    private static native int nativeSetJniMonitorAddress(long start, long end, boolean contain, boolean add);
+    private static native int nativeSetJniMonitorAddress(long start, long end, boolean contain,
+            boolean add);
 
-    private static native int nativeSetRuntimeBlacklist(String oldCmd, String newCmd, String[] oldArgv, boolean matchArgv, String[] newArgv,
-                                                        boolean replaceArgv, String input, String output, String error);
+    private static native int nativeSetRuntimeBlacklist(String oldCmd, String newCmd,
+            String[] oldArgv, boolean matchArgv, String[] newArgv, boolean replaceArgv,
+            String input, String output, String error);
 
     public static ErrorCode openJniMonitor() {
         try {
@@ -119,7 +124,8 @@ public final class NativeHook {
         }
     }
 
-    public static ErrorCode setJniMonitorAddress(long start, long end, boolean contain, boolean add) {
+    public static ErrorCode setJniMonitorAddress(long start, long end, boolean contain,
+            boolean add) {
         try {
             if (end < start) {
                 return ErrorCode.ERROR_JAVA_EXECUTE;
@@ -147,7 +153,8 @@ public final class NativeHook {
         }
     }
 
-    private static ErrorCode callIntBlacklist(NativeOption.NativeIntOption option, String name, int value, boolean add) {
+    private static ErrorCode callIntBlacklist(NativeOption.NativeIntOption option, String name,
+            int value, boolean add) {
         if (option == null || TextUtils.isEmpty(name)) {
             return ErrorCode.ERROR_JAVA_EXECUTE;
         }
@@ -159,12 +166,14 @@ public final class NativeHook {
         }
     }
 
-    private static ErrorCode callStringBlacklist(NativeOption.NativeStringOption option, String name, String value, boolean add) {
+    private static ErrorCode callStringBlacklist(NativeOption.NativeStringOption option,
+            String name, String value, boolean add) {
         if (option == null || TextUtils.isEmpty(name)) {
             return ErrorCode.ERROR_JAVA_EXECUTE;
         }
         try {
-            return ErrorCode.codeToError(nativeAddStringBlackList(option.ordinal(), name, value, add));
+            return ErrorCode.codeToError(
+                    nativeAddStringBlackList(option.ordinal(), name, value, add));
         } catch (Throwable e) {
             e.printStackTrace();
             return ErrorCode.ERROR_JAVA_EXECUTE;
@@ -178,7 +187,8 @@ public final class NativeHook {
         return callIntBlacklist(NativeOption.NativeIntOption.MAPS_RULE, name, value, add);
     }
 
-    public static ErrorCode addBlackList(NativeOption.NativeIntOption option, String name, NativeHookStatus value) {
+    public static ErrorCode addBlackList(NativeOption.NativeIntOption option, String name,
+            NativeHookStatus value) {
         if (value == null) {
             return ErrorCode.ERROR_JAVA_EXECUTE;
         }
@@ -190,7 +200,8 @@ public final class NativeHook {
      * @param name   名字,传null则删除该类型下所有黑名单
      * @param value  字符串值
      */
-    public static ErrorCode addBlackList(NativeOption.NativeStringOption option, String name, String value) {
+    public static ErrorCode addBlackList(NativeOption.NativeStringOption option, String name,
+            String value) {
         return callStringBlacklist(option, name, value, true);
     }
 
@@ -208,7 +219,8 @@ public final class NativeHook {
      * @param values 值选项,开启/关闭
      * @return 添加黑名单是否成功
      */
-    public static ErrorCode addBlackLists(NativeOption.NativeIntOption option, String[] names, NativeHookStatus[] values) {
+    public static ErrorCode addBlackLists(NativeOption.NativeIntOption option, String[] names,
+            NativeHookStatus[] values) {
         if (option == null) {
             return ErrorCode.ERROR_JAVA_EXECUTE;
         }
@@ -217,7 +229,9 @@ public final class NativeHook {
             return ErrorCode.ERROR_JAVA_EXECUTE;
         }
         if (names.length != values.length) {
-            LogUtil.e(TAG, "Key value cannot be one-to-one correspondence, key length: %d value length: %d", names.length, values.length);
+            LogUtil.e(TAG,
+                    "Key value cannot be one-to-one correspondence, key length: %d value length: %d",
+                    names.length, values.length);
             return ErrorCode.ERROR_JAVA_EXECUTE;
         }
         for (int i = 0; i < names.length; i++) {
@@ -235,7 +249,8 @@ public final class NativeHook {
             intValues[i] = values[i].getOption();
         }
         try {
-            return ErrorCode.codeToError(nativeAddIntBlackLists(option.ordinal(), names, intValues, true));
+            return ErrorCode.codeToError(
+                    nativeAddIntBlackLists(option.ordinal(), names, intValues, true));
         } catch (Throwable e) {
             e.printStackTrace();
             return ErrorCode.ERROR_JAVA_EXECUTE;
@@ -253,15 +268,17 @@ public final class NativeHook {
             }
         }
         try {
-            return ErrorCode.codeToError(nativeAddIntBlackLists(option.ordinal(), names, null, false));
+            return ErrorCode.codeToError(
+                    nativeAddIntBlackLists(option.ordinal(), names, null, false));
         } catch (Throwable e) {
             e.printStackTrace();
             return ErrorCode.ERROR_JAVA_EXECUTE;
         }
     }
 
-    public static ErrorCode addRuntimeBlacklist(String oldCmd, String newCmd, String[] oldArgv, boolean matchArgv,
-                                                String[] newArgv, boolean replaceArgv, String input, String output, String error) {
+    public static ErrorCode addRuntimeBlacklist(String oldCmd, String newCmd, String[] oldArgv,
+            boolean matchArgv, String[] newArgv, boolean replaceArgv, String input, String output,
+            String error) {
         if (TextUtils.isEmpty(oldCmd)) {
             return ErrorCode.ERROR_JAVA_EXECUTE;
         }
@@ -304,7 +321,9 @@ public final class NativeHook {
             error = null;
         }
         try {
-            return ErrorCode.codeToError(nativeSetRuntimeBlacklist(oldCmd, newCmd, oldArgv, matchArgv, newArgv, replaceArgv, input, output, error));
+            return ErrorCode.codeToError(
+                    nativeSetRuntimeBlacklist(oldCmd, newCmd, oldArgv, matchArgv, newArgv,
+                            replaceArgv, input, output, error));
         } catch (Throwable e) {
             e.printStackTrace();
             return ErrorCode.ERROR_JAVA_EXECUTE;
@@ -377,7 +396,8 @@ public final class NativeHook {
             return ErrorCode.ERROR_JAVA_EXECUTE;
         }
         try {
-            return ErrorCode.codeToError(nativeSetHookOptionString(option.name, TextUtils.isEmpty(value) ? "" : value));
+            return ErrorCode.codeToError(
+                    nativeSetHookOptionString(option.name, TextUtils.isEmpty(value) ? "" : value));
         } catch (Throwable e) {
             e.printStackTrace();
             return ErrorCode.ERROR_JAVA_EXECUTE;
@@ -431,7 +451,8 @@ public final class NativeHook {
             return false;
         }
         try {
-            return nativeSetRedirectFile(src.getAbsolutePath(), redirect.getAbsolutePath(), src.isDirectory());
+            return nativeSetRedirectFile(src.getAbsolutePath(), redirect.getAbsolutePath(),
+                    src.isDirectory());
         } catch (Throwable e) {
             e.printStackTrace();
             return false;
@@ -484,7 +505,8 @@ public final class NativeHook {
             return false;
         }
         try {
-            return nativeSetFileAccess(file.getAbsolutePath(), uid, gid, access & FileAccessMask.MASK);
+            return nativeSetFileAccess(file.getAbsolutePath(), uid, gid,
+                    access & FileAccessMask.MASK);
         } catch (Throwable e) {
             e.printStackTrace();
             return false;
@@ -502,22 +524,30 @@ public final class NativeHook {
         }
     }
 
-    public static void initLibraryPath(Context context) throws PackageManager.NameNotFoundException {
+    public static void initLibraryPath(Context context)
+            throws PackageManager.NameNotFoundException {
         if (libraryPath != null) {
             return;
         }
-        ApplicationInfo info = context.getPackageManager().getApplicationInfo(com.sanfengandroid.datafilter.BuildConfig.APPLICATION_ID, 0);
+        ApplicationInfo info = context.getPackageManager()
+                .getApplicationInfo(com.sanfengandroid.datafilter.BuildConfig.APPLICATION_ID, 0);
+        LogUtil.d(TAG, "initLibraryPath ApplicationInfo: %s", JSONObject.toJSONString(info));
         libraryPath = info.nativeLibraryDir;
+        LogUtil.d(TAG, "initLibraryPath find library at: %s", libraryPath);
     }
 
-    public static void initLibraryPath(Context context, int targetSdk) throws PackageManager.NameNotFoundException {
+    public static void initLibraryPath(Context context, int targetSdk)
+            throws PackageManager.NameNotFoundException {
         if (targetSdk < Build.VERSION_CODES.R || Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
             initLibraryPath(context);
             return;
         }
         try {
             libraryPath = findLibraryPath();
-            LogUtil.d(TAG, "find library at: %s", libraryPath);
+            LogUtil.d(TAG, "initLibraryPath find library at: %s", libraryPath);
+            if (libraryPath == null) {
+                initLibraryPath(context);
+            }
         } catch (Exception e) {
             LogUtil.e(TAG, "find library error", e);
             initLibraryPath(context);
@@ -526,7 +556,8 @@ public final class NativeHook {
 
     private static String findLibraryPath() throws Exception {
         ClassLoader loader = NativeHook.class.getClassLoader();
-        Object pathList = ReflectUtil.getField(Class.forName("dalvik.system.BaseDexClassLoader"), loader, "pathList");
+        Object pathList = ReflectUtil.getField(Class.forName("dalvik.system.BaseDexClassLoader"),
+                loader, "pathList");
         Object[] dexElements = (Object[]) ReflectUtil.getFieldInstance(pathList, "dexElements");
         File apkPath = null;
         for (Object element : dexElements) {
@@ -534,15 +565,18 @@ public final class NativeHook {
             if (path == null) {
                 continue;
             }
-            if (path.getName().endsWith(".apk") && path.getAbsolutePath().contains(com.sanfengandroid.datafilter.BuildConfig.APPLICATION_ID)) {
+            if (path.getName().endsWith(".apk") && path.getAbsolutePath()
+                    .contains(com.sanfengandroid.datafilter.BuildConfig.APPLICATION_ID)) {
                 apkPath = path;
                 break;
             }
         }
-        if (apkPath == null){
+        if (apkPath == null) {
             return null;
         }
         File base = new File(apkPath.getParent(), "lib");
+        LogUtil.d(TAG, " File base : %s", base.getAbsolutePath());
+
         File library = null;
         if (FileInstaller.isRunning64Bit()) {
             library = new File(base, FileInstaller.isX86() ? "x86_64" : "arm64");
@@ -557,8 +591,11 @@ public final class NativeHook {
     }
 
     public static String getDefaultHookModulePath() {
-        String name = "lib" + (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ? com.sanfengandroid.datafilter.BuildConfig.HOOK_HIGH_MODULE_NAME : com.sanfengandroid.datafilter.BuildConfig.HOOK_LOW_MODULE_NAME);
-        return new File(libraryPath, FileInstaller.isRunning64Bit() ? name + "64.so" : name + ".so").getAbsolutePath();
+        String name = "lib" + (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
+                               ? com.sanfengandroid.datafilter.BuildConfig.HOOK_HIGH_MODULE_NAME
+                               : com.sanfengandroid.datafilter.BuildConfig.HOOK_LOW_MODULE_NAME);
+        return new File(libraryPath,
+                FileInstaller.isRunning64Bit() ? name + "64.so" : name + ".so").getAbsolutePath();
     }
 
     public static String getConfigPath() {
@@ -570,9 +607,12 @@ public final class NativeHook {
     }
 
     public static String getDefaultFakeLinkerPath() {
-        String name = "lib" + BuildConfig.LINKER_MODULE_NAME + "-" + (Build.VERSION.SDK_INT == Build.VERSION_CODES.N_MR1 ? Build.VERSION_CODES.N : Build.VERSION.SDK_INT);
+        String name = "lib" + BuildConfig.LINKER_MODULE_NAME + (
+                Build.VERSION.SDK_INT == Build.VERSION_CODES.N_MR1 ? Build.VERSION_CODES.N
+                                                                   : Build.VERSION.SDK_INT);
 
-        return new File(libraryPath, FileInstaller.isRunning64Bit() ? name + "64.so" : name + ".so").getAbsolutePath();
+        return new File(libraryPath,
+                FileInstaller.isRunning64Bit() ? name + "64.so" : name + ".so").getAbsolutePath();
     }
 
     public static void defaultInitFakeLinker(Context context) {
@@ -580,10 +620,13 @@ public final class NativeHook {
             initLibraryPath(context);
         } catch (PackageManager.NameNotFoundException ignore) {
         }
-        FakeLinker.initFakeLinker(getDefaultFakeLinkerPath(), getDefaultHookModulePath(), context.getCacheDir().getAbsolutePath(), getConfigPath(), Util.getProcessName(context));
+        FakeLinker.initFakeLinker(getDefaultFakeLinkerPath(), getDefaultHookModulePath(),
+                context.getCacheDir().getAbsolutePath(), getConfigPath(),
+                Util.getProcessName(context));
     }
 
     public static void initFakeLinker(String cacheDir, String processName) {
-        FakeLinker.initFakeLinker(getDefaultFakeLinkerPath(), getDefaultHookModulePath(), cacheDir, getConfigPath(), processName);
+        FakeLinker.initFakeLinker(getDefaultFakeLinkerPath(), getDefaultHookModulePath(), cacheDir,
+                getConfigPath(), processName);
     }
 }

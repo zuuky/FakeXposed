@@ -159,8 +159,8 @@ def clean_build():
 
 def cleanup(args):
     execv([gradlew, 'clean'])
-    rm_rf(op.join('app', 'src', 'main', 'libs'))
-    rm_rf(op.join('fake-linker', 'src', 'main', 'libs'))
+    rm_rf(op.join('app', 'src', 'main', 'jniLibs'))
+    rm_rf(op.join('fake-linker', 'src', 'main', 'jniLibs'))
 
 
 def clean_generate():
@@ -186,7 +186,7 @@ def get_apk_name(type):
 
 def build_all(args):
     cleanup(args)
-    for api in range(21, 31):
+    for api in range(21, 33):
         if api == 25:
             continue
         header(f'building api {api}')
@@ -215,7 +215,7 @@ def build_all(args):
 
 def build_api(args):
     clean_build()
-    if args.level < 21 or args.level > 30:
+    if args.level < 24 or args.level > 33:
         error(f'unsupported api level: {args.level}')
     if args.level == 25:
         args.level = 24
@@ -239,7 +239,7 @@ def build_library(args):
     clean_build()
     header(args.level)
     for level in args.level:
-        if level < 21 or level > 30:
+        if level < 21 or level > 33:
             error(f'unsupported api level: {args.level}')
         if level == 25:
             header('Warning:compile incompatible versions of ndk: 25')
