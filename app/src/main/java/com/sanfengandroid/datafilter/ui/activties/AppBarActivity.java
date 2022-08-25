@@ -41,8 +41,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.sanfengandroid.common.util.LogUtil;
 import com.sanfengandroid.common.util.NetUtil;
-import com.sanfengandroid.fakeinterface.NativeTestActivity;
 import com.sanfengandroid.datafilter.BuildConfig;
+import com.sanfengandroid.datafilter.NativeTestActivity;
 import com.sanfengandroid.datafilter.R;
 import com.sanfengandroid.datafilter.SPProvider;
 import com.sanfengandroid.datafilter.XpApplication;
@@ -67,12 +67,15 @@ public class AppBarActivity extends AppCompatActivity {
     private int layoutId;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(
+            @Nullable
+                    Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(layoutId);
         mToolbar = findViewById(R.id.toolbar);
         setSupportActionBar(mToolbar);
-        mViewModel = new ViewModelProvider(XpApplication.getInstance()).get(ApplicationViewModel.class);
+        mViewModel = new ViewModelProvider(XpApplication.getInstance()).get(
+                ApplicationViewModel.class);
     }
 
     public void setViewLayout(int resId) {
@@ -117,7 +120,7 @@ public class AppBarActivity extends AppCompatActivity {
             item.setChecked(true);
         }
         item = menu.findItem(R.id.action_test);
-        if (item != null){
+        if (item != null) {
             item.setVisible(true);
         }
         return true;
@@ -140,10 +143,12 @@ public class AppBarActivity extends AppCompatActivity {
         } else if (id == R.id.soft_reboot) {
             Debug.setSanityChecksEnabled(false);
             if (!Shell.SU.available()) {
-                Snackbar.make(getSnackView(), R.string.error_no_root_permission, Snackbar.LENGTH_SHORT).show();
+                Snackbar.make(getSnackView(), R.string.error_no_root_permission,
+                        Snackbar.LENGTH_SHORT).show();
             } else {
                 DialogBuilder.confirmCancelShow(this, R.string.confirm_reboot, (d, w) -> {
-                    List<String> list = Shell.SU.run("setprop ctl.restart surfaceflinger; setprop ctl.restart zygote");
+                    List<String> list = Shell.SU.run(
+                            "setprop ctl.restart surfaceflinger; setprop ctl.restart zygote");
                     if (list == null) {
                         DialogBuilder.confirmShow(this, R.string.soft_reboot_error, 0, null);
                     }
@@ -215,34 +220,38 @@ public class AppBarActivity extends AppCompatActivity {
     }
 
     protected void donate() {
-        String[] items = new String[]{
-                getString(R.string.alipay),
-                getString(R.string.paypal),
-                getString(R.string.donate_other)
-        };
-        new MaterialAlertDialogBuilder(this)
-                .setTitle(R.string.donate)
+        String[] items = new String[]{getString(R.string.alipay), getString(R.string.paypal),
+                getString(R.string.donate_other)};
+        new MaterialAlertDialogBuilder(this).setTitle(R.string.donate)
                 .setItems(items, (dialog, which) -> {
                     try {
                         Intent intent;
                         if (which == 0) {
-                            intent = Intent.parseUri("alipayqr://platformapi/startapp?saId=10000007&qrcode=https://qr.alipay.com/fkx17394wnyqsvysokxgu08", Intent.URI_INTENT_SCHEME);
+                            intent = Intent.parseUri(
+                                    "alipayqr://platformapi/startapp?saId=10000007&qrcode=https://qr.alipay.com/fkx17394wnyqsvysokxgu08",
+                                    Intent.URI_INTENT_SCHEME);
                         } else if (which == 1) {
-                            intent = Intent.parseUri("https://paypal.me/sanfengandroid?locale.x=zh_XC", Intent.URI_INTENT_SCHEME);
+                            intent = Intent.parseUri(
+                                    "https://paypal.me/sanfengandroid?locale.x=zh_XC",
+                                    Intent.URI_INTENT_SCHEME);
                         } else {
-                            intent = Intent.parseUri("https://sanfengandroid.github.io/about/", Intent.URI_INTENT_SCHEME);
+                            intent = Intent.parseUri("https://sanfengandroid.github.io/about/",
+                                    Intent.URI_INTENT_SCHEME);
                         }
                         startActivity(intent);
                     } catch (Exception e) {
-                        Snackbar.make(getSnackView(), e.getMessage() == null ? e.getClass().getSimpleName() : e.getMessage(), Snackbar.LENGTH_SHORT).show();
+                        Snackbar.make(getSnackView(),
+                                        e.getMessage() == null ? e.getClass().getSimpleName()
+                                                               : e.getMessage(), Snackbar.LENGTH_SHORT)
+                                .show();
                     }
-                })
-                .show();
+                }).show();
     }
 
     protected void github() {
         try {
-            Intent intent = Intent.parseUri("https://github.com/sanfengAndroid/FakeXposed", Intent.URI_INTENT_SCHEME);
+            Intent intent = Intent.parseUri("https://github.com/sanfengAndroid/FakeXposed",
+                    Intent.URI_INTENT_SCHEME);
             startActivity(intent);
         } catch (URISyntaxException ignore) {
         }
@@ -253,19 +262,27 @@ public class AppBarActivity extends AppCompatActivity {
             String net = NetUtil.requestHttps(AppBean.UPDATE_URL);
             AppBean app = new AppBean(net);
             LogUtil.d("new version " + app);
-            if (app.getVersionCode() > BuildConfig.VERSION_CODE && !TextUtils.isEmpty(app.getLink())) {
-                if (!force && SPProvider.getIgnoreVersionCode(AppBarActivity.this) == app.getVersionCode()) {
+            if (app.getVersionCode() > BuildConfig.VERSION_CODE && !TextUtils.isEmpty(
+                    app.getLink())) {
+                if (!force && SPProvider.getIgnoreVersionCode(AppBarActivity.this)
+                        == app.getVersionCode()) {
                     return;
                 }
-                String note = getResources().getConfiguration().locale.getCountry().equals("CN") ? app.getNoteCN() : app.getNoteEN();
-                getSnackView().post(() -> DialogBuilder.confirmNeutralShow(AppBarActivity.this, R.string.update, note, R.string.update, R.string.ignore, R.string.cancel, (dialog, which) -> {
-                    Uri uri = Uri.parse(app.getLink());
-                    Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-                    startActivity(intent);
-                }, (dialog, which) -> SPProvider.configureIgnoreVersionCode(AppBarActivity.this, app.getVersionCode())));
+                String note = getResources().getConfiguration().locale.getCountry().equals("CN")
+                              ? app.getNoteCN() : app.getNoteEN();
+                getSnackView().post(
+                        () -> DialogBuilder.confirmNeutralShow(AppBarActivity.this, R.string.update,
+                                note, R.string.update, R.string.ignore, R.string.cancel,
+                                (dialog, which) -> {
+                                    Uri uri = Uri.parse(app.getLink());
+                                    Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                                    startActivity(intent);
+                                }, (dialog, which) -> SPProvider.configureIgnoreVersionCode(
+                                        AppBarActivity.this, app.getVersionCode())));
             } else {
                 if (force) {
-                    Snackbar.make(getSnackView(), R.string.has_latest_version, Snackbar.LENGTH_SHORT).show();
+                    Snackbar.make(getSnackView(), R.string.has_latest_version,
+                            Snackbar.LENGTH_SHORT).show();
                 }
             }
         });
@@ -275,7 +292,8 @@ public class AppBarActivity extends AppCompatActivity {
     protected void copyWechat() {
         ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
         cm.setPrimaryClip(ClipData.newPlainText("wechat", "sanfengAndroid逆向安全"));
-        Snackbar.make(getSnackView(), R.string.copy_wechat_public_tip, Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(getSnackView(), R.string.copy_wechat_public_tip, Snackbar.LENGTH_SHORT)
+                .show();
     }
 
     protected void shared() {

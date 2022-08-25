@@ -39,13 +39,6 @@ public class NativeInit {
         try {
             NativeHook.initFakeLinker(context.getCacheDir().getAbsolutePath(), process);
             nativeSync();
-            if (BuildConfig.DEBUG) {
-                NativeHook.openJniMonitor();
-            }
-            if (TextUtils.equals(process, BuildConfig.APPLICATION_ID)) {
-                GlobalConfig.getMap(DataModelType.PACKAGE_HIDE).clear();
-                NativeHook.nativeTest();
-            }
         } catch (Throwable e) {
             LogUtil.e(TAG, "native init error", e);
         }
@@ -63,24 +56,29 @@ public class NativeInit {
         addNativeStringOption(DataModelType.LOAD_CLASS_HIDE);
         addNativeStringOption(DataModelType.STACK_ELEMENT_HIDE);
         addNativeRuntime();
-//        addNativeStringOption(DataModelType.SYSTEM_ENV_HIDE);
         Map<String, String> map = GlobalConfig.getMap(DataModelType.MAPS_HIDE, String.class);
         for (Map.Entry<String, String> entry : map.entrySet()) {
             MapsRuleModel model = new MapsRuleModel();
             model.setKey(entry.getKey());
             model.setValue(entry.getValue());
-            LogUtil.v(TAG, "add native maps rule: %s, result: %s", model, NativeHook.addMapsRule(model.getMode(), model.getKey(), model.getRule()));
+            LogUtil.v(TAG, "add native maps rule: %s, result: %s", model,
+                    NativeHook.addMapsRule(model.getMode(), model.getKey(), model.getRule()));
         }
-        for (Map.Entry<String, String> entry : GlobalConfig.getMap(DataModelType.FILE_REDIRECT_HIDE, String.class).entrySet()) {
-            LogUtil.v(TAG, "add file redirect path src: %s, dst: %s, result: %s", entry.getKey(), entry.getValue(),
-                    NativeHook.addRedirectFile(entry.getKey(), entry.getValue()));
+        for (Map.Entry<String, String> entry : GlobalConfig.getMap(DataModelType.FILE_REDIRECT_HIDE,
+                String.class).entrySet()) {
+            LogUtil.v(TAG, "add file redirect path src: %s, dst: %s, result: %s", entry.getKey(),
+                    entry.getValue(), NativeHook.addRedirectFile(entry.getKey(), entry.getValue()));
         }
-        for (Map.Entry<String, String> entry : GlobalConfig.getMap(DataModelType.FILE_ACCESS_HIDE, String.class).entrySet()) {
+        for (Map.Entry<String, String> entry : GlobalConfig.getMap(DataModelType.FILE_ACCESS_HIDE,
+                String.class).entrySet()) {
             FileAccessModel model = new FileAccessModel();
             model.setValue(entry.getValue());
-            LogUtil.v(TAG, "add file access control path: %s, uid: %d, gid: %d, access: %s, result: %s", entry.getKey(), model.getUid(),
-                    model.getGid(), Integer.toOctalString(model.getAccess()),
-                    NativeHook.setFilePermission(entry.getKey(), model.getUid(), model.getGid(), model.getAccess()));
+            LogUtil.v(TAG,
+                    "add file access control path: %s, uid: %d, gid: %d, access: %s, result: %s",
+                    entry.getKey(), model.getUid(), model.getGid(),
+                    Integer.toOctalString(model.getAccess()),
+                    NativeHook.setFilePermission(entry.getKey(), model.getUid(), model.getGid(),
+                            model.getAccess()));
         }
     }
 
@@ -103,7 +101,8 @@ public class NativeInit {
                 default:
                     break;
             }
-            LogUtil.v(TAG, "add native %s blacklist result: %s", type.name(), NativeHook.addBlackLists(option, list.toArray(new String[0]), options));
+            LogUtil.v(TAG, "add native %s blacklist result: %s", type.name(),
+                    NativeHook.addBlackLists(option, list.toArray(new String[0]), options));
         }
     }
 
@@ -134,18 +133,21 @@ public class NativeInit {
         }
 
         for (Map.Entry<String, String> entry : map.entrySet()) {
-            LogUtil.v(TAG, "add native %s string option name: %s, value: %s, result: %s", type.name(), entry.getKey(), entry.getValue(),
+            LogUtil.v(TAG, "add native %s string option name: %s, value: %s, result: %s",
+                    type.name(), entry.getKey(), entry.getValue(),
                     NativeHook.addBlackList(option, entry.getKey(), entry.getValue()));
         }
     }
 
     private static void addNativeRuntime() {
-        Map<String, List<ExecBean>> map = (Map<String, List<ExecBean>>) GlobalConfig.getMap(DataModelType.RUNTIME_EXEC_HIDE);
+        Map<String, List<ExecBean>> map = (Map<String, List<ExecBean>>) GlobalConfig.getMap(
+                DataModelType.RUNTIME_EXEC_HIDE);
         for (Map.Entry<String, List<ExecBean>> entry : map.entrySet()) {
             for (ExecBean bean : entry.getValue()) {
                 LogUtil.v(TAG, "add runtime option result: %s",
-                        NativeHook.addRuntimeBlacklist(bean.oldCmd, bean.newCmd, bean.oldArgs, bean.matchArgv,
-                                bean.newArgs, bean.replaceArgv, bean.outStream, bean.inputStream, bean.errStream));
+                        NativeHook.addRuntimeBlacklist(bean.oldCmd, bean.newCmd, bean.oldArgs,
+                                bean.matchArgv, bean.newArgs, bean.replaceArgv, bean.outStream,
+                                bean.inputStream, bean.errStream));
             }
         }
     }

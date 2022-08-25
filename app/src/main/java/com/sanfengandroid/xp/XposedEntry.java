@@ -28,10 +28,10 @@ import android.util.Log;
 import com.sanfengandroid.common.model.base.ShowDataModel;
 import com.sanfengandroid.common.util.LogUtil;
 import com.sanfengandroid.datafilter.BuildConfig;
+import com.sanfengandroid.datafilter.NativeTestActivity;
 import com.sanfengandroid.fakeinterface.GlobalConfig;
 import com.sanfengandroid.fakeinterface.NativeHook;
 import com.sanfengandroid.fakeinterface.NativeInit;
-import com.sanfengandroid.fakeinterface.NativeTestActivity;
 import com.sanfengandroid.xp.hooks.XposedFilter;
 
 import java.lang.reflect.Constructor;
@@ -40,6 +40,7 @@ import java.util.Set;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
@@ -50,6 +51,7 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage;
 public class XposedEntry implements IXposedHookLoadPackage {
     private static final String TAG = XposedEntry.class.getSimpleName();
     private static boolean hasHook = false;
+    public static final String GLOBAL_XP_PREF = "global_xp_pref";
 
     static {
         LogUtil.addCallback(Log.ERROR, (state, level, tag, msg, throwable) -> {
@@ -64,20 +66,44 @@ public class XposedEntry implements IXposedHookLoadPackage {
                 XposedBridge.log(throwable);
             }
         });
+        //LogUtil.addCallback(Log.INFO, (state, level, tag, msg, throwable) -> {
+        //    XposedBridge.log(tag + ": " + msg);
+        //    if (throwable != null) {
+        //        XposedBridge.log(throwable);
+        //    }
+        //});
+        //LogUtil.addCallback(Log.VERBOSE, (state, level, tag, msg, throwable) -> {
+        //    XposedBridge.log(tag + ": " + msg);
+        //    if (throwable != null) {
+        //        XposedBridge.log(throwable);
+        //    }
+        //});
+        //LogUtil.addCallback(Log.DEBUG, (state, level, tag, msg, throwable) -> {
+        //    XposedBridge.log(tag + ": " + msg);
+        //    if (throwable != null) {
+        //        XposedBridge.log(throwable);
+        //    }
+        //});
         LogUtil.setLogMode(LogUtil.LogMode.CALLBACK_AND_PRINT);
         LogUtil.minLogLevel = Log.VERBOSE;
     }
 
+    //public static XSharedPreferences getPref(String path) {
+    //    XSharedPreferences pref = new XSharedPreferences(BuildConfig.APPLICATION_ID, path);
+    //    return pref.getFile().canRead() ? pref : null;
+    //}
+
     @Override
     public void handleLoadPackage(XC_LoadPackage.LoadPackageParam lpparam) {
         try {
-            LogUtil.v(TAG, "process: %s, package: %s", lpparam.processName, lpparam.packageName);
+            if ("android".equals(lpparam.processName)) {
+                return;
+            }
+            LogUtil.v(TAG, "process: %s, package: %s, hasHook: %s", lpparam.processName,
+                    lpparam.packageName, hasHook);
             if (hasHook) {
                 LogUtil.v(TAG, "current process: %s, package: %s has been hooked",
                         lpparam.processName, lpparam.packageName);
-                return;
-            }
-            if ("android".equals(lpparam.processName)) {
                 return;
             }
             if (BuildConfig.APPLICATION_ID.equals(lpparam.packageName)) {
@@ -87,7 +113,6 @@ public class XposedEntry implements IXposedHookLoadPackage {
                     XpConfigAgent.setDataMode(XpDataMode.X_SP);
                     XpConfigAgent.setProcessMode(ProcessMode.SELF);
                     NativeHook.initLibraryPath(contextImpl, lpparam.appInfo.targetSdkVersion);
-
                     NativeTestActivity.initTestData(contextImpl);
                     NativeInit.initNative(contextImpl, lpparam.processName);
                     new XposedFilter().hook(lpparam.classLoader);
@@ -95,14 +120,13 @@ public class XposedEntry implements IXposedHookLoadPackage {
                 }
                 return;
             }
-            LogUtil.w(TAG, "targetSDK: %d, current class loader: %s",
+            LogUtil.v(TAG, "targetSDK: %d, current class loader: %s",
                     lpparam.appInfo.targetSdkVersion, XposedEntry.class.getClassLoader());
             Context contextImpl = createAppContext(lpparam.appInfo);
             // 使用自身ContentProvider如果未启动则手动启动,这样会增加很长的启动时间
             XpDataMode mode = XpConfigAgent.xSharedPreferencesAvailable() ? XpDataMode.X_SP
                                                                           : XpDataMode.APP_CALL;
             LogUtil.d(TAG, "current data mode: %s", mode.name());
-            XposedBridge.log(TAG + " current data mode: " + mode.name());
             XpConfigAgent.setDataMode(mode);
             XpConfigAgent.setProcessMode(ProcessMode.HOOK_APP);
             if (!XpConfigAgent.getHookAppEnable(contextImpl, lpparam.packageName)) {
@@ -114,6 +138,7 @@ public class XposedEntry implements IXposedHookLoadPackage {
                 LogUtil.e(TAG, "get package: " + lpparam.packageName + " configuration failed.");
                 return;
             }
+            LogUtil.d(TAG, " package " + lpparam.packageName + " map: %s", map);
             GlobalConfig.init(map);
             GlobalConfig.removeThis(lpparam.packageName);
             NativeHook.initLibraryPath(contextImpl, lpparam.appInfo.targetSdkVersion);
@@ -137,8 +162,6 @@ public class XposedEntry implements IXposedHookLoadPackage {
         if (Build.VERSION.SDK_INT >= 31) {
             params = new ContextParams.Builder().build();
         }
-        LogUtil.v(TAG, "ContextParams params", params);
-        LogUtil.v(TAG, "Build.VERSION.SDK_INT: " + Build.VERSION.SDK_INT);
         switch (Build.VERSION.SDK_INT) {
             case 32:
                 contextImpl = (Context) ctor.newInstance(null, activityThread, loadedApk, params,
@@ -181,7 +204,6 @@ public class XposedEntry implements IXposedHookLoadPackage {
                         "Unsupported version " + Build.VERSION.SDK_INT);
 
         }
-        LogUtil.v(TAG, "ContextParams contextImpl", contextImpl);
         return contextImpl;
     }
 
@@ -194,6 +216,6 @@ public class XposedEntry implements IXposedHookLoadPackage {
                         param.setResult(true);
                     }
                 });
-        LogUtil.v(TAG, "hook myself");
+        LogUtil.v(TAG, "hooked myself");
     }
 }

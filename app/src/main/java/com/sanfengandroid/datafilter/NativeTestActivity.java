@@ -15,7 +15,7 @@
  *
  */
 
-package com.sanfengandroid.fakeinterface;
+package com.sanfengandroid.datafilter;
 
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -32,9 +32,12 @@ import com.sanfengandroid.common.bean.EnvBean;
 import com.sanfengandroid.common.model.base.DataModelType;
 import com.sanfengandroid.common.util.LogUtil;
 import com.sanfengandroid.common.util.Util;
-import com.sanfengandroid.datafilter.BuildConfig;
-import com.sanfengandroid.datafilter.R;
 import com.sanfengandroid.datafilter.ui.fragments.MainFragment;
+import com.sanfengandroid.fakeinterface.FileAccessMask;
+import com.sanfengandroid.fakeinterface.GlobalConfig;
+import com.sanfengandroid.fakeinterface.MapsMode;
+import com.sanfengandroid.fakeinterface.NativeHook;
+import com.sanfengandroid.fakeinterface.NativeInit;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -58,7 +61,7 @@ public class NativeTestActivity extends AppCompatActivity implements View.OnClic
         setContentView(R.layout.native_test_activity);
         if (MainFragment.isActive()) {
             findViewById(R.id.tv_plugin).setVisibility(View.GONE);
-        }else {
+        } else {
             findViewById(R.id.btn_local_load).setVisibility(View.VISIBLE);
         }
         findViewById(R.id.btn_test_maps).setOnClickListener(this);
@@ -124,12 +127,15 @@ public class NativeTestActivity extends AppCompatActivity implements View.OnClic
 
     public static void initTestData(Context context) {
         File cache = context.getCacheDir();
-        Map<String, EnvBean> envs = GlobalConfig.getMap(DataModelType.SYSTEM_ENV_HIDE, EnvBean.class);
+        LogUtil.v(TAG, "context cacheDir: %s", cache.getAbsolutePath());
+        Map<String, EnvBean> envs = GlobalConfig.getMap(DataModelType.SYSTEM_ENV_HIDE,
+                EnvBean.class);
         EnvBean bean = new EnvBean(TEST_KEY, TEST_RULE);
         envs.put(bean.name, bean);
         Map<String, String> global = GlobalConfig.getMap(DataModelType.GLOBAL_HIDE, String.class);
         global.put(TEST_KEY, TEST_RIGHT);
-        Map<String, String> globalProperty = GlobalConfig.getMap(DataModelType.GLOBAL_SYSTEM_PROPERTY_HIDE, String.class);
+        Map<String, String> globalProperty = GlobalConfig.getMap(
+                DataModelType.GLOBAL_SYSTEM_PROPERTY_HIDE, String.class);
         globalProperty.put("ro.zygote", TEST_RIGHT);
         Map<String, String> mapHide = GlobalConfig.getMap(DataModelType.MAPS_HIDE, String.class);
         mapHide.put(BuildConfig.APPLICATION_ID, MapsMode.MM_REMOVE.key);
@@ -155,7 +161,8 @@ public class NativeTestActivity extends AppCompatActivity implements View.OnClic
             fw.flush();
             fw.close();
             map = GlobalConfig.getMap(DataModelType.FILE_REDIRECT_HIDE, String.class);
-            map.put(new File(cache, TEST_KEY + TEST_RULE).getAbsolutePath(), file.getAbsolutePath());
+            map.put(new File(cache, TEST_KEY + TEST_RULE).getAbsolutePath(),
+                    file.getAbsolutePath());
             file = new File(cache, TEST_VALUE);
             if (!file.exists()) {
                 file.createNewFile();
@@ -164,7 +171,6 @@ public class NativeTestActivity extends AppCompatActivity implements View.OnClic
             map.put(file.getAbsolutePath(), "-1:-1:" + FileAccessMask.USR_READ.mode);
         } catch (Throwable e) {
             LogUtil.e(TAG, "error initializing test data", e);
-            return;
         }
     }
 
@@ -177,7 +183,8 @@ public class NativeTestActivity extends AppCompatActivity implements View.OnClic
             success = true;
         }
         try {
-            LogUtil.d(TAG, "self class %s", this.getClassLoader().loadClass("de.robv.android.xposed.XposedBridge"));
+            LogUtil.d(TAG, "self class %s",
+                    this.getClassLoader().loadClass("de.robv.android.xposed.XposedBridge"));
             success = false;
         } catch (Throwable e) {
             LogUtil.e(TAG, "test ClassLoader().loadClass", e);
@@ -186,7 +193,8 @@ public class NativeTestActivity extends AppCompatActivity implements View.OnClic
     }
 
     private boolean testDebugProperty() {
-        return TextUtils.equals(Settings.Global.getString(getContentResolver(), TEST_KEY), TEST_RIGHT);
+        return TextUtils.equals(Settings.Global.getString(getContentResolver(), TEST_KEY),
+                TEST_RIGHT);
     }
 
     private boolean testEnv() {
@@ -230,10 +238,12 @@ public class NativeTestActivity extends AppCompatActivity implements View.OnClic
             try {
                 String[] cmd = new String[]{"ls", "/system/lib"};
                 Process process = Runtime.getRuntime().exec(cmd);
-                BufferedReader br = new BufferedReader(new InputStreamReader(process.getInputStream()));
+                BufferedReader br = new BufferedReader(
+                        new InputStreamReader(process.getInputStream()));
                 final String line = br.readLine();
                 LogUtil.d(TAG, "test runtime result: %s", line);
-                NativeTestActivity.this.getWindow().getDecorView().post(() -> tip("测试Runtime执行", TextUtils.equals(line, "fake exec ls /system/lib")));
+                NativeTestActivity.this.getWindow().getDecorView().post(() -> tip("测试Runtime执行",
+                        TextUtils.equals(line, "fake exec ls /system/lib")));
             } catch (Throwable e) {
                 LogUtil.e(TAG, "test runtime error", e);
             }
@@ -261,7 +271,8 @@ public class NativeTestActivity extends AppCompatActivity implements View.OnClic
                 FileReader fr = new FileReader(file);
                 BufferedReader br = new BufferedReader(fr);
                 final String line = br.readLine();
-                NativeTestActivity.this.getWindow().getDecorView().post(() -> tip("测试文件重定向", TextUtils.equals(line, "has been redirect")));
+                NativeTestActivity.this.getWindow().getDecorView()
+                        .post(() -> tip("测试文件重定向", TextUtils.equals(line, "has been redirect")));
             } catch (Exception e) {
                 e.printStackTrace();
             }

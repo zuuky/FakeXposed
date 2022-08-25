@@ -49,6 +49,7 @@ public class ContentProviderAgent {
     }
 
     private WeakReference<Context> mContext;
+
     private ContentProviderAgent() {
     }
 
@@ -64,16 +65,20 @@ public class ContentProviderAgent {
     }
 
     public static boolean setHookAppEnable(Context context, String pkg, Boolean enable) {
-        return new RemoteArgsUnpack(callRemote(context, RemoteCall.SET_APP_ENABLE, new RemoteArgsBuild(pkg).setBoolean(enable).build())).success();
+        return new RemoteArgsUnpack(callRemote(context, RemoteCall.SET_APP_ENABLE,
+                new RemoteArgsBuild(pkg).setBoolean(enable).build())).success();
     }
 
-    public static boolean setAppStringConfig(Context context, String pkg, DataModelType type, String value) {
+    public static boolean setAppStringConfig(Context context, String pkg, DataModelType type,
+            String value) {
         RemoteArgsBuild build = new RemoteArgsBuild(pkg).setDataType(type).setString(value);
-        return new RemoteArgsUnpack(callRemote(context, RemoteCall.SET_APP_STRING_CONFIG, build.build())).success();
+        return new RemoteArgsUnpack(
+                callRemote(context, RemoteCall.SET_APP_STRING_CONFIG, build.build())).success();
     }
 
     public static RemoteArgsUnpack getHookAppConfig(Context context, String pkg) {
-        return new RemoteArgsUnpack(callRemote(context, RemoteCall.GET_APP_CONFIG, new RemoteArgsBuild(pkg).build()));
+        return new RemoteArgsUnpack(
+                callRemote(context, RemoteCall.GET_APP_CONFIG, new RemoteArgsBuild(pkg).build()));
     }
 
     public static String syncConfigurationToSystem(Context context) {
@@ -97,11 +102,14 @@ public class ContentProviderAgent {
                 fr = new FileReader(file);
                 int len;
                 while ((len = fr.read(chars)) > 0) {
-                    String data = new String(Base64.encode(new String(chars, 0, len).getBytes(), Base64.NO_WRAP));
-                    RemoteArgsUnpack unBuild = new RemoteArgsUnpack(syncFileToSystem(context, file.getName(), data, block++));
+                    String data = new String(
+                            Base64.encode(new String(chars, 0, len).getBytes(), Base64.NO_WRAP));
+                    RemoteArgsUnpack unBuild = new RemoteArgsUnpack(
+                            syncFileToSystem(context, file.getName(), data, block++));
                     if (!unBuild.success()) {
                         LogUtil.e(TAG, "remote sync file error, %s", unBuild.error());
-                        return "sync file " + file.getName() + " block " + block + " error, " + unBuild.error();
+                        return "sync file " + file.getName() + " block " + block + " error, "
+                                + unBuild.error();
                     }
                 }
                 fr.close();
@@ -122,7 +130,8 @@ public class ContentProviderAgent {
 
     private static Bundle syncFileToSystem(Context context, String name, String data, int block) {
         try {
-            RemoteArgsBuild build = new RemoteArgsBuild().setSyncFileName(name).setSyncFileData(data).setSyncFileBlock(block);
+            RemoteArgsBuild build = new RemoteArgsBuild().setSyncFileName(name)
+                    .setSyncFileData(data).setSyncFileBlock(block);
             return callRemote(context, RemoteCall.SYNC_CONFIGURATION, build.build());
         } catch (Throwable e) {
             LogUtil.e(TAG, "call remote method %s error.", RemoteCall.SYNC_CONFIGURATION, e);
@@ -138,8 +147,10 @@ public class ContentProviderAgent {
 
     private static Bundle callRemote(Context context, RemoteCall method, Bundle extra) {
         try {
-            LogUtil.v(TAG, "call remote uri: %s, method: %s", URI, method.method);
-            return context.getContentResolver().call(URI, RemoteCall.METHOD_HOOK_FLAG, method.method, extra);
+            Bundle bundle = context.getContentResolver()
+                    .call(URI, RemoteCall.METHOD_HOOK_FLAG, method.method, extra);
+            LogUtil.v(TAG, "call remote uri: %s, method: %s, extra: %s, result: %s", URI,
+                    method.method, extra, bundle);
         } catch (Throwable e) {
             LogUtil.e(TAG, "call remote system method error, uri: %s", URI, e);
         }
@@ -151,6 +162,7 @@ public class ContentProviderAgent {
     }
 
     public Bundle invoke(Context context, RemoteCall method, Bundle caller) {
+        LogUtil.d("invoke RemoteCall: %s, caller: %s", method, caller);
         mContext = new WeakReference<>(context);
         Bundle ret;
         if (method == null) {
@@ -174,8 +186,10 @@ public class ContentProviderAgent {
 
     private Bundle dispatcher(RemoteCall call, RemoteArgsUnpack caller) {
         Bundle ret = null;
+        LogUtil.d("dispatcher RemoteCall: %s, RemoteArgsUnpack: %s", call, caller);
         if (!caller.exist()) {
-            return new RemoteArgsBuild().setReturnCode(RemoteCall.RESULT_VALUE_PARAM_NULL_ERROR).build();
+            return new RemoteArgsBuild().setReturnCode(RemoteCall.RESULT_VALUE_PARAM_NULL_ERROR)
+                    .build();
         }
         try {
             switch (call) {
@@ -194,20 +208,24 @@ public class ContentProviderAgent {
                     ret = writeConfiguration(caller);
                     break;
                 default:
-                    ret = new RemoteArgsBuild().setReturnCode(RemoteCall.RESULT_VALUE_UNDEFINED).build();
+                    ret = new RemoteArgsBuild().setReturnCode(RemoteCall.RESULT_VALUE_UNDEFINED)
+                            .build();
                     break;
             }
         } catch (IllegalArgumentException e) {
-            ret = new RemoteArgsBuild().setReturnCode(RemoteCall.RESULT_VALUE_PARAM_ERROR).setErrorString(e.getMessage()).build();
+            ret = new RemoteArgsBuild().setReturnCode(RemoteCall.RESULT_VALUE_PARAM_ERROR)
+                    .setErrorString(e.getMessage()).build();
         }
         return ret;
     }
 
     private Bundle getAppConfigRemote(RemoteArgsUnpack caller) {
         // 第一步判断该APP是否开启Hook,如果没开启Hook则没必要进行下一步
-        RemoteArgsBuild build = new RemoteArgsBuild().enable(SPProvider.getHookAppEnable(mContext.get(), caller.getPackageNonNull()));
+        RemoteArgsBuild build = new RemoteArgsBuild().enable(
+                SPProvider.getHookAppEnable(mContext.get(), caller.getPackageNonNull()));
         if (build.appEnable) {
-            Map<String, String[]> map = SPProvider.getOverloadAppJsonAvailable(mContext.get(), caller.getPackage());
+            Map<String, String[]> map = SPProvider.getOverloadAppJsonAvailable(mContext.get(),
+                    caller.getPackage());
             build.arrayMap(map);
         }
         build.success();
@@ -215,7 +233,9 @@ public class ContentProviderAgent {
     }
 
     private Bundle writeConfiguration(RemoteArgsUnpack caller) {
-        boolean success = SPProvider.writeSyncConfiguration(caller.syncFileName(), new String(Base64.decode(caller.syncFileData(), Base64.NO_WRAP)), caller.syncFileBlock());
+        boolean success = SPProvider.writeSyncConfiguration(caller.syncFileName(),
+                new String(Base64.decode(caller.syncFileData(), Base64.NO_WRAP)),
+                caller.syncFileBlock());
         if (success) {
             return SUCCESS;
         }
@@ -230,7 +250,8 @@ public class ContentProviderAgent {
     }
 
     private Bundle setHookAppStringConfigRemote(RemoteArgsUnpack caller) {
-        SPProvider.putAppStringConfig(mContext.get(), caller.getPackageNonNull(), caller.getDataType(), caller.getString());
+        SPProvider.putAppStringConfig(mContext.get(), caller.getPackageNonNull(),
+                caller.getDataType(), caller.getString());
         return SUCCESS;
     }
 
@@ -415,7 +436,8 @@ public class ContentProviderAgent {
         }
 
         public boolean success() {
-            return bundle != null && bundle.getInt(RemoteCall.KEY_CALL_RESULT) == RemoteCall.RESULT_VALUE_CALL_SUCCESS;
+            return bundle != null && bundle.getInt(RemoteCall.KEY_CALL_RESULT)
+                    == RemoteCall.RESULT_VALUE_CALL_SUCCESS;
         }
 
         public boolean exist() {
@@ -429,7 +451,8 @@ public class ContentProviderAgent {
         public String syncFileName() {
             String name = bundle.getString(RemoteCall.KEY_SYNC_FILE_NAME);
             if (TextUtils.isEmpty(name)) {
-                throw new IllegalArgumentException(RemoteCall.KEY_SYNC_FILE_NAME + " parameter is empty.");
+                throw new IllegalArgumentException(
+                        RemoteCall.KEY_SYNC_FILE_NAME + " parameter is empty.");
             }
             return name;
         }

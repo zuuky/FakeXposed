@@ -19,6 +19,10 @@ package com.sanfengandroid.common.util;
 
 import android.util.Log;
 
+import com.alibaba.fastjson.JSONObject;
+
+import java.util.Objects;
+
 /**
  * @author sanfengAndroid
  * @date 2020/10/07
@@ -27,7 +31,8 @@ public class LogUtil {
     private static final int MAX_LENGTH = 3 * 1024;
     private static final int STATE_NONE = 0;
     private static final LogCallback[] callbacks = new LogCallback[5];
-    private static final boolean STATES[] = new boolean[]{true, true, true, true, true, true, true, true, true, true};
+    private static final boolean STATES[] = new boolean[]{true, true, true, true, true, true, true,
+            true, true, true};
     public static String HEAD = "HookLog_";
     public static boolean ADD_HEAD = true;
     public static String DEFAULT_HEAD = "HookLog";
@@ -118,7 +123,7 @@ public class LogUtil {
      * @param state 0 ~ 10调用者不要传入超出范围值
      */
     private static void print(int state, int level, String tag, String format, Object... msg) {
-        if (logType == 0) {
+        if (logType == 0 || level < minLogLevel) {
             return;
         }
         Throwable throwable = null;
@@ -126,14 +131,8 @@ public class LogUtil {
             throwable = (Throwable) msg[msg.length - 1];
         }
         String str = formatText(format, msg);
-        if ((logType & 2) != 0 && callbacks[level - Log.VERBOSE] != null) {
+        if (callbacks[level - Log.VERBOSE] != null) {
             callbacks[level - Log.VERBOSE].visit(state, level, tag, str, throwable);
-        }
-        if ((logType & 0x1) == 0 || !STATES[state]) {
-            return;
-        }
-        if (level < minLogLevel){
-            return;
         }
         String[] ret = splitMsg(str);
         for (int i = 0; i < ret.length; i++) {
@@ -160,28 +159,44 @@ public class LogUtil {
                 case Log.ERROR:
                     Log.e(head, ret[i], throwable);
                     break;
-                case Log.ASSERT:
-                    break;
                 default:
                     break;
             }
         }
     }
 
-    public static void println(int priority, String tag, String format, Object... msg) {
-        if ((logType & 1) != 0) {
-            Log.println(priority, ADD_HEAD ? HEAD + tag : tag, formatText(format, msg));
-        }
-    }
-
     private static String formatText(String format, Object... msg) {
         try {
             if (msg != null) {
-                return String.format(format, msg);
+                Object[] a = new String[msg.length];
+                int i = 0;
+                for (final Object o : msg) {
+                    if (o == null) {
+                        a[i] = "null";
+                    } else if (isPrimitive(o.getClass())) {
+                        a[i] = Objects.toString(o);
+                    } else {
+                        try {
+                            a[i] = JSONObject.toJSONString(o);
+                        } catch (Exception e) {
+                            a[i] = Objects.toString(o);
+                        }
+                    }
+                    i++;
+                }
+                return String.format(format, a);
             }
         } catch (Throwable ignored) {
         }
         return format;
+    }
+
+    private static boolean isPrimitive(Class clz) {
+        try {
+            return clz.isPrimitive() || ((Class) clz.getField("TYPE").get(null)).isPrimitive();
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     private static String[] splitMsg(String msg) {

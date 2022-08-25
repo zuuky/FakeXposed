@@ -19,9 +19,10 @@ package com.sanfengandroid.xp;
 
 import android.content.Context;
 
-import com.sanfengandroid.fakeinterface.GlobalConfig;
 import com.sanfengandroid.common.model.base.ShowDataModel;
+import com.sanfengandroid.common.util.LogUtil;
 import com.sanfengandroid.datafilter.SPProvider;
+import com.sanfengandroid.fakeinterface.GlobalConfig;
 
 import java.util.Map;
 import java.util.Set;
@@ -68,7 +69,6 @@ final class XpConfigAgent {
         if (enable != null) {
             return enable;
         }
-        /*|| (mode == XpDataMode.SYSTEM_CALL && processMode == ProcessMode.HOOK_SYSTEM)*/
         if (mode == XpDataMode.X_SP || processMode == ProcessMode.SELF) {
             enable = SPProvider.getHookAppEnable(context, pkg);
         } else {
@@ -76,6 +76,8 @@ final class XpConfigAgent {
             callback = ContentProviderAgent.getHookAppConfig(context, pkg);
             enable = callback.success() && callback.enable();
         }
+        LogUtil.d("getHookAppEnable enable: %s,pkg: %s,processMode: %s,mode: %s", enable, pkg,
+                processMode, mode);
         return enable;
     }
 
@@ -83,18 +85,18 @@ final class XpConfigAgent {
      * 只有Hook开启了才调用,会出现一个进程调用多次,在一个进程内加载了多个包
      */
     public static Map<String, Set<ShowDataModel>> getAppConfig(Context context, String pkg) {
-        if (!enable) {
-            return null;
-        }
+        //if (!enable) {
+        //    return null;
+        //}
         if (mode == XpDataMode.X_SP || processMode == ProcessMode.SELF) {
             return SPProvider.getOverloadAppAvailable(context, pkg);
         }
-        if (callback == null) {
-            return null;
-        }
+        //if (callback == null) {
+        //return null;
+        //}
         // 这里始终是获取成功,但是会出现一个进程加载多次回调多次的情况
         Map<String, Set<ShowDataModel>> data = GlobalConfig.transformBundle(callback.bundle());
-        callback = null;
+        //callback = null;
         return data;
     }
 

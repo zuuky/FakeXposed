@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2021 FakeXposed by sanfengAndroid.
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -20,7 +19,7 @@
         xmlns:dist="http://schemas.android.com/apk/distribution"
         package="com.sanfengandroid.datafilter">
 
-    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.INTERNET" />
     <dist:module dist:instant="true" />
     <application
             android:allowBackup="true"
@@ -29,9 +28,11 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/Theme.XpFilter"
-            android:name="com.sanfengandroid.datafilter.XpApplication">
-        <activity android:name="com.sanfengandroid.datafilter.ui.activties.EditItemDialogActivity" />
-        <activity android:name="com.sanfengandroid.datafilter.ui.activties.MainActivity">
+            android:name=".XpApplication">
+        <activity android:name=".ui.activties.EditItemDialogActivity" />
+        <activity
+                android:name=".ui.activties.MainActivity"
+                android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -39,26 +40,33 @@
             </intent-filter>
         </activity>
         <activity
-                android:name="com.sanfengandroid.datafilter.ui.activties.SettingsActivity"
+                android:name=".ui.activties.SettingsActivity"
                 android:label="@string/settings" />
 
         <provider
-                android:authorities="com.sanfengandroid.datafilter"
-                android:name="com.sanfengandroid.datafilter.XPContentProvider"
-                android:exported="true"
+                android:authorities="${applicationId}"
+                android:name=".XPContentProvider"
+                android:exported="false"
                 android:process=":sp"
                 android:enabled="true" />
-        <activity android:name="com.sanfengandroid.fakeinterface.NativeTestActivity" />
+
+        <activity android:name=".NativeTestActivity" />
 
         <meta-data
                 android:name="xposedmodule"
-                android:value="XpFilter" />
+                android:value="october" />
         <meta-data
                 android:name="xposeddescription"
-                android:value="过滤Xposed检测" />
+                android:value="october" />
         <meta-data
                 android:name="xposedminversion"
-                android:value="53" />
+                android:value="93" />
+        <meta-data
+                android:name="xposedsharedprefs"
+                android:value="true" />
+        <meta-data
+                android:name="xposedscope"
+                android:resource="@array/xposed_scope" />
     </application>
 
 </manifest>

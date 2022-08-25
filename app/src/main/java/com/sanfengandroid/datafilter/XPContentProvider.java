@@ -39,13 +39,31 @@ public class XPContentProvider extends ContentProvider {
 
     @Nullable
     @Override
-    public Bundle call(@NonNull String authority, @NonNull String method, @Nullable String arg, @Nullable Bundle extras) {
+    public Bundle call(
+            @NonNull
+                    String authority,
+            @NonNull
+                    String method,
+            @Nullable
+                    String arg,
+            @Nullable
+                    Bundle extras) {
+        LogUtil.d("XPContentProvider authority call: %s, method: %s, arg: %s, extras: %s",
+                authority, method, arg, extras);
         return call(method, arg, extras);
     }
 
     @Nullable
     @Override
-    public Bundle call(@NonNull String method, @Nullable String arg, @Nullable Bundle extras) {
+    public Bundle call(
+            @NonNull
+                    String method,
+            @Nullable
+                    String arg,
+            @Nullable
+                    Bundle extras) {
+        LogUtil.d("XPContentProvider authority call 1 method: %s, arg: %s, extras: %s", method, arg,
+                extras);
         if (!RemoteCall.METHOD_HOOK_FLAG.equals(method)) {
             return null;
         }
@@ -61,29 +79,59 @@ public class XPContentProvider extends ContentProvider {
 
     @Nullable
     @Override
-    public Cursor query(@NonNull Uri uri, @Nullable String[] projection, @Nullable String selection, @Nullable String[] selectionArgs, @Nullable String sortOrder) {
+    public Cursor query(
+            @NonNull
+                    Uri uri,
+            @Nullable
+                    String[] projection,
+            @Nullable
+                    String selection,
+            @Nullable
+                    String[] selectionArgs,
+            @Nullable
+                    String sortOrder) {
         return null;
     }
 
     @Nullable
     @Override
-    public String getType(@NonNull Uri uri) {
+    public String getType(
+            @NonNull
+                    Uri uri) {
         return null;
     }
 
     @Nullable
     @Override
-    public Uri insert(@NonNull Uri uri, @Nullable ContentValues values) {
+    public Uri insert(
+            @NonNull
+                    Uri uri,
+            @Nullable
+                    ContentValues values) {
         return null;
     }
 
     @Override
-    public int delete(@NonNull Uri uri, @Nullable String selection, @Nullable String[] selectionArgs) {
+    public int delete(
+            @NonNull
+                    Uri uri,
+            @Nullable
+                    String selection,
+            @Nullable
+                    String[] selectionArgs) {
         return 0;
     }
 
     @Override
-    public int update(@NonNull Uri uri, @Nullable ContentValues values, @Nullable String selection, @Nullable String[] selectionArgs) {
+    public int update(
+            @NonNull
+                    Uri uri,
+            @Nullable
+                    ContentValues values,
+            @Nullable
+                    String selection,
+            @Nullable
+                    String[] selectionArgs) {
         return 0;
     }
 }

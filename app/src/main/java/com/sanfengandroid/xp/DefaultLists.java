@@ -31,13 +31,12 @@ import java.util.List;
  * @date 2020/11/01
  */
 public class DefaultLists {
-    public static final String[] DEFAULT_APPS_LIST = {"xposed", "org.lsposed.manager",
+    public static final String[] DEFAULT_APPS_LIST = {"xposed", "lsposed", "org.lsposed.manager",
             "org.meowcat.edxposed.manager", "de.robv.android.xposed.installer",
-            "org.meowcat.edxposed.manager", "com.fde.DomesticDigitalCopy",
-            "com.directv.application.android.go.production", "com.res.bby", "dk.excitor.dmemail",
-            "com.BHTV", "com.bradfordnetworks.bma", "com.apriva.mobile.bams",
-            "com.apriva.mobile.aprivapay", "pl.pkobp.iko", "au.com.auspost",
-            "com.rogers.citytv.phone", "com.zenprise", "net.flixster.android",
+            "com.fde.DomesticDigitalCopy", "com.directv.application.android.go.production",
+            "com.res.bby", "dk.excitor.dmemail", "com.BHTV", "com.bradfordnetworks.bma",
+            "com.apriva.mobile.bams", "com.apriva.mobile.aprivapay", "pl.pkobp.iko",
+            "au.com.auspost", "com.rogers.citytv.phone", "com.zenprise", "net.flixster.android",
             "com.starfinanz.smob.android.sfinanzstatus", "com.ovidos.yuppi", "klb.android.lovelive",
             "klb.android.lovelive_en", "com.nintendo.zaaa", "com.incube.epub",
             "com.airwatch.androidagent", "com.zappware.twintv.d3",
@@ -56,14 +55,14 @@ public class DefaultLists {
             "noshufou", "xposed", "rootcloak", "chainfire", "titanium", "Titanium", "substrate",
             "greenify", "daemonsu", "root", "busybox", "titanium", ".tmpsu", "su", "rootcloak2"};
     public static final String[] DEFAULT_FILES_LIST = {"su", "daemonsu", "superuser.apk",
-            "ZUPERFAKEFILE", "xposed", "edxposed"};
+            "ZUPERFAKEFILE", "xposed", "edxposed", "lsposed"};
     public static final String[] DEFAULT_SYMBOL_LIST = {"riru_is_zygote_methods_replaced",
             "riru_get_version"};
     public static final String[] DEFAULT_CLASS_LIST = {"de.robv.android.xposed.XposedBridge",
             "de.robv.android.xposed.XposedHelpers"};
     public static final String[] DEFAULT_STACK_LIST = DEFAULT_CLASS_LIST;
     public static final Pair<String, String>[] DEFAULT_SYSTEM_PROP_LIST = new Pair[]{
-            new Pair<>("vxp", "")};
+            new Pair<>("vxp", ""), new Pair<>("lsposed", "")};
     public static final Pair<String, String>[] DEFAULT_GLOBAL_PROPERTY_LIST = new Pair[]{
             new Pair<>("ro.build.selinux", "1"), new Pair<>("ro.build.tags", "release-keys"),
             new Pair<>("ro.secure", "0"), new Pair<>("ro.debuggable", "1")};

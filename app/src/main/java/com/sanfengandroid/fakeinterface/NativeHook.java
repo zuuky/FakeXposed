@@ -24,7 +24,6 @@ import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
 
-import com.alibaba.fastjson.JSONObject;
 import com.sanfengandroid.common.reflection.ReflectUtil;
 import com.sanfengandroid.common.util.LogUtil;
 import com.sanfengandroid.common.util.Util;
@@ -34,6 +33,9 @@ import com.sanfengandroid.fakelinker.FakeLinker;
 import com.sanfengandroid.fakelinker.FileInstaller;
 
 import java.io.File;
+import java.util.List;
+
+import eu.chainfire.libsuperuser.Shell;
 
 /**
  * Native Hook入口
@@ -49,6 +51,7 @@ public final class NativeHook {
      */
     private static String configPath = "/data/system/sanfengandroid/fakexposed";
     private static String libraryPath = null;
+    private static String publicSourceDir = null;
 
     private static native int nativeAddIntBlackList(int type, String name, int value, boolean add);
 
@@ -531,17 +534,13 @@ public final class NativeHook {
         }
         ApplicationInfo info = context.getPackageManager()
                 .getApplicationInfo(com.sanfengandroid.datafilter.BuildConfig.APPLICATION_ID, 0);
-        LogUtil.d(TAG, "initLibraryPath ApplicationInfo: %s", JSONObject.toJSONString(info));
         libraryPath = info.nativeLibraryDir;
+        publicSourceDir = info.publicSourceDir;
         LogUtil.d(TAG, "initLibraryPath find library at: %s", libraryPath);
     }
 
     public static void initLibraryPath(Context context, int targetSdk)
             throws PackageManager.NameNotFoundException {
-        if (targetSdk < Build.VERSION_CODES.R || Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-            initLibraryPath(context);
-            return;
-        }
         try {
             libraryPath = findLibraryPath();
             LogUtil.d(TAG, "initLibraryPath find library at: %s", libraryPath);
@@ -575,8 +574,6 @@ public final class NativeHook {
             return null;
         }
         File base = new File(apkPath.getParent(), "lib");
-        LogUtil.d(TAG, " File base : %s", base.getAbsolutePath());
-
         File library = null;
         if (FileInstaller.isRunning64Bit()) {
             library = new File(base, FileInstaller.isX86() ? "x86_64" : "arm64");
@@ -594,25 +591,49 @@ public final class NativeHook {
         String name = "lib" + (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
                                ? com.sanfengandroid.datafilter.BuildConfig.HOOK_HIGH_MODULE_NAME
                                : com.sanfengandroid.datafilter.BuildConfig.HOOK_LOW_MODULE_NAME);
-        return new File(libraryPath,
-                FileInstaller.isRunning64Bit() ? name + "64.so" : name + ".so").getAbsolutePath();
+        File hookModuleFile = new File(libraryPath,
+                FileInstaller.isRunning64Bit() ? name + "64.so" : name + ".so");
+        // 文件不存在时复制过去
+        if (!hookModuleFile.exists()) {
+            runShell(hookModuleFile.getAbsolutePath());
+        }
+        return hookModuleFile.getAbsolutePath();
     }
 
     public static String getConfigPath() {
         return configPath;
     }
 
+    private static void runShell(String path) {
+        synchronized (TAG) {
+            String basePath = path.split("/lib/")[0];
+            String cmdLine = "unzip -o " + basePath + "/base.apk" + " \"*/*.so\" -d " + basePath
+                    + "; chmod 755 " + path + "; chown system:system " + path;
+            LogUtil.v(TAG, "cmd line : %s", cmdLine);
+            try {
+                List<String> result = Shell.SU.run(cmdLine);
+                LogUtil.v(TAG, "copy success: %s, path: %s", result, path);
+            } catch (Exception e) {
+                LogUtil.e(TAG, "copy failed: %s", path, e);
+            }
+        }
+    }
+
     public static void setConfigPath(String configPath) {
         NativeHook.configPath = new File(configPath).getAbsolutePath();
     }
 
-    public static String getDefaultFakeLinkerPath() {
+    public static File getDefaultFakeLinkerPath() {
         String name = "lib" + BuildConfig.LINKER_MODULE_NAME + (
                 Build.VERSION.SDK_INT == Build.VERSION_CODES.N_MR1 ? Build.VERSION_CODES.N
                                                                    : Build.VERSION.SDK_INT);
-
-        return new File(libraryPath,
-                FileInstaller.isRunning64Bit() ? name + "64.so" : name + ".so").getAbsolutePath();
+        File fakeLinkerFile = new File(libraryPath,
+                FileInstaller.isRunning64Bit() ? name + "64.so" : name + ".so");
+        // 文件不存在时复制过去
+        if (!fakeLinkerFile.exists()) {
+            runShell(fakeLinkerFile.getAbsolutePath());
+        }
+        return fakeLinkerFile;
     }
 
     public static void defaultInitFakeLinker(Context context) {
@@ -620,13 +641,13 @@ public final class NativeHook {
             initLibraryPath(context);
         } catch (PackageManager.NameNotFoundException ignore) {
         }
-        FakeLinker.initFakeLinker(getDefaultFakeLinkerPath(), getDefaultHookModulePath(),
-                context.getCacheDir().getAbsolutePath(), getConfigPath(),
-                Util.getProcessName(context));
+        FakeLinker.initFakeLinker(getDefaultFakeLinkerPath().getAbsolutePath(),
+                getDefaultHookModulePath(), context.getCacheDir().getAbsolutePath(),
+                getConfigPath(), Util.getProcessName(context));
     }
 
     public static void initFakeLinker(String cacheDir, String processName) {
-        FakeLinker.initFakeLinker(getDefaultFakeLinkerPath(), getDefaultHookModulePath(), cacheDir,
-                getConfigPath(), processName);
+        FakeLinker.initFakeLinker(getDefaultFakeLinkerPath().getAbsolutePath(),
+                getDefaultHookModulePath(), cacheDir, getConfigPath(), processName);
     }
 }
