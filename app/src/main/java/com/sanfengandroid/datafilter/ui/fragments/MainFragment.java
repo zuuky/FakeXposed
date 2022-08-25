@@ -78,8 +78,6 @@ public class MainFragment extends Fragment implements View.OnClickListener {
 
     public static boolean isActive() {
         LogUtil.d("Prevent inlining");
-        LogUtil.d("Prevent inlining");
-        LogUtil.d("Prevent inlining");
         if (TextUtils.equals(XpApplication.getInstance().getString(R.string.set_gid), "123")){
             return true;
         }

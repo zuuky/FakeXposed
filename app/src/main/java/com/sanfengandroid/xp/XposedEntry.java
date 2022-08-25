@@ -120,7 +120,7 @@ public class XposedEntry implements IXposedHookLoadPackage {
                 }
                 return;
             }
-            LogUtil.v(TAG, "targetSDK: %d, current class loader: %s",
+            LogUtil.v(TAG, "targetSDK: %s, current class loader: %s",
                     lpparam.appInfo.targetSdkVersion, XposedEntry.class.getClassLoader());
             Context contextImpl = createAppContext(lpparam.appInfo);
             // 使用自身ContentProvider如果未启动则手动启动,这样会增加很长的启动时间

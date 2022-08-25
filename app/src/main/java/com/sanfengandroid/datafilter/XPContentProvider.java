@@ -48,8 +48,9 @@ public class XPContentProvider extends ContentProvider {
                     String arg,
             @Nullable
                     Bundle extras) {
-        LogUtil.d("XPContentProvider authority call: %s, method: %s, arg: %s, extras: %s",
-                authority, method, arg, extras);
+        LogUtil.d(this.getClass().getSimpleName(),
+                "XPContentProvider authority call: %s, method: %s, arg: %s, extras: %s", authority,
+                method, arg, extras);
         return call(method, arg, extras);
     }
 
@@ -62,7 +63,8 @@ public class XPContentProvider extends ContentProvider {
                     String arg,
             @Nullable
                     Bundle extras) {
-        LogUtil.d("XPContentProvider authority call 1 method: %s, arg: %s, extras: %s", method, arg,
+        LogUtil.d(this.getClass().getSimpleName(),
+                "XPContentProvider authority call 1 method: %s, arg: %s, extras: %s", method, arg,
                 extras);
         if (!RemoteCall.METHOD_HOOK_FLAG.equals(method)) {
             return null;
