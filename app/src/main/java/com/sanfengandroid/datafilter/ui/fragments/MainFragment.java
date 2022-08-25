@@ -18,11 +18,7 @@
 package com.sanfengandroid.datafilter.ui.fragments;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
-import android.graphics.Paint;
-import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -47,12 +43,10 @@ import com.sanfengandroid.datafilter.XpApplication;
 import com.sanfengandroid.datafilter.viewmodel.ApplicationViewModel;
 import com.sanfengandroid.fakeinterface.Installer;
 
-import java.net.URISyntaxException;
-
 public class MainFragment extends Fragment implements View.OnClickListener {
 
     public static final String VIEW_TAG = "Main";
-    private static final boolean SHOW_INSTALL = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P;
+    private static final boolean SHOW_INSTALL = true;
     private ApplicationViewModel mViewModel;
     private SwitchMaterial installHookConfig;
     private View tipView, updateCard;
@@ -62,93 +56,77 @@ public class MainFragment extends Fragment implements View.OnClickListener {
     }
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
+    public void onCreate(
+            @Nullable
+                    Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mViewModel = new ViewModelProvider(XpApplication.getInstance()).get(ApplicationViewModel.class);
+        mViewModel = new ViewModelProvider(XpApplication.getInstance()).get(
+                ApplicationViewModel.class);
     }
 
     @Override
     public void onResume() {
         super.onResume();
         mViewModel.setDataModelType(DataModelType.NOTHING);
-        long time = SPProvider.getHookConfigurationInstallTime();
+        long time = SPProvider.getHookConfigurationInstallTime(requireContext());
         long time1 = SPProvider.getConfigurationUpdateTime(requireContext());
         updateCard.setVisibility(time != 0 && time != time1 ? View.VISIBLE : View.GONE);
     }
 
     public static boolean isActive() {
         LogUtil.d("Prevent inlining");
-        if (TextUtils.equals(XpApplication.getInstance().getString(R.string.set_gid), "123")){
-            return true;
-        }
-        return false;
+        return TextUtils.equals(XpApplication.getInstance().getString(R.string.set_gid), "123");
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull
+                    LayoutInflater inflater,
+            @Nullable
+                    ViewGroup container,
+            @Nullable
+                    Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
         ImageView icon = view.findViewById(R.id.status_icon);
         boolean active = isActive();
-        icon.setImageDrawable(requireActivity().getResources().getDrawable(active ? R.drawable.ic_state_normal_24dp : R.drawable.ic_state_warning_24dp, null));
+        icon.setImageDrawable(requireActivity().getResources().getDrawable(
+                active ? R.drawable.ic_state_normal_24dp : R.drawable.ic_state_warning_24dp, null));
         TextView status = view.findViewById(R.id.status_text);
-        String tip = getString(active ? R.string.status_normal : R.string.status_warning) + "(" + BuildConfig.APP_TYPE + ")";
+        String tip = getString(active ? R.string.status_normal : R.string.status_warning) + "("
+                + BuildConfig.APP_TYPE + ")";
         status.setText(tip);
 
         updateCard = view.findViewById(R.id.update_card);
         view.findViewById(R.id.sync_hook_configuration).setOnClickListener(this);
         installHookConfig = view.findViewById(R.id.install_hook_configuration);
-        view.findViewById(R.id.fakelinker_sources).setOnClickListener(this);
-        view.findViewById(R.id.fakelinker_article).setOnClickListener(this);
-        view.findViewById(R.id.fakexpose_article).setOnClickListener(this);
-        view.findViewById(R.id.fakexpose_sources).setOnClickListener(this);
-        view.findViewById(R.id.join_qq).setOnClickListener(this);
-        TextView source = view.findViewById(R.id.fakelinker_sources);
-        source.getPaint().setFlags(Paint.UNDERLINE_TEXT_FLAG);
-        source = view.findViewById(R.id.fakelinker_article);
-        source.getPaint().setFlags(Paint.UNDERLINE_TEXT_FLAG);
-        source = view.findViewById(R.id.fakexpose_article);
-        source.getPaint().setFlags(Paint.UNDERLINE_TEXT_FLAG);
-        source = view.findViewById(R.id.fakexpose_sources);
-        source.getPaint().setFlags(Paint.UNDERLINE_TEXT_FLAG);
-        source = view.findViewById(R.id.join_qq);
-        source.getPaint().setFlags(Paint.UNDERLINE_TEXT_FLAG);
         installHookConfig.setOnClickListener(this);
-        installHookConfig.setChecked(SPProvider.getHookConfigurationInstallTime() != 0);
-        view.findViewById(R.id.use_tip_dismiss).setOnClickListener(this);
-        tipView = view.findViewById(R.id.use_tip_card);
-        mViewModel.setSnackMessageObserver(this, s -> Snackbar.make(requireView(), s, Snackbar.LENGTH_SHORT).show());
+        installHookConfig.setChecked(
+                SPProvider.getHookConfigurationInstallTime(this.getContext()) != 0);
+        mViewModel.setSnackMessageObserver(this,
+                s -> Snackbar.make(requireView(), s, Snackbar.LENGTH_SHORT).show());
         if (!SHOW_INSTALL) {
             installHookConfig.setVisibility(View.GONE);
             updateCard.setVisibility(View.GONE);
-            view.findViewById(R.id.use_tip_card).setVisibility(View.GONE);
         }
         return view;
     }
 
     @Override
-    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
-        super.onActivityCreated(savedInstanceState);
-    }
-
-
-    @Override
     public void onClick(View v) {
         int id = v.getId();
-        if (id == R.id.use_tip_dismiss) {
-            tipView.setVisibility(View.GONE);
-            return;
-        }
         if (id == R.id.install_hook_configuration || id == R.id.sync_hook_configuration) {
             AsyncTask.execute(() -> {
                 String tip;
                 boolean success;
-                boolean uninstall = id != R.id.sync_hook_configuration && !installHookConfig.isChecked();
+                boolean uninstall =
+                        id != R.id.sync_hook_configuration && !installHookConfig.isChecked();
                 try {
-                    success = uninstall ? Installer.uninstallHookFile(requireContext()) : Installer.installHookFile(requireContext());
-                    tip = uninstall ? getString(R.string.success_uninstall_hook_configuration) : getString(R.string.success_install_hook_configuration);
+                    success = uninstall ? Installer.uninstallHookFile(requireContext())
+                                        : Installer.installHookFile(requireContext());
+                    tip = uninstall ? getString(R.string.success_uninstall_hook_configuration)
+                                    : getString(R.string.success_install_hook_configuration);
                 } catch (Exception e) {
                     tip = e.getMessage();
                     success = false;
@@ -163,31 +141,6 @@ public class MainFragment extends Fragment implements View.OnClickListener {
                     updateCard.setVisibility(finalSuccess ? View.GONE : View.VISIBLE);
                 });
             });
-        } else if (id == R.id.join_qq) {
-            if (!joinQQGroup()) {
-                mViewModel.setMessage(getString(R.string.please_install_qq));
-            }
-        } else {
-            String url = (String) v.getTag();
-            if (url != null) {
-                try {
-                    Intent intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
-                    startActivity(intent);
-                } catch (URISyntaxException ignore) {
-                }
-            }
-        }
-    }
-
-    private boolean joinQQGroup() {
-        Intent intent = new Intent();
-        intent.setData(Uri.parse("mqqopensdkapi://bizAgent/qm/qr?url=http%3A%2F%2Fqm.qq.com%2Fcgi-bin%2Fqm%2Fqr%3Ffrom%3Dapp%26p%3Dandroid%26jump_from%3Dwebapi%26k%3D" + "CBrl7C8WiubBzAbOq2EGUaTmx8D9Wylf"));
-        try {
-            startActivity(intent);
-            return true;
-        } catch (Exception e) {
-            // 未安装手Q或安装的版本不支持
-            return false;
         }
     }
 }

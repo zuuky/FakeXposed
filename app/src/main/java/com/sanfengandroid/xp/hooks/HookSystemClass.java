@@ -18,16 +18,15 @@
 package com.sanfengandroid.xp.hooks;
 
 import android.annotation.SuppressLint;
-import android.os.Build;
 import android.text.TextUtils;
 import android.util.Pair;
 
 import com.sanfengandroid.common.bean.EnvBean;
-import com.sanfengandroid.fakeinterface.GlobalConfig;
 import com.sanfengandroid.common.model.base.DataModelType;
 import com.sanfengandroid.common.reflection.ReflectUtil;
 import com.sanfengandroid.common.util.LogUtil;
 import com.sanfengandroid.common.util.Util;
+import com.sanfengandroid.fakeinterface.GlobalConfig;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -46,10 +45,10 @@ import de.robv.android.xposed.XposedBridge;
  * 这里应该监听有属性变化然后再次调整
  */
 public class HookSystemClass implements IHook {
-    private final String PropsName = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N ? "props" : "systemProperties";
+    private final String PropsName = "props";
     private static final String TAG = HookSystemClass.class.getSimpleName();
     private final Observer envObserver = (o, arg) -> {
-        if (arg != null && Build.VERSION.SDK_INT > Build.VERSION_CODES.N) {
+        if (arg != null) {
             replaceEnvs();
         }
     };
@@ -106,79 +105,47 @@ public class HookSystemClass implements IHook {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 orig = System.getProperties();
+                LogUtil.d("getProperties orig: %s", orig);
                 proxy.clear();
                 copyProperties(orig, proxy);
+                LogUtil.d("getProperties proxy: %s", proxy);
                 ReflectUtil.setFieldStatic(System.class, PropsName, proxy);
                 propObserver.update(null, GlobalConfig.getMap(DataModelType.SYSTEM_PROPERTY_HIDE));
             }
         });
-
         shieldSystemEnv();
         GlobalConfig.addObserver(envObserver, DataModelType.SYSTEM_ENV_HIDE);
     }
 
-    private void shieldSystemEnv() throws NoSuchMethodException {
-        // native拦截然后回调java处理 getenv(String)
-        Method method;
-        // 21 ~ 23 每次调用生成一个Map
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            replaceEnvs();
-        } else {
-            method = System.class.getDeclaredMethod("getenv");
-            GlobalConfig.addHookMethodModifierFilter(method);
-            XposedBridge.hookMethod(method, new XC_MethodHook() {
-                @Override
-                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                    // SystemEnvironment
-                    Map<String, String> envs = (Map<String, String>) param.getResult();
-                    Map<String, String> map = replaceEnvs(envs);
-                    if (map == envs) {
-                        return;
-                    }
-                    // 反射创建 SystemEnvironment
-                    try {
-                        Constructor<?> constructor = envs.getClass().getConstructor(Map.class);
-                        constructor.setAccessible(true);
-                        param.setResult(constructor.newInstance(map));
-                    } catch (Throwable e) {
-                        LogUtil.e(TAG, "Reflect create %s failed.", envs.getClass(), e);
-                        param.setResult(map);
-                    }
-                }
-            });
-        }
+    private void shieldSystemEnv() {
+        replaceEnvs();
     }
 
     @SuppressLint("BlockedPrivateApi")
     public void replaceEnvs() {
-        // 直接修改实例
-        // Map<Variable,Value>
         Map<String, String> envs = System.getenv();
+        LogUtil.d("getProperties System.getenv(): %s", envs);
         Map<String, String> newMap = replaceEnvs(envs);
-        // ProcessEnvironment.theUnmodifiableEnvironment
-        // Map<String, String> -> StringEnvironment(Map<Variable,Value> m)
+        LogUtil.d("getProperties replaceEnvs: %s", newMap);
         if (envs != newMap) {
             try {
-                // Map<String, String> -> Map<Variable,Value> m
                 Class<?> mVariable = Class.forName("java.lang.ProcessEnvironment$Variable");
                 Method valueOfVariable = mVariable.getDeclaredMethod("valueOf", String.class);
                 valueOfVariable.setAccessible(true);
                 Class<?> mValue = Class.forName("java.lang.ProcessEnvironment$Value");
                 Method valueOfValue = mValue.getDeclaredMethod("valueOf", String.class);
                 valueOfValue.setAccessible(true);
-
                 Map map = new HashMap();
                 for (Map.Entry<String, String> entry : newMap.entrySet()) {
-                    map.put(valueOfVariable.invoke(null, entry.getKey()), valueOfValue.invoke(null,
-                            entry.getValue()));
+                    map.put(valueOfVariable.invoke(null, entry.getKey()),
+                            valueOfValue.invoke(null, entry.getValue()));
                 }
-                // Map<Variable,Value> -> StringEnvironment
-                Class<?> mStringEnvironmentClass = Class.forName("java.lang.ProcessEnvironment$StringEnvironment");
+                Class<?> mStringEnvironmentClass = Class.forName(
+                        "java.lang.ProcessEnvironment$StringEnvironment");
                 Constructor<?> constructor = mStringEnvironmentClass.getConstructor(Map.class);
                 constructor.setAccessible(true);
                 map = (Map) constructor.newInstance(map);
                 map = Collections.unmodifiableMap(map);
-                // ProcessEnvironment.theUnmodifiableEnvironment
                 Class<?> processEnvironment = Class.forName("java.lang.ProcessEnvironment");
                 Field field = processEnvironment.getDeclaredField("theUnmodifiableEnvironment");
                 Util.removeFinalModifier(field);
@@ -196,8 +163,8 @@ public class HookSystemClass implements IHook {
             return input;
         }
         Map<String, String> map = new HashMap<>();
-        Collection<EnvBean> list = GlobalConfig.getBlackListValue(DataModelType.SYSTEM_ENV_HIDE, EnvBean.class);
-
+        Collection<EnvBean> list = GlobalConfig.getBlackListValue(DataModelType.SYSTEM_ENV_HIDE,
+                EnvBean.class);
         boolean hasChange = false;
         for (Map.Entry<String, String> entry : input.entrySet()) {
             boolean change = false;

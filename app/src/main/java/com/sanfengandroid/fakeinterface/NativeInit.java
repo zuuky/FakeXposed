@@ -18,14 +18,13 @@
 package com.sanfengandroid.fakeinterface;
 
 import android.content.Context;
-import android.text.TextUtils;
 
+import com.sanfengandroid.common.bean.EnvBean;
 import com.sanfengandroid.common.bean.ExecBean;
 import com.sanfengandroid.common.model.FileAccessModel;
 import com.sanfengandroid.common.model.MapsRuleModel;
 import com.sanfengandroid.common.model.base.DataModelType;
 import com.sanfengandroid.common.util.LogUtil;
-import com.sanfengandroid.datafilter.BuildConfig;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -38,7 +37,7 @@ public class NativeInit {
     public static void initNative(Context context, String process) {
         try {
             NativeHook.initFakeLinker(context.getCacheDir().getAbsolutePath(), process);
-            nativeSync();
+            NativeInit.nativeSync();
         } catch (Throwable e) {
             LogUtil.e(TAG, "native init error", e);
         }
@@ -55,6 +54,7 @@ public class NativeInit {
         addNativeStringOption(DataModelType.GLOBAL_SYSTEM_PROPERTY_HIDE);
         addNativeStringOption(DataModelType.LOAD_CLASS_HIDE);
         addNativeStringOption(DataModelType.STACK_ELEMENT_HIDE);
+        addNativeStringOption(DataModelType.SYSTEM_ENV_HIDE);
         addNativeRuntime();
         Map<String, String> map = GlobalConfig.getMap(DataModelType.MAPS_HIDE, String.class);
         for (Map.Entry<String, String> entry : map.entrySet()) {
@@ -127,15 +127,27 @@ public class NativeInit {
         if (option == null) {
             return;
         }
-        Map<String, String> map = GlobalConfig.getMap(type, String.class);
-        if (map.isEmpty()) {
-            return;
-        }
-
-        for (Map.Entry<String, String> entry : map.entrySet()) {
-            LogUtil.v(TAG, "add native %s string option name: %s, value: %s, result: %s",
-                    type.name(), entry.getKey(), entry.getValue(),
-                    NativeHook.addBlackList(option, entry.getKey(), entry.getValue()));
+        if (option == NativeOption.NativeStringOption.ENVIRONMENT) {
+            Map<String, EnvBean> systemEnv = GlobalConfig.getMap(type, EnvBean.class);
+            if (systemEnv.isEmpty()) {
+                return;
+            }
+            for (Map.Entry<String, EnvBean> entry : systemEnv.entrySet()) {
+                LogUtil.v(TAG, "add native %s string option name: %s, value: %s, result: %s",
+                        type.name(), entry.getKey(), entry.getValue().toString(),
+                        NativeHook.addBlackList(option, entry.getKey(),
+                                entry.getValue().toString()));
+            }
+        } else {
+            Map<String, String> map = GlobalConfig.getMap(type, String.class);
+            if (map.isEmpty()) {
+                return;
+            }
+            for (Map.Entry<String, String> entry : map.entrySet()) {
+                LogUtil.v(TAG, "add native %s string option name: %s, value: %s, result: %s",
+                        type.name(), entry.getKey(), entry.getValue(),
+                        NativeHook.addBlackList(option, entry.getKey(), entry.getValue()));
+            }
         }
     }
 

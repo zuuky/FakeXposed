@@ -252,10 +252,12 @@ public class NativeTestActivity extends AppCompatActivity implements View.OnClic
 
     private boolean testFileHide() {
         File file = new File(getCacheDir(), "su");
-        LogUtil.d(this.getPackageName(),"file hide: %s, result: %s", file.getAbsolutePath(), !file.exists());
+        LogUtil.d(this.getPackageName(), "file hide: %s, result: %s", file.getAbsolutePath(),
+                !file.exists());
         boolean success = !file.exists();
         file = new File(getCacheDir(), TEST_KEY);
-        LogUtil.d(this.getPackageName(),"file hide: %s, result: %s", file.getAbsolutePath(), !file.exists());
+        LogUtil.d(this.getPackageName(), "file hide: %s, result: %s", file.getAbsolutePath(),
+                !file.exists());
         return success && !file.exists();
     }
 

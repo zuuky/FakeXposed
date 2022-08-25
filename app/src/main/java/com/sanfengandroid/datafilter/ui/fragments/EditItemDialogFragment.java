@@ -46,6 +46,8 @@ import com.sanfengandroid.datafilter.listener.AppFilterable;
 import com.sanfengandroid.datafilter.ui.DialogBuilder;
 import com.sanfengandroid.datafilter.viewmodel.ApplicationViewModel;
 
+import java.util.Objects;
+
 /**
  * @author sanfengAndroid
  */
@@ -62,7 +64,9 @@ public class EditItemDialogFragment extends AppCompatDialogFragment {
     private boolean showFilter, showFilterSystem;
 
     @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
+    public void onCreate(
+            @Nullable
+                    Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setStyle(STYLE_NORMAL, R.style.Widget_XpFilter_FullScreen_Dialog);
         setCancelable(true);
@@ -70,7 +74,8 @@ public class EditItemDialogFragment extends AppCompatDialogFragment {
         mViewModel = XpApplication.getViewModel();
         mViewModel.setSaveResultObserver(this, b -> {
             if (b) {
-                Toast.makeText(requireContext(), R.string.add_data_success, Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), R.string.add_data_success, Toast.LENGTH_SHORT)
+                        .show();
                 requireActivity().finish();
             }
         });
@@ -83,12 +88,18 @@ public class EditItemDialogFragment extends AppCompatDialogFragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+    public View onCreateView(
+            @NonNull
+                    LayoutInflater inflater,
+            @Nullable
+                    ViewGroup container,
+            @Nullable
+                    Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.edit_item_dialog_fragment, container, false);
         Toolbar toolbar = view.findViewById(R.id.toolbar);
         AppCompatActivity activity = (AppCompatActivity) requireActivity();
         activity.setSupportActionBar(toolbar);
-        activity.getSupportActionBar().setDisplayShowCustomEnabled(true);
+        Objects.requireNonNull(activity.getSupportActionBar()).setDisplayShowCustomEnabled(true);
         toolbar.setNavigationIcon(androidx.appcompat.R.drawable.abc_ic_clear_material);
         initView(view);
         toolbar.setNavigationOnClickListener(v -> exit());
@@ -107,7 +118,8 @@ public class EditItemDialogFragment extends AppCompatDialogFragment {
             return;
         }
         if (editDataModel.hasChange()) {
-            DialogBuilder.confirmCancelShow(requireContext(), R.string.data_has_changed, (dialog, which) -> requireActivity().finish(), null);
+            DialogBuilder.confirmCancelShow(requireContext(), R.string.data_has_changed,
+                    (dialog, which) -> requireActivity().finish(), null);
         } else {
             requireActivity().finish();
         }
@@ -122,7 +134,8 @@ public class EditItemDialogFragment extends AppCompatDialogFragment {
         try {
             editDataModel = mViewModel.getDataModelType().addType.newInstance();
         } catch (IllegalAccessException | java.lang.InstantiationException e) {
-            Toast.makeText(this.requireContext(), "创建对象失败,请确保类有个无参的public构造函数: " + mViewModel.getDataModelType().addType.getName(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this.requireContext(), "创建对象失败,请确保类有个无参的public构造函数: "
+                    + mViewModel.getDataModelType().addType.getName(), Toast.LENGTH_SHORT).show();
             return;
         }
         LinearLayout layout = parent.findViewById(R.id.item_contain);
@@ -131,13 +144,20 @@ public class EditItemDialogFragment extends AppCompatDialogFragment {
         showFilter = editDataModel.showFilter();
         showFilterSystem = editDataModel.showFilterSystem();
         if (view != null) {
-            layout.addView(view, new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT));
+            layout.addView(view,
+                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.WRAP_CONTENT));
         }
-        ((AppCompatActivity) requireActivity()).getSupportActionBar().setTitle(mViewModel.getDataModelType().nameId);
+        ((AppCompatActivity) requireActivity()).getSupportActionBar()
+                .setTitle(mViewModel.getDataModelType().nameId);
     }
 
     @Override
-    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+    public void onCreateOptionsMenu(
+            @NonNull
+                    Menu menu,
+            @NonNull
+                    MenuInflater inflater) {
         menu.clear();
         inflater.inflate(R.menu.menu_edit, menu);
         MenuItem mSearchItem = menu.findItem(R.id.action_search);
@@ -167,13 +187,16 @@ public class EditItemDialogFragment extends AppCompatDialogFragment {
 
 
     @Override
-    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+    public boolean onOptionsItemSelected(
+            @NonNull
+                    MenuItem item) {
         int id = item.getItemId();
         if (id == R.id.action_filter_system_app) {
             item.setChecked(!item.isChecked());
             Filter filter = editDataModel.getFilter();
             if (filter != null) {
-                filter.filter(item.isChecked() ? AppFilterable.SYSTEM_MASK : AppFilterable.SYSTEM_UNMASK);
+                filter.filter(
+                        item.isChecked() ? AppFilterable.SYSTEM_MASK : AppFilterable.SYSTEM_UNMASK);
             }
             return true;
         }

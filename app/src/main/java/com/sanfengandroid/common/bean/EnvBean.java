@@ -19,6 +19,8 @@ package com.sanfengandroid.common.bean;
 
 import android.text.TextUtils;
 
+import androidx.annotation.NonNull;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -36,6 +38,13 @@ public class EnvBean {
         this.name = name;
         regions = new ArrayList<>(1);
         regions.add(region);
+    }
+
+    @NonNull
+    @Override
+    public String toString() {
+        return regions != null ? regions.toString().substring(1, regions.toString().length() - 2)
+                               : "null";
     }
 
     public EnvBean(String name, List<String> regions) {
@@ -71,8 +80,12 @@ public class EnvBean {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
         EnvBean bean = (EnvBean) o;
         return name.equals(bean.name);
     }

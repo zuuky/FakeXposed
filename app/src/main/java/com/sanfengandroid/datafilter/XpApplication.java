@@ -26,27 +26,26 @@ import androidx.lifecycle.ViewModelStore;
 import androidx.lifecycle.ViewModelStoreOwner;
 
 import com.sanfengandroid.common.util.Util;
-import com.sanfengandroid.xp.ProcessMode;
 import com.sanfengandroid.datafilter.viewmodel.ApplicationViewModel;
+import com.sanfengandroid.xp.ProcessMode;
 
 public class XpApplication extends Application implements ViewModelStoreOwner {
-    private static final String TAG = XpApplication.class.getSimpleName();
-    private static XpApplication singleton = null;
+    private static XpApplication xpApplication = null;
     private ViewModelStore mStore;
     private ApplicationViewModel viewModel;
 
     public static XpApplication getInstance() {
-        return singleton;
+        return xpApplication;
     }
 
     public static ApplicationViewModel getViewModel() {
-        return singleton.viewModel;
+        return xpApplication.viewModel;
     }
 
     @Override
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
-        singleton = this;
+        xpApplication = this;
         if (BuildConfig.APPLICATION_ID.equals(Util.getProcessName(base))) {
             mStore = new ViewModelStore();
             viewModel = new ViewModelProvider(this).get(ApplicationViewModel.class);

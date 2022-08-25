@@ -17,9 +17,6 @@
 
 package com.sanfengandroid.datafilter.ui.activties;
 
-import android.content.ClipData;
-import android.content.ClipboardManager;
-import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -36,8 +33,6 @@ import androidx.appcompat.widget.SearchView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.sanfengandroid.common.util.LogUtil;
 import com.sanfengandroid.common.util.NetUtil;
@@ -51,7 +46,6 @@ import com.sanfengandroid.datafilter.ui.DialogBuilder;
 import com.sanfengandroid.datafilter.viewmodel.AppBean;
 import com.sanfengandroid.datafilter.viewmodel.ApplicationViewModel;
 
-import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
 
@@ -133,7 +127,6 @@ public class AppBarActivity extends AppCompatActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        //noinspection SimplifiableIfStatement
         if (id == R.id.action_test) {
             Intent intent = new Intent(this, NativeTestActivity.class);
             startActivity(intent);
@@ -181,10 +174,6 @@ public class AppBarActivity extends AppCompatActivity {
         searchView.setOnQueryTextListener(listener);
     }
 
-    protected void setOnCloseListener(SearchView.OnCloseListener listener) {
-        searchView.setOnCloseListener(listener);
-    }
-
     protected void setSearchViewMenuVisible(boolean visible) {
         mSearchItem.setVisible(visible);
     }
@@ -194,67 +183,18 @@ public class AppBarActivity extends AppCompatActivity {
         mFilterXposedItem.setVisible(visible);
     }
 
-    protected void setFilterXposedMenuVisible(boolean visible) {
-        mFilterXposedItem.setVisible(visible);
-    }
-
     protected void setAppBarTitle(String title) {
         Objects.requireNonNull(getSupportActionBar()).setTitle(title);
     }
 
-    protected void setAppBarTitle(int stringResId) {
-        Objects.requireNonNull(getSupportActionBar()).setTitle(stringResId);
-    }
-
     protected void callbackSystemFilter(AppFilterable.Option option) {
-
     }
 
     protected void callbackXposedFilter(AppFilterable.Option option) {
-
     }
 
     protected View getSnackView() {
-        FloatingActionButton fab = findViewById(R.id.fab_menu);
-        return fab != null ? fab : getWindow().getDecorView();
-    }
-
-    protected void donate() {
-        String[] items = new String[]{getString(R.string.alipay), getString(R.string.paypal),
-                getString(R.string.donate_other)};
-        new MaterialAlertDialogBuilder(this).setTitle(R.string.donate)
-                .setItems(items, (dialog, which) -> {
-                    try {
-                        Intent intent;
-                        if (which == 0) {
-                            intent = Intent.parseUri(
-                                    "alipayqr://platformapi/startapp?saId=10000007&qrcode=https://qr.alipay.com/fkx17394wnyqsvysokxgu08",
-                                    Intent.URI_INTENT_SCHEME);
-                        } else if (which == 1) {
-                            intent = Intent.parseUri(
-                                    "https://paypal.me/sanfengandroid?locale.x=zh_XC",
-                                    Intent.URI_INTENT_SCHEME);
-                        } else {
-                            intent = Intent.parseUri("https://sanfengandroid.github.io/about/",
-                                    Intent.URI_INTENT_SCHEME);
-                        }
-                        startActivity(intent);
-                    } catch (Exception e) {
-                        Snackbar.make(getSnackView(),
-                                        e.getMessage() == null ? e.getClass().getSimpleName()
-                                                               : e.getMessage(), Snackbar.LENGTH_SHORT)
-                                .show();
-                    }
-                }).show();
-    }
-
-    protected void github() {
-        try {
-            Intent intent = Intent.parseUri("https://github.com/sanfengAndroid/FakeXposed",
-                    Intent.URI_INTENT_SCHEME);
-            startActivity(intent);
-        } catch (URISyntaxException ignore) {
-        }
+        return null;
     }
 
     protected void update(boolean force) {
@@ -287,20 +227,4 @@ public class AppBarActivity extends AppCompatActivity {
             }
         });
     }
-
-
-    protected void copyWechat() {
-        ClipboardManager cm = (ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-        cm.setPrimaryClip(ClipData.newPlainText("wechat", "sanfengAndroid逆向安全"));
-        Snackbar.make(getSnackView(), R.string.copy_wechat_public_tip, Snackbar.LENGTH_SHORT)
-                .show();
-    }
-
-    protected void shared() {
-        Intent sharingIntent = new Intent(Intent.ACTION_SEND);
-        sharingIntent.setType("text/plain");
-        sharingIntent.putExtra(Intent.EXTRA_TEXT, getString(R.string.share_app_text));
-        startActivity(Intent.createChooser(sharingIntent, getString(R.string.share)));
-    }
-
 }

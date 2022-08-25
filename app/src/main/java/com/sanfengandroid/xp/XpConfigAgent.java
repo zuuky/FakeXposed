@@ -22,7 +22,6 @@ import android.content.Context;
 import com.sanfengandroid.common.model.base.ShowDataModel;
 import com.sanfengandroid.common.util.LogUtil;
 import com.sanfengandroid.datafilter.SPProvider;
-import com.sanfengandroid.fakeinterface.GlobalConfig;
 
 import java.util.Map;
 import java.util.Set;
@@ -37,7 +36,6 @@ final class XpConfigAgent {
     private static XpDataMode mode;
     private static ProcessMode processMode;
     private static Boolean enable;
-    private static ContentProviderAgent.RemoteArgsUnpack callback;
 
     public static void setDataMode(XpDataMode mode) {
         XpConfigAgent.mode = mode;
@@ -48,32 +46,25 @@ final class XpConfigAgent {
         return mode;
     }
 
-    public static ProcessMode getProcessMode() {
-        return processMode;
-    }
-
     public static void setProcessMode(ProcessMode mode) {
         processMode = mode;
         SPProvider.setProcessMode(mode);
     }
 
-    public static boolean isSystemActive(Context context) {
-        return ContentProviderAgent.remoteIsActive(context);
-    }
-
-    public static boolean xSharedPreferencesAvailable() {
-        return SPProvider.testXSharedPreferencesAvailable();
+    public static ProcessMode getProcessMode() {
+        return processMode;
     }
 
     public static boolean getHookAppEnable(Context context, String pkg) {
         if (enable != null) {
             return enable;
         }
-        if (mode == XpDataMode.X_SP || processMode == ProcessMode.SELF) {
+        if (processMode == ProcessMode.SELF) {
             enable = SPProvider.getHookAppEnable(context, pkg);
         } else {
             // 需要远程调用
-            callback = ContentProviderAgent.getHookAppConfig(context, pkg);
+            ContentProviderAgent.RemoteArgsUnpack callback = ContentProviderAgent.getHookAppConfig(
+                    context, pkg);
             enable = callback.success() && callback.enable();
         }
         LogUtil.d("getHookAppEnable enable: %s,pkg: %s,processMode: %s,mode: %s", enable, pkg,
@@ -85,19 +76,10 @@ final class XpConfigAgent {
      * 只有Hook开启了才调用,会出现一个进程调用多次,在一个进程内加载了多个包
      */
     public static Map<String, Set<ShowDataModel>> getAppConfig(Context context, String pkg) {
-        //if (!enable) {
-        //    return null;
-        //}
-        if (mode == XpDataMode.X_SP || processMode == ProcessMode.SELF) {
+        if (processMode == ProcessMode.SELF) {
             return SPProvider.getOverloadAppAvailable(context, pkg);
         }
-        //if (callback == null) {
-        //return null;
-        //}
-        // 这里始终是获取成功,但是会出现一个进程加载多次回调多次的情况
-        Map<String, Set<ShowDataModel>> data = GlobalConfig.transformBundle(callback.bundle());
-        //callback = null;
-        return data;
+        return null;
     }
 
 }

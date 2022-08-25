@@ -27,6 +27,7 @@ import android.util.Log;
 import com.sanfengandroid.common.reflection.ReflectUtil;
 import com.sanfengandroid.common.util.LogUtil;
 import com.sanfengandroid.common.util.Util;
+import com.sanfengandroid.datafilter.SPProvider;
 import com.sanfengandroid.fakelinker.BuildConfig;
 import com.sanfengandroid.fakelinker.ErrorCode;
 import com.sanfengandroid.fakelinker.FakeLinker;
@@ -51,7 +52,6 @@ public final class NativeHook {
      */
     private static String configPath = "/data/system/sanfengandroid/fakexposed";
     private static String libraryPath = null;
-    private static String publicSourceDir = null;
 
     private static native int nativeAddIntBlackList(int type, String name, int value, boolean add);
 
@@ -532,10 +532,14 @@ public final class NativeHook {
         if (libraryPath != null) {
             return;
         }
-        ApplicationInfo info = context.getPackageManager()
-                .getApplicationInfo(com.sanfengandroid.datafilter.BuildConfig.APPLICATION_ID, 0);
-        libraryPath = info.nativeLibraryDir;
-        publicSourceDir = info.publicSourceDir;
+        try {
+            ApplicationInfo info = context.getPackageManager()
+                    .getApplicationInfo(com.sanfengandroid.datafilter.BuildConfig.APPLICATION_ID,
+                            0);
+            libraryPath = info.nativeLibraryDir;
+        } catch (Exception e) {
+            libraryPath = SPProvider.getAppLibPath(context);
+        }
         LogUtil.d(TAG, "initLibraryPath find library at: %s", libraryPath);
     }
 
@@ -588,9 +592,7 @@ public final class NativeHook {
     }
 
     public static String getDefaultHookModulePath() {
-        String name = "lib" + (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N
-                               ? com.sanfengandroid.datafilter.BuildConfig.HOOK_HIGH_MODULE_NAME
-                               : com.sanfengandroid.datafilter.BuildConfig.HOOK_LOW_MODULE_NAME);
+        String name = "lib" + com.sanfengandroid.datafilter.BuildConfig.HOOK_HIGH_MODULE_NAME;
         File hookModuleFile = new File(libraryPath,
                 FileInstaller.isRunning64Bit() ? name + "64.so" : name + ".so");
         // 文件不存在时复制过去
@@ -624,9 +626,7 @@ public final class NativeHook {
     }
 
     public static File getDefaultFakeLinkerPath() {
-        String name = "lib" + BuildConfig.LINKER_MODULE_NAME + (
-                Build.VERSION.SDK_INT == Build.VERSION_CODES.N_MR1 ? Build.VERSION_CODES.N
-                                                                   : Build.VERSION.SDK_INT);
+        String name = "lib" + BuildConfig.LINKER_MODULE_NAME + Build.VERSION.SDK_INT;
         File fakeLinkerFile = new File(libraryPath,
                 FileInstaller.isRunning64Bit() ? name + "64.so" : name + ".so");
         // 文件不存在时复制过去

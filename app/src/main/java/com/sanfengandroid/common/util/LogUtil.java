@@ -17,10 +17,12 @@
 
 package com.sanfengandroid.common.util;
 
+import android.os.Parcelable;
 import android.util.Log;
 
 import com.alibaba.fastjson.JSONObject;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 /**
@@ -173,7 +175,8 @@ public class LogUtil {
                 for (final Object o : msg) {
                     if (o == null) {
                         a[i] = "null";
-                    } else if (isPrimitive(o.getClass())) {
+                    } else if (isPrimitive(o.getClass()) || o instanceof Parcelable
+                            || !(o instanceof Serializable)) {
                         a[i] = Objects.toString(o);
                     } else {
                         try {

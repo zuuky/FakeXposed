@@ -15,7 +15,7 @@
  *
  */
 
-include ':framework-compile'
-include ':app'
 rootProject.name = "FakeXposed"
+include ':app'
 include ':fake-linker'
+include ':framework-compile'

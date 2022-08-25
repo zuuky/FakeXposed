@@ -25,7 +25,6 @@ import com.sanfengandroid.common.util.LogUtil;
  * native回调java
  */
 public class NativeCall {
-    private static final String TAG = NativeCall.class.getSimpleName();
 
     public static String nativeReplaceEnv(String name, String value) {
         EnvBean bean = GlobalConfig.getEnvBlacklistValue(name);

@@ -19,29 +19,28 @@ package com.sanfengandroid.fakeinterface;
 
 import android.content.Context;
 
-import com.sanfengandroid.fakelinker.FileInstaller;
 import com.sanfengandroid.datafilter.SPProvider;
+import com.sanfengandroid.fakelinker.FileInstaller;
 
 import java.io.File;
 
-/**
- * @author sanfengAndroid
- * @date 2020/11/20
- */
 public class Installer {
     private static boolean root = true;
 
     public static boolean installHookFile(Context context) throws Exception {
-        FileInstaller.setConfigPath(NativeHook.getConfigPath());
         setRoot(true);
+        FileInstaller.setConfigPath(NativeHook.getConfigPath());
         File[] files = SPProvider.getAllConfigurationFiles(context);
+        //if (files == null || files.length <= 0) {
+        //    files = SPProvider.initAllConfigurationFiles(context);
+        //}
         FileInstaller.installFile(context, files, root);
         return true;
     }
 
     public static boolean uninstallHookFile(Context context) throws Exception {
-        FileInstaller.setConfigPath(NativeHook.getConfigPath());
         setRoot(true);
+        FileInstaller.setConfigPath(NativeHook.getConfigPath());
         File[] files = SPProvider.getAllConfigurationFiles(context);
         if (files == null) {
             return true;

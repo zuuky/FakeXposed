@@ -20,7 +20,12 @@
         xmlns:tools="http://schemas.android.com/tools"
         package="com.sanfengandroid.datafilter">
 
+    <uses-permission
+            android:name="android.permission.QUERY_ALL_PACKAGES"
+            tools:ignore="QueryAllPackagesPermission" />
+
     <uses-permission android:name="android.permission.INTERNET" />
+
     <dist:module dist:instant="true" />
     <application
             android:allowBackup="true"
@@ -30,7 +35,6 @@
             android:supportsRtl="true"
             android:theme="@style/Theme.XpFilter"
             android:name=".XpApplication">
-        <activity android:name=".ui.activties.EditItemDialogActivity" />
         <activity
                 android:name=".ui.activties.MainActivity"
                 android:exported="true">
@@ -40,9 +44,7 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-                android:name=".ui.activties.SettingsActivity"
-                android:label="@string/settings" />
+        <activity android:name=".ui.activties.EditItemDialogActivity" />
 
         <provider
                 tools:ignore="ExportedContentProvider"
@@ -63,9 +65,6 @@
         <meta-data
                 android:name="xposedminversion"
                 android:value="93" />
-        <meta-data
-                android:name="xposedsharedprefs"
-                android:value="true" />
         <meta-data
                 android:name="xposedscope"
                 android:resource="@array/xposed_scope" />

@@ -46,7 +46,6 @@ import com.sanfengandroid.datafilter.listener.DataModelItemClickListener;
 import com.sanfengandroid.datafilter.viewmodel.ApplicationViewModel;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -59,15 +58,9 @@ public class InstalledPackageFragment extends Fragment implements Filterable, Ap
     private DataModelRecyclerViewAdapter<InstallPackageModel> mAdapter;
     private ApplicationViewModel mViewModel;
 
-    /**
-     * Mandatory empty constructor for the fragment manager to instantiate the
-     * fragment (e.g. upon screen orientation changes).
-     */
     public InstalledPackageFragment() {
     }
 
-    // TODO: Customize parameter initialization
-    @SuppressWarnings("unused")
     public static InstalledPackageFragment newInstance() {
         return new InstalledPackageFragment();
     }
@@ -75,7 +68,8 @@ public class InstalledPackageFragment extends Fragment implements Filterable, Ap
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mViewModel = new ViewModelProvider(XpApplication.getInstance()).get(ApplicationViewModel.class);
+        mViewModel = new ViewModelProvider(XpApplication.getInstance()).get(
+                ApplicationViewModel.class);
         mAdapter = new DataModelRecyclerViewAdapter<>();
         mAdapter.setItemClickListener(this);
         mViewModel.getInstalled().observe(this, installPackageModels -> {
@@ -85,7 +79,6 @@ public class InstalledPackageFragment extends Fragment implements Filterable, Ap
             item.all = true;
             List<InstallPackageModel> apps = new ArrayList<>(installPackageModels);
             apps.add(item);
-
             mViewModel.setHookAppsObserver(this, map -> {
                 for (Map.Entry<String, Boolean> entry : map.entrySet()) {
                     if (entry.getValue() != null && entry.getValue()) {
@@ -97,7 +90,7 @@ public class InstalledPackageFragment extends Fragment implements Filterable, Ap
                         }
                     }
                 }
-                Collections.sort(apps, null);
+                apps.sort(null);
                 mAdapter.setData(apps, false);
             });
             mViewModel.initHookApps();
@@ -106,13 +99,15 @@ public class InstalledPackageFragment extends Fragment implements Filterable, Ap
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+            Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_recycler_view, container, false);
         RecyclerView recyclerView = view.findViewById(R.id.list);
         if (recyclerView != null) {
             Context context = view.getContext();
             recyclerView.setLayoutManager(new LinearLayoutManager(context));
-            recyclerView.addItemDecoration(new DividerItemDecoration(context, DividerItemDecoration.VERTICAL));
+            recyclerView.addItemDecoration(
+                    new DividerItemDecoration(context, DividerItemDecoration.VERTICAL));
             recyclerView.setAdapter(mAdapter);
         }
         return view;
@@ -173,7 +168,8 @@ public class InstalledPackageFragment extends Fragment implements Filterable, Ap
         DataModelType type = mViewModel.getDataModelType();
         FragmentManager fm = getParentFragmentManager();
         mViewModel.setCurrentPackage(data.pkg);
-        ItemFragment<? extends ShowDataModel> itemFragment = ItemFragment.newInstance(1, type.valueType);
+        ItemFragment<? extends ShowDataModel> itemFragment = ItemFragment.newInstance(1,
+                type.valueType);
         fm.beginTransaction().addToBackStack(null).replace(R.id.container, itemFragment).commit();
         return true;
     }

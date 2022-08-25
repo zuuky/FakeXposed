@@ -109,8 +109,6 @@ public class GlobalConfig {
         for (Pair<String, String> pair : DefaultLists.DEFAULT_GLOBAL_VARIABLE_LIST) {
             globalSettingsBlacklist.put(pair.first, pair.second);
         }
-//        runtimeBlackList.put(bean.oldCmd, bean);
-
         // C层数据配置
         for (String file : DefaultLists.DEFAULT_FILES_LIST) {
             fileBlacklist.put(file, file);
@@ -300,11 +298,8 @@ public class GlobalConfig {
                     case RUNTIME_EXEC_HIDE:
                         RuntimeExecModel runModel = (RuntimeExecModel) model;
                         runModel.getBean().transform();
-                        List<ExecBean> list = runtimeBlackList.get(runModel.getBean().oldCmd);
-                        if (list == null) {
-                            list = new ArrayList<>();
-                            runtimeBlackList.put(runModel.getBean().oldCmd, list);
-                        }
+                        List<ExecBean> list = runtimeBlackList.computeIfAbsent(
+                                runModel.getBean().oldCmd, k -> new ArrayList<>());
                         list.add(runModel.getBean());
                         break;
                     case NOTHING:

@@ -33,14 +33,15 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModel;
 
-import com.sanfengandroid.fakeinterface.GlobalConfig;
 import com.sanfengandroid.common.model.InstallPackageModel;
 import com.sanfengandroid.common.model.PackageModel;
 import com.sanfengandroid.common.model.base.DataModelType;
 import com.sanfengandroid.common.model.base.ShowDataModel;
 import com.sanfengandroid.common.util.LogUtil;
+import com.sanfengandroid.datafilter.BuildConfig;
 import com.sanfengandroid.datafilter.SPProvider;
 import com.sanfengandroid.datafilter.XpApplication;
+import com.sanfengandroid.fakeinterface.GlobalConfig;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -74,7 +75,6 @@ public class ApplicationViewModel extends ViewModel {
     private final MutableLiveData<List<ShowDataModel>> data = new MutableLiveData<>();
     private final Map<DataModelType, List<ShowDataModel>> dataSources = new HashMap<>();
     private final MutableLiveData<Map<String, Boolean>> hookApps = new MutableLiveData<>();
-    private final MutableLiveData<Pair<String, Boolean>> hookApp = new MutableLiveData<>();
     /**
      * 当前设置生效的包名
      */
@@ -84,7 +84,8 @@ public class ApplicationViewModel extends ViewModel {
         @Override
         public void onChanged(List<ShowDataModel> objects) {
             AsyncTask.execute(() -> {
-                if (objects == null || currentPackage == null || dataModelType == null || dataModelType == DataModelType.NOTHING) {
+                if (objects == null || currentPackage == null || dataModelType == null
+                        || dataModelType == DataModelType.NOTHING) {
                     return;
                 }
                 JSONArray array = new JSONArray();
@@ -93,13 +94,15 @@ public class ApplicationViewModel extends ViewModel {
                     try {
                         value = model.serialization();
                     } catch (JSONException e) {
-                        throw new RuntimeException("serialization object " + model.getClass().getName() + " error", e);
+                        throw new RuntimeException(
+                                "serialization object " + model.getClass().getName() + " error", e);
                     }
                     if (value != null) {
                         array.put(value);
                     }
                 }
-                SPProvider.putAppStringConfig(XpApplication.getInstance(), currentPackage, dataModelType, array);
+                SPProvider.putAppStringConfig(XpApplication.getInstance(), currentPackage,
+                        dataModelType, array);
             });
         }
     };
@@ -125,50 +128,43 @@ public class ApplicationViewModel extends ViewModel {
                 Context context = XpApplication.getInstance();
                 List<InstallPackageModel> list = new ArrayList<>();
                 PackageManager pm = context.getPackageManager();
-                Set<String> xposedes = new HashSet<>();
+                Set<String> xpApks = new HashSet<>();
                 List<PackageInfo> infos = pm.getInstalledPackages(PackageManager.GET_META_DATA);
                 for (PackageInfo info : infos) {
                     InstallPackageModel item = new InstallPackageModel();
+                    if (info.packageName.equals(BuildConfig.APPLICATION_ID)) {
+                        SPProvider.setAppLibPath(context.getApplicationContext(),
+                                info.applicationInfo.nativeLibraryDir);
+                    }
                     item.pkg = info.packageName;
                     item.appName = info.applicationInfo.loadLabel(pm).toString();
                     item.versionName = info.versionName;
-                    item.versionCode = info.versionCode;
-                    item.isXposedModule = isXposedModule(info.applicationInfo.metaData, info.applicationInfo.publicSourceDir);
+                    item.versionCode = info.getLongVersionCode();
+                    item.isXposedModule = isXposedModule(info.applicationInfo.metaData);
                     item.icon = info.applicationInfo.loadIcon(pm);
-                    item.isSystemApp = (info.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
+                    item.isSystemApp =
+                            (info.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
                     list.add(item);
                     apks.put(item.pkg, item);
                     if (item.isXposedModule) {
-                        xposedes.add(item.pkg);
+                        xpApks.add(item.pkg);
                     }
+                    LogUtil.d("installed apk: %s", info);
                 }
+                LogUtil.d("xpApks: %s", xpApks);
                 Collections.sort(list);
                 installed.postValue(list);
-                SPProvider.setXposedList(context, xposedes);
+                SPProvider.setXposedList(context, xpApks);
             });
         }
     }
 
-    private boolean isXposedModule(Bundle bundle, String path) {
+    private boolean isXposedModule(Bundle bundle) {
         if (bundle != null) {
-            if (bundle.getString("xposeddescription") != null) {
-                return true;
-            }
-            if (bundle.getString("xposedminversion") != null) {
-                return true;
-            }
-            if (bundle.getString("xposedmodule") != null) {
-                return true;
-            }
+            return bundle.containsKey("xposeddescription") || bundle.containsKey("xposedminversion")
+                    || bundle.containsKey("xposedmodule");
         }
         return false;
-//        ZipFile zipFile = null;
-//        try {
-//            zipFile = new ZipFile(path);
-//        } catch (IOException e) {
-//            return false;
-//        }
-//        return zipFile.getEntry("assets/xposed_init") != null;
     }
 
     public InstallPackageModel getInstallApp(String pkg) {
@@ -236,6 +232,7 @@ public class ApplicationViewModel extends ViewModel {
             setDataValue(values);
         }
     }
+
     @SuppressWarnings("unchecked")
     public void deleteDataValue(ShowDataModel value) {
         List<ShowDataModel> values = (List<ShowDataModel>) getDataValue();
@@ -252,7 +249,8 @@ public class ApplicationViewModel extends ViewModel {
         }
     }
 
-    public void setEditModelObserver(LifecycleOwner owner, Observer<Pair<ShowDataModel, Integer>> observer) {
+    public void setEditModelObserver(LifecycleOwner owner,
+            Observer<Pair<ShowDataModel, Integer>> observer) {
         editModel.observe(owner, editDataModel -> {
             if (editDataModel != null && editDataModel.first != null) {
                 observer.onChanged(editDataModel);
@@ -260,7 +258,8 @@ public class ApplicationViewModel extends ViewModel {
         });
     }
 
-    public void setDataObserver(LifecycleOwner owner, Observer<List<? extends ShowDataModel>> observer) {
+    public void setDataObserver(LifecycleOwner owner,
+            Observer<List<? extends ShowDataModel>> observer) {
         data.observe(owner, showDataModels -> {
             if (showDataModels != null) {
                 observer.onChanged(showDataModels);
@@ -317,21 +316,13 @@ public class ApplicationViewModel extends ViewModel {
             return;
         }
         Objects.requireNonNull(hookApps.getValue()).put(pkg, value);
-        syncHookApp(pkg, value);
+        SPProvider.setHookApp(XpApplication.getInstance(), pkg, value);
     }
 
     public void setHookAppsObserver(LifecycleOwner owner, Observer<Map<String, Boolean>> observer) {
         hookApps.observe(owner, map -> {
             if (map != null) {
                 observer.onChanged(map);
-            }
-        });
-    }
-
-    public void setHookAppObserver(LifecycleOwner owner, Observer<Pair<String, Boolean>> observer) {
-        hookApp.observe(owner, pair -> {
-            if (pair != null) {
-                observer.onChanged(pair);
             }
         });
     }
@@ -355,14 +346,17 @@ public class ApplicationViewModel extends ViewModel {
             if (dataSources.get(dataModelType) != null) {
                 return;
             }
-            if (currentPackage == null || dataModelType == null || dataModelType == DataModelType.NOTHING) {
+            if (currentPackage == null || dataModelType == null
+                    || dataModelType == DataModelType.NOTHING) {
                 return;
             }
             AsyncTask.execute(() -> {
                 List<ShowDataModel> values;
-                if (SPProvider.appHasInit(XpApplication.getInstance(), currentPackage, dataModelType)) {
+                if (SPProvider.appHasInit(XpApplication.getInstance(), currentPackage,
+                        dataModelType)) {
                     values = new ArrayList<>();
-                    String value = SPProvider.getAppTypeValue(XpApplication.getInstance(), currentPackage, dataModelType);
+                    String value = SPProvider.getAppTypeValue(XpApplication.getInstance(),
+                            currentPackage, dataModelType);
                     if (!TextUtils.isEmpty(value)) {
                         try {
                             JSONArray array = new JSONArray(value);
@@ -379,7 +373,9 @@ public class ApplicationViewModel extends ViewModel {
                                 LogUtil.e("Failed to initialize configuration data", e);
                             }
                         } catch (JSONException e) {
-                            throw new RuntimeException("unSerialization string error, type: " + dataModelType.name(), e);
+                            throw new RuntimeException(
+                                    "unSerialization string error, type: " + dataModelType.name(),
+                                    e);
                         }
                     }
                 } else {
@@ -388,8 +384,11 @@ public class ApplicationViewModel extends ViewModel {
                         Iterator<ShowDataModel> iter = values.iterator();
                         while (iter.hasNext()) {
                             PackageModel model = (PackageModel) iter.next();
-                            InstallPackageModel installPackageModel = getInstallApp(model.getPackageName());
-                            if (installPackageModel == null && !PackageModel.XPOSED_PACKAGE_MASK.equals(model.getPackageName())) {
+                            InstallPackageModel installPackageModel = getInstallApp(
+                                    model.getPackageName());
+                            if (installPackageModel == null
+                                    && !PackageModel.XPOSED_PACKAGE_MASK.equals(
+                                    model.getPackageName())) {
                                 iter.remove();
                             }
                         }
@@ -409,16 +408,9 @@ public class ApplicationViewModel extends ViewModel {
             if (hookApps.getValue() != null) {
                 return;
             }
-            AsyncTask.execute(() -> hookApps.postValue(SPProvider.getHookApps(XpApplication.getInstance())));
+            AsyncTask.execute(
+                    () -> hookApps.postValue(SPProvider.getHookApps(XpApplication.getInstance())));
         }
     }
 
-    private void syncHookApp(String pkg, Boolean value) {
-        SPProvider.setHookApp(XpApplication.getInstance(), pkg, value);
-        if (Looper.getMainLooper().getThread() == Thread.currentThread()) {
-            hookApp.setValue(new Pair<>(pkg, value));
-        } else {
-            hookApp.postValue(new Pair<>(pkg, value));
-        }
-    }
 }

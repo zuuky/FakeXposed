@@ -31,13 +31,14 @@ public class EditItemDialogActivity extends AppCompatActivity implements ICallEx
     private ICallExternal callback;
 
     @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
+    protected void onCreate(
+            @Nullable
+                    Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         if (savedInstanceState == null) {
             fragment = new EditItemDialogFragment();
             getSupportFragmentManager().beginTransaction()
-                    .replace(android.R.id.content, fragment, null)
-                    .commitNow();
+                    .replace(android.R.id.content, fragment, null).commitNow();
         }
     }
 
