@@ -109,7 +109,7 @@ NATIVE_HOOK_DEF(jint, UNIXProcess_forkAndExec, JNIEnv *env, jobject process,
     initVectorFromBlock(pargv, argv, argc);
     LOGMV("runtime exec cmd: %s", cmd);
     for (int i = 0; i < argc; ++i) {
-        LOGMV("exec parameter %d: %s", i, pargv[i]);
+        LOGMV("runtime exec cmd parameter %d: %s", i, pargv[i]);
     }
     jint pid;
     RuntimeBean *bean = FXHandler::FindRuntimeBean(cmd, pargv, argc);

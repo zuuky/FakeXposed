@@ -36,9 +36,9 @@ import com.sanfengandroid.common.util.LogUtil;
 import com.sanfengandroid.fakeinterface.GlobalConfig;
 
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 
@@ -61,213 +61,163 @@ public class HookSystemComponent implements IHook {
         Object oldPm = ReflectUtil.invoke("android.app.ActivityThread", null, "getPackageManager");
         Class<?> ipm = Class.forName("android.content.pm.IPackageManager");
         Object newPm = Proxy.newProxyInstance(ipm.getClassLoader(), new Class[]{ipm},
-                new InvocationHandler() {
-                    private Object orig;
+                ((InvocationHandler) (proxy, method, args) -> {
+                    LogUtil.v(TAG, "hooked pms method.name %s, hash: %s, method: %s",
+                            method.getName(), method.getName().hashCode(), method);
+                    DataModelType type = DataModelType.PACKAGE_HIDE;
+                    Object result = method.invoke(oldPm, args);
+                    if (args != null && args.length >= 1 && args[0] instanceof String
+                            && GlobalConfig.stringEqualBlacklist((String) args[0], type)) {
+                        Class<?>[] exceptionTypes = method.getExceptionTypes();
 
-                    public InvocationHandler set(Object orig) {
-                        this.orig = orig;
-                        return this;
+                        if (Arrays.stream(exceptionTypes).anyMatch(a -> a.getName()
+                                .equals(PackageManager.NameNotFoundException.class.getName()))) {
+                            throw new PackageManager.NameNotFoundException();
+                        } else if (!LogUtil.isPrimitive(method.getReturnType())) {
+                            return null;
+                        }
                     }
-
-                    @Override
-                    public Object invoke(Object proxy, Method method, Object[] args)
-                            throws Throwable {
-                        LogUtil.v(TAG, "hooked pms method: %s", method);
-                        Object result = method.invoke(orig, args);
-                        if (GlobalConfig.isEmptyBlacklist(DataModelType.PACKAGE_HIDE)
-                                || result == null) {
-                            return result;
-                        }
-                        try {
-                            DataModelType type = DataModelType.PACKAGE_HIDE;
-                            switch (method.getName().hashCode()) {
-                                case -150905391:        // getInstalledPackages
-                                case -232294012:        // getPackagesHoldingPermissions
-                                    Iterator<PackageInfo> piIt = ((ParceledListSlice<PackageInfo>) result).getList()
-                                            .iterator();
-                                    while (piIt.hasNext()) {
-                                        PackageInfo info = piIt.next();
-                                        if (GlobalConfig.stringEqualBlacklist(info.packageName,
-                                                type)) {
-                                            LogUtil.w(Const.JAVA_MONITOR_STATE,
-                                                    "hide filter PackageInfo : %s",
-                                                    info.packageName);
-                                            piIt.remove();
-                                        }
-                                    }
-                                    break;
-                                case 1700882705:            // queryContentProviders
-                                case 964371846:             // queryInstrumentation
-                                case 1600494599:            // getInstalledApplications
-                                    Iterator<PackageItemInfo> piiIt = (Iterator<PackageItemInfo>) ((ParceledListSlice<?>) result).getList()
-                                            .iterator();
-                                    while (piiIt.hasNext()) {
-                                        PackageItemInfo info = piiIt.next();
-                                        if (GlobalConfig.stringEqualBlacklist(info.packageName,
-                                                type)) {
-                                            LogUtil.w(Const.JAVA_MONITOR_STATE,
-                                                    "hide filter %s : %s", info.getClass(), info);
-                                            piiIt.remove();
-                                        }
-                                    }
-                                    break;
-                                case 1374193809:                    // queryIntentActivities
-                                case -1655019925:                   // queryIntentActivityOptions
-                                case 1786110784:                    // queryIntentReceivers
-                                case -109758974:                    // queryIntentServices
-                                case -1530208819:                   // queryIntentContentProviders
-                                    Iterator<ResolveInfo> riIt;
-                                    if (result instanceof List) {
-                                        riIt = ((List) result).iterator();
-                                    } else {
-                                        riIt = ((ParceledListSlice<ResolveInfo>) result).getList()
-                                                .iterator();
-                                    }
-                                    while (riIt.hasNext()) {
-                                        ResolveInfo info = riIt.next();
-                                        if (GlobalConfig.stringEqualBlacklist(
-                                                info.resolvePackageName, type)) {
-                                            LogUtil.w(Const.JAVA_MONITOR_STATE,
-                                                    "hide filter ResolveInfo : %s", info);
-                                            riIt.remove();
-                                            continue;
-                                        }
-                                        if (info.activityInfo != null) {
-                                            if (GlobalConfig.stringEqualBlacklist(
-                                                    info.activityInfo.packageName, type)) {
-                                                LogUtil.w(Const.JAVA_MONITOR_STATE,
-                                                        "hide filter ResolveInfo(ActivityInfo) : %s",
-                                                        info);
-                                                riIt.remove();
-                                                continue;
-                                            }
-                                        }
-                                        if (info.serviceInfo != null) {
-                                            if (GlobalConfig.stringEqualBlacklist(
-                                                    info.serviceInfo.packageName, type)) {
-                                                LogUtil.w(Const.JAVA_MONITOR_STATE,
-                                                        "hide filter ResolveInfo(ServiceInfo) : %s",
-                                                        info);
-                                                riIt.remove();
-                                                continue;
-                                            }
-                                        }
-                                        if (info.providerInfo != null) {
-                                            if (GlobalConfig.stringEqualBlacklist(
-                                                    info.providerInfo.packageName, type)) {
-                                                LogUtil.w(Const.JAVA_MONITOR_STATE,
-                                                        "hide filter ResolveInfo(ProviderInfo) : %s",
-                                                        info);
-                                                riIt.remove();
-                                                continue;
-                                            }
-                                        }
-                                    }
-                                    break;
-                                case 268353758:                     // getPackageInfo
-                                case 268289313:                     // getPackageGids
-                                case -1710913560:                   // getApplicationInfo
-                                case -1280559169:                   // getInstallerPackageName
-                                    if (GlobalConfig.stringEqualBlacklist((String) args[0], type)) {
-                                        result = null;
-                                    }
-                                    break;
-                                case -268426720:                    // getPackageUid
-                                    if (GlobalConfig.stringEqualBlacklist((String) args[0], type)) {
-                                        result = -1;
-                                    }
-                                    break;
-                                case -1039974701:                   // getActivityInfo
-                                case 871155123:                     // getReceiverInfo
-                                case 1725989837:                    // getServiceInfo
-                                case 1207111861:                    // getProviderInfo
-                                case -760840698:                    // getInstrumentationInfo
-                                    ComponentName cn = (ComponentName) args[0];
-                                    if (GlobalConfig.stringEqualBlacklist(cn.getPackageName(),
-                                            type)) {
-                                        result = null;
-                                    }
-                                    break;
-                                case -432049674:                    // getComponentEnabledSetting
-                                    cn = (ComponentName) args[0];
-                                    if (GlobalConfig.stringEqualBlacklist(cn.getPackageName(),
-                                            type)) {
-                                        result = 0;
-                                    }
-                                    break;
-                                case -548994423:                    // getApplicationEnabledSetting
-                                    if (GlobalConfig.stringEqualBlacklist((String) args[0], type)) {
-                                        result = 0;
-                                    }
-                                    break;
-                                case 501009465:                     // getPackageInfoVersioned
-                                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                                        VersionedPackage vp = (VersionedPackage) args[0];
-                                        if (GlobalConfig.stringEqualBlacklist(vp.getPackageName(),
-                                                type)) {
-                                            result = null;
-                                        }
-                                    }
-                                    break;
-                                case 686218487:                     // checkPermission
-                                    if (GlobalConfig.stringEqualBlacklist((String) args[1], type)) {
-                                        result = PackageManager.PERMISSION_DENIED;
-                                    }
-                                    break;
-                                case -1879918258:                   // isPermissionRevokedByPolicy
-                                    if (GlobalConfig.stringEqualBlacklist((String) args[1], type)) {
-                                        result = false;
-                                    }
-                                    break;
-                                case -1221197494:                   // isInstantApp
-                                    if (GlobalConfig.stringEqualBlacklist((String) args[0], type)) {
-                                        result = false;
-                                    }
-                                    break;
-                                case -2108206142:                   // getPermissionFlags
-                                    if (GlobalConfig.stringEqualBlacklist((String) args[1], type)) {
-                                        result = 0;
-                                    }
-                                    break;
-                                case -923564278:                    // getPackagesForUid
-                                    String[] pkgs = (String[]) result;
-                                    List<String> list = new ArrayList<>(pkgs.length);
-                                    boolean change = false;
-                                    for (String pkg : pkgs) {
-                                        if (GlobalConfig.stringEqualBlacklist(pkg, type)) {
-                                            change = true;
-                                        } else {
-                                            list.add(pkg);
-                                        }
-                                    }
-                                    if (change) {
-                                        result =
-                                                list.isEmpty() ? null : list.toArray(new String[0]);
-                                    }
-                                    break;
-                                case -564624472:                        // resolveIntent
-                                case -297395415:                        // resolveService
-                                    ResolveInfo ri = (ResolveInfo) result;
-                                    if (GlobalConfig.stringEqualBlacklist(ri.resolvePackageName,
-                                            type)) {
-                                        result = null;
-                                    }
-                                    break;
-                                case 1326102014:                        // resolveContentProvider
-                                    ProviderInfo pi = (ProviderInfo) result;
-                                    if (GlobalConfig.stringEqualBlacklist(pi.packageName, type)) {
-                                        result = null;
-                                    }
-                                    break;
-                                default:
-                                    break;
-                            }
-                        } catch (Throwable e) {
-                            LogUtil.e(TAG, "resolve data error", e);
-                        }
+                    if (GlobalConfig.isEmptyBlacklist(DataModelType.PACKAGE_HIDE)
+                            || result == null) {
                         return result;
                     }
-                }.set(oldPm));
+                    try {
+                        switch (method.getName().hashCode()) {
+                            case -150905391:        // getInstalledPackages
+                                PmFilterUtil.filterQueryPackage(result, type);
+                                break;
+                            case -232294012:        // getPackagesHoldingPermissions
+                                PmFilterUtil.filterQueryPackage(result, type);
+                                break;
+                            case 1700882705:            // queryContentProviders
+                            case 964371846:             // queryInstrumentation
+                            case 1600494599:            // getInstalledApplications
+                                Iterator<PackageItemInfo> piiIt = (Iterator<PackageItemInfo>) ((ParceledListSlice<?>) result).getList()
+                                        .iterator();
+                                while (piiIt.hasNext()) {
+                                    PackageItemInfo info = piiIt.next();
+                                    if (GlobalConfig.stringEqualBlacklist(info.packageName, type)) {
+                                        LogUtil.w(Const.JAVA_MONITOR_STATE, "hide filter %s : %s",
+                                                info.getClass(), info);
+                                        piiIt.remove();
+                                    }
+                                }
+                                break;
+                            case 1374193809:                    // queryIntentActivities
+                                PmFilterUtil.filterQueryIntent(result, type);
+                                break;
+                            case -1655019925:                   // queryIntentActivityOptions
+                                PmFilterUtil.filterQueryIntent(result, type);
+                                break;
+                            case 1786110784:                    // queryIntentReceivers
+                                PmFilterUtil.filterQueryIntent(result, type);
+                                break;
+                            case -109758974:                    // queryIntentServices
+                                PmFilterUtil.filterQueryIntent(result, type);
+                                break;
+                            case -1530208819:                   // queryIntentContentProviders
+                                PmFilterUtil.filterQueryIntent(result, type);
+                                break;
+                            case 268353758:                     // getPackageInfo
+                                PackageInfo info = (PackageInfo) result;
+                                info.applicationInfo.sourceDir = null;
+                                break;
+                            case 268289313:                     // getPackageGids
+                            case -1710913560:                   // getApplicationInfo
+                            case -1280559169:                   // getInstallerPackageName
+                                if (GlobalConfig.stringEqualBlacklist((String) args[0], type)) {
+                                    result = null;
+                                }
+                                break;
+                            case -268426720:                    // getPackageUid
+                                if (GlobalConfig.stringEqualBlacklist((String) args[0], type)) {
+                                    result = -1;
+                                }
+                                break;
+                            case -1039974701:                   // getActivityInfo
+                            case 871155123:                     // getReceiverInfo
+                            case 1725989837:                    // getServiceInfo
+                            case 1207111861:                    // getProviderInfo
+                            case -760840698:                    // getInstrumentationInfo
+                                ComponentName cn = (ComponentName) args[0];
+                                if (GlobalConfig.stringEqualBlacklist(cn.getPackageName(), type)) {
+                                    result = null;
+                                }
+                                break;
+                            case -432049674:                    // getComponentEnabledSetting
+                                cn = (ComponentName) args[0];
+                                if (GlobalConfig.stringEqualBlacklist(cn.getPackageName(), type)) {
+                                    result = 0;
+                                }
+                                break;
+                            case -548994423:                    // getApplicationEnabledSetting
+                                if (GlobalConfig.stringEqualBlacklist((String) args[0], type)) {
+                                    result = 0;
+                                }
+                                break;
+                            case 501009465:                     // getPackageInfoVersioned
+                                VersionedPackage vp = (VersionedPackage) args[0];
+                                if (GlobalConfig.stringEqualBlacklist(vp.getPackageName(), type)) {
+                                    result = null;
+                                }
+                                break;
+                            case 686218487:                     // checkPermission
+                                if (GlobalConfig.stringEqualBlacklist((String) args[1], type)) {
+                                    result = PackageManager.PERMISSION_DENIED;
+                                }
+                                break;
+                            case -1879918258:                   // isPermissionRevokedByPolicy
+                                if (GlobalConfig.stringEqualBlacklist((String) args[1], type)) {
+                                    result = false;
+                                }
+                                break;
+                            case -1221197494:                   // isInstantApp
+                                if (GlobalConfig.stringEqualBlacklist((String) args[0], type)) {
+                                    result = false;
+                                }
+                                break;
+                            case -2108206142:                   // getPermissionFlags
+                                if (GlobalConfig.stringEqualBlacklist((String) args[1], type)) {
+                                    result = 0;
+                                }
+                                break;
+                            case -923564278:                    // getPackagesForUid
+                                String[] pkgs = (String[]) result;
+                                List<String> list = new ArrayList<>(pkgs.length);
+                                boolean change = false;
+                                for (String pkg : pkgs) {
+                                    if (GlobalConfig.stringEqualBlacklist(pkg, type)) {
+                                        change = true;
+                                    } else {
+                                        list.add(pkg);
+                                    }
+                                }
+                                if (change) {
+                                    result = list.isEmpty() ? null : list.toArray(new String[0]);
+                                }
+                                break;
+                            case -564624472:                        // resolveIntent
+                            case -297395415:                        // resolveService
+                                ResolveInfo ri = (ResolveInfo) result;
+                                if (GlobalConfig.stringEqualBlacklist(ri.resolvePackageName,
+                                        type)) {
+                                    result = null;
+                                }
+                                break;
+                            case 1326102014:                        // resolveContentProvider
+                                ProviderInfo pi = (ProviderInfo) result;
+                                if (GlobalConfig.stringEqualBlacklist(pi.packageName, type)) {
+                                    result = null;
+                                }
+                                break;
+                            default:
+                                break;
+                        }
+                    } catch (Throwable e) {
+                        LogUtil.e(TAG, "resolve data error", e);
+                    }
+                    return result;
+                }));
         ReflectUtil.setField("android.app.ActivityThread", null, "sPackageManager", newPm);
     }
 
@@ -277,34 +227,17 @@ public class HookSystemComponent implements IHook {
             //获取的Singleton<IActivityManager>成员
             //获取Singleton<IActivityManager> gDefault的真实对象
             Object gDefault;
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                gDefault = ReflectUtil.getFieldStatic("android.app.ActivityManager",
-                        "IActivityManagerSingleton");
-            } else {
-                gDefault = ReflectUtil.getFieldStatic("android.app.ActivityManagerNative",
-                        "gDefault");
-            }
+            gDefault = ReflectUtil.getFieldStatic("android.app.ActivityManager",
+                    "IActivityManagerSingleton");
             //gDefault关联Singleton，所以mInstance就是IActivityManager的实例
             final Object iam = ReflectUtil.invoke("android.util.Singleton", gDefault, "get");
             Class<?> iActivityManagerInterface = Class.forName("android.app.IActivityManager");
             Object proxy = Proxy.newProxyInstance(iActivityManagerInterface.getClassLoader(),
-                    new Class[]{iActivityManagerInterface}, new InvocationHandler() {
-                        private Object orig;
-
-                        public InvocationHandler set(Object orig) {
-                            this.orig = orig;
-                            return this;
-                        }
-
-                        @Override
-                        public Object invoke(Object proxy, Method method, Object[] args)
-                                throws Throwable {
-                            LogUtil.v(TAG, "hooked am method: %s", method);
-
-                            Object result = method.invoke(orig, args);
-                            if (result == null) {
-                                return result;
-                            }
+                    new Class[]{iActivityManagerInterface},
+                    ((InvocationHandler) (proxy1, method, args) -> {
+                        LogUtil.v(TAG, "hooked am method: %s", method);
+                        Object result = method.invoke(iam, args);
+                        if (result != null) {
                             try {
                                 switch (method.getName()) {
                                     case "getServices":     // getRunningServices
@@ -358,9 +291,9 @@ public class HookSystemComponent implements IHook {
                             } catch (Throwable e) {
                                 LogUtil.e(TAG, "resolve IActivityManager data error", e);
                             }
-                            return result;
                         }
-                    }.set(iam));
+                        return result;
+                    }));
             ReflectUtil.setField("android.util.Singleton", gDefault, "mInstance", proxy);
         } catch (Exception e) {
             LogUtil.e(TAG, "hookActivityManager: exception", e);
@@ -383,48 +316,32 @@ public class HookSystemComponent implements IHook {
             Class<?> iActivityTaskManagerInterface = Class.forName(
                     "android.app.IActivityTaskManager");
             Object proxy = Proxy.newProxyInstance(iActivityTaskManagerInterface.getClassLoader(),
-                    new Class[]{iActivityTaskManagerInterface}, new InvocationHandler() {
-                        private Object orig;
-
-                        public InvocationHandler set(Object orig) {
-                            this.orig = orig;
-                            return this;
-                        }
-
-                        @Override
-                        public Object invoke(Object proxy, Method method, Object[] args)
-                                throws Throwable {
-                            LogUtil.v(TAG, "hooked atm method: %s", method);
-                            Object result = method.invoke(orig, args);
-                            if (result == null) {
-                                return result;
-                            }
+                    new Class[]{iActivityTaskManagerInterface}, (proxy1, method, args) -> {
+                        LogUtil.v(TAG, "hooked atm method: %s", method);
+                        Object result = method.invoke(iatm, args);
+                        if (result != null) {
                             try {
-                                switch (method.getName()) {
-                                    case "getTasks":    // sdk > 28
-                                        Iterator<ActivityManager.RunningTaskInfo> rtIt = ((List<ActivityManager.RunningTaskInfo>) result).iterator();
-                                        while (rtIt.hasNext()) {
-                                            String tempBaseActivity = rtIt.next().baseActivity.flattenToString();
-                                            if (tempBaseActivity != null
-                                                    && GlobalConfig.stringContainBlackList(
-                                                    tempBaseActivity,
-                                                    DataModelType.COMPONENT_KEY_HIDE)) {
-                                                rtIt.remove();
-                                                LogUtil.w(Const.JAVA_MONITOR_STATE,
-                                                        "hide filter running task: %s",
-                                                        tempBaseActivity);
-                                            }
+                                if ("getTasks".equals(method.getName())) {    // sdk > 28
+                                    Iterator<ActivityManager.RunningTaskInfo> rtIt = ((List<ActivityManager.RunningTaskInfo>) result).iterator();
+                                    while (rtIt.hasNext()) {
+                                        String tempBaseActivity = rtIt.next().baseActivity.flattenToString();
+                                        if (tempBaseActivity != null
+                                                && GlobalConfig.stringContainBlackList(
+                                                tempBaseActivity,
+                                                DataModelType.COMPONENT_KEY_HIDE)) {
+                                            rtIt.remove();
+                                            LogUtil.w(Const.JAVA_MONITOR_STATE,
+                                                    "hide filter running task: %s",
+                                                    tempBaseActivity);
                                         }
-                                        break;
-                                    default:
-                                        break;
+                                    }
                                 }
                             } catch (Throwable e) {
                                 LogUtil.e(TAG, "resolve ActivityTaskManager data error", e);
                             }
-                            return result;
                         }
-                    }.set(iatm));
+                        return result;
+                    });
             ReflectUtil.setField("android.util.Singleton", gDefault, "mInstance", proxy);
         } catch (Throwable e) {
             LogUtil.e(TAG, "replace ActivityTaskManager object failed.", e);

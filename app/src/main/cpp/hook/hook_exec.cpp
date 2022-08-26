@@ -16,7 +16,7 @@ FUN_INTERCEPT HOOK_DEF(int, execve, const char *filename, char *const argv[], ch
     LOGMV("cmd %s ", filename);
     int i = 0;
     while (argv[i] != nullptr) {
-        LOGMV("arg %d: %s ", i, filename);
+        LOGMV("cmd arg %d: %s ", i, filename);
         i++;
     }
     IS_BLACKLIST_FILE(filename);

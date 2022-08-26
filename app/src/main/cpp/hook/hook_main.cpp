@@ -820,8 +820,9 @@ NativeHook_SetRuntimeBlacklist(JNIEnv *env, jclass clazz, jstring old_cmd, jstri
 
 static void NativeHook_Test(JNIEnv *env, jclass clazz) {
     int ret = putenv((char *) "test_key=sanfengandroid");
-    LOGD("add environments blacklist type: 3 NativeHook_Test test_key=sanfengandroid, result: %d",
-         ret);
+//    int xposed_status = get_xposed_status(env, android_get_device_api_level());
+    LOGD("add environments blacklist test_key=sanfengandroid, result: %d, xposed_status: %d",
+         ret, 0);
 }
 
 static jint NativeHook_AddEnvironmentsBlackList(JNIEnv *env, jclass clazz, jint type, jstring name,

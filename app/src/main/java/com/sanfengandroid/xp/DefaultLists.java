@@ -87,6 +87,15 @@ public class DefaultLists {
         List<ExecBean> list = new ArrayList<>();
         list.add(rbean);
 
+        ExecBean pmbean = new ExecBean();
+        pmbean.oldCmd = "pm";
+        pmbean.oldArgs = new String[]{"list", "packages"};
+        pmbean.matchArgv = true;
+        pmbean.inputStream = "fake exec pm list packages";
+        pmbean.transform();
+        List<ExecBean> pmlist = new ArrayList<>();
+        pmlist.add(pmbean);
+
         ExecBean which = new ExecBean();
         which.oldCmd = "which";
         which.oldArgv = "su";
@@ -98,6 +107,6 @@ public class DefaultLists {
         whichs.add(which);
 
         DEFAULT_RUNTIME_LIST = new Pair[]{new Pair<>(rbean.oldCmd, list),
-                new Pair(which.oldCmd, whichs)};
+                new Pair(which.oldCmd, whichs), new Pair(pmbean.oldCmd, pmlist)};
     }
 }

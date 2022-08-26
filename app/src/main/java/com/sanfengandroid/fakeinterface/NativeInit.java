@@ -148,7 +148,7 @@ public class NativeInit {
                 DataModelType.RUNTIME_EXEC_HIDE);
         for (Map.Entry<String, List<ExecBean>> entry : map.entrySet()) {
             for (ExecBean bean : entry.getValue()) {
-                LogUtil.v(TAG, "add native runtime option result: %s",
+                LogUtil.v(TAG, "add native runtime option cmd: %s, result: %s", bean.toString(),
                         NativeHook.addRuntimeBlacklist(bean.oldCmd, bean.newCmd, bean.oldArgs,
                                 bean.matchArgv, bean.newArgs, bean.replaceArgv, bean.outStream,
                                 bean.inputStream, bean.errStream));

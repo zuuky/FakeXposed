@@ -195,7 +195,7 @@ public class LogUtil {
         return format;
     }
 
-    private static boolean isPrimitive(Class clz) {
+    public static boolean isPrimitive(Class clz) {
         try {
             return clz.isPrimitive() || ((Class) clz.getField("TYPE").get(null)).isPrimitive();
         } catch (Exception e) {
