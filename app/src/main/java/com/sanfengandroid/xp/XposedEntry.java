@@ -21,7 +21,6 @@ import android.annotation.SuppressLint;
 import android.app.ActivityThread;
 import android.content.Context;
 import android.content.ContextParams;
-import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.os.Build;
 import android.util.Log;
@@ -30,7 +29,6 @@ import com.sanfengandroid.common.util.LogUtil;
 import com.sanfengandroid.datafilter.BuildConfig;
 import com.sanfengandroid.datafilter.NativeTestActivity;
 import com.sanfengandroid.datafilter.SPProvider;
-import com.sanfengandroid.fakeinterface.GlobalConfig;
 import com.sanfengandroid.fakeinterface.NativeHook;
 import com.sanfengandroid.fakeinterface.NativeInit;
 import com.sanfengandroid.xp.hooks.XposedFilter;
@@ -87,22 +85,22 @@ public class XposedEntry implements IXposedHookLoadPackage {
             Context contextImpl = createAppContext(lpparam.appInfo);
             XpConfigAgent.setDataMode(XpDataMode.X_SP);
             NativeHook.initLibraryPath(contextImpl, lpparam.appInfo.targetSdkVersion);
+            NativeHook.initFakeLinker(contextImpl.getCacheDir().getAbsolutePath(),
+                    lpparam.processName);
             if (BuildConfig.APPLICATION_ID.equals(lpparam.packageName)
                     || BuildConfig.APPLICATION_ID.equals(lpparam.processName)) {
                 hookSelf(lpparam.classLoader);
                 // 自身获取 xps 模式
                 XpConfigAgent.setProcessMode(ProcessMode.SELF);
-                SPProvider.testSpActive(contextImpl);
-                // 模拟测试数据
                 NativeTestActivity.initTestData(contextImpl);
             } else {
                 XpConfigAgent.setProcessMode(ProcessMode.HOOK_APP);
-                SPProvider.testSpActive(contextImpl);
-                GlobalConfig.removeThis(lpparam.packageName);
+                //GlobalConfig.removeThis(lpparam.packageName);
             }
-            NativeInit.initNative(contextImpl, lpparam.processName);
+            NativeInit.nativeSync();
             new XposedFilter().hook(lpparam.classLoader);
             NativeInit.startNative();
+            SPProvider.testSpActive(contextImpl);
             hasHook = true;
         } catch (Throwable e) {
             LogUtil.e(TAG, "Hook error", e);

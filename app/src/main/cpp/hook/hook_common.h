@@ -87,7 +87,7 @@ public:
     std::map<std::string, int> file_path_blacklist;
     std::map<std::string, int> symbol_blacklist;
     std::map<std::string, std::string> properties;
-    std::map<std::string, std::pair<std::string, std::string>> environments;
+    std::map<std::string, std::string> environments;
     std::map<std::string, std::string> load_class_blacklist;
     std::map<std::string, std::string> static_class_blacklist;
     int pid;

@@ -5,13 +5,12 @@
 #include "hook_env.h"
 
 FUN_INTERCEPT HOOK_DEF(char*, getenv, const char *name) {
-    LOGMV("Monitor: getenv name: %s", name);
     char *value = get_orig_getenv()(name);
-    LOGMV("Monitor: getenv value: %s", value);
-
+    LOGMV("Monitor: getenv name: %s, value: %s", name, value);
     if (value == nullptr) {
         return value;
     }
     char *result = FXHandler::EnvironmentReplace(name, value);
+    LOGMV("Monitor: getenv name: %s, value: %s, replaced value: %s", name, value, result);
     return result == nullptr ? value : result;
 }

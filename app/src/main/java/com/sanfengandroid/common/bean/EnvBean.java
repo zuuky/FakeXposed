@@ -28,23 +28,27 @@ import java.util.Objects;
 
 public class EnvBean {
     public String name;
+    // 环境变量的值 (新增)
+    public String value;
+    // 环境变量需要被去掉的关键字集合
     public List<String> regions = Collections.EMPTY_LIST;
 
     public EnvBean(String name) {
         this.name = name;
     }
 
-    public EnvBean(String name, String region) {
+    public EnvBean(String name, String value, String region) {
         this.name = name;
+        this.value = value;
         regions = new ArrayList<>(1);
         regions.add(region);
     }
 
-    @NonNull
-    @Override
-    public String toString() {
-        return regions != null ? regions.toString().substring(1, regions.toString().length() - 2)
-                               : "null";
+
+    public EnvBean(String name, String region) {
+        this.name = name;
+        regions = new ArrayList<>(1);
+        regions.add(region);
     }
 
     public EnvBean(String name, List<String> regions) {

@@ -85,7 +85,9 @@ enum Option {
 // 可以使用库名称指定查找
 void *FXHandler::FindLibcSymbolRealAddress(const char *name) {
     int error_code;
-    void *result = remote->CallSoinfoFunction(kSFCallDlsym, kSPOriginal, FXHandler::Get()->libc_soinfo, kSPSymbol, name, &error_code);
+    void *result = remote->CallSoinfoFunction(kSFCallDlsym, kSPOriginal,
+                                              FXHandler::Get()->libc_soinfo, kSPSymbol, name,
+                                              &error_code);
     if (error_code == kErrorNo) {
         return result;
     } else {
@@ -105,14 +107,18 @@ char **FXHandler::GetEnviron() {
 
 static void InitPreFunction() {
     int error_code;
-    FXHandler::Get()->libc_handle = remote->CallSoinfoFunction(kSFGetHandle, kSPName, "libc.so", kSPNull, nullptr, &error_code);
+    FXHandler::Get()->libc_handle = remote->CallSoinfoFunction(kSFGetHandle, kSPName, "libc.so",
+                                                               kSPNull, nullptr, &error_code);
     CHECK(FXHandler::Get()->libc_handle);
-    FXHandler::Get()->libc_soinfo = remote->CallSoinfoFunction(kSFInquire, kSPName, "libc.so", kSPNull, nullptr, &error_code);
+    FXHandler::Get()->libc_soinfo = remote->CallSoinfoFunction(kSFInquire, kSPName, "libc.so",
+                                                               kSPNull, nullptr, &error_code);
     CHECK(FXHandler::Get()->libc_soinfo);
-    FXHandler::Get()->self_soinfo = remote->CallSoinfoFunction(kSFInquire, kSPAddress, nullptr, kSPNull, nullptr, &error_code);
+    FXHandler::Get()->self_soinfo = remote->CallSoinfoFunction(kSFInquire, kSPAddress, nullptr,
+                                                               kSPNull, nullptr, &error_code);
     CHECK(FXHandler::Get()->self_soinfo);
 
-    LOGD("libc handle: %p, libc soinfo: %p, self soinfo: %p", FXHandler::Get()->libc_handle, FXHandler::Get()->libc_soinfo, FXHandler::Get()->self_soinfo);
+    LOGD("libc handle: %p, libc soinfo: %p, self soinfo: %p", FXHandler::Get()->libc_handle,
+         FXHandler::Get()->libc_soinfo, FXHandler::Get()->self_soinfo);
 
 }
 
@@ -160,7 +166,8 @@ static inline const char *FindStringOption(const char *name) {
     return nullptr;
 }
 
-static inline void ModifyIntMap(std::map<std::string, int> *map, const char *name, int value, bool add) {
+static inline void
+ModifyIntMap(std::map<std::string, int> *map, const char *name, int value, bool add) {
     if (add) {
         if (map == &FXHandler::Get()->file_blacklist && name[0] == '/') {
             FXHandler::Get()->file_path_blacklist[name] = value;
@@ -183,7 +190,9 @@ static inline void ModifyIntMap(std::map<std::string, int> *map, const char *nam
 
 }
 
-static inline void ModifyStringMap(std::map<std::string, std::string> *map, const char *name, const char *value, bool add) {
+static inline void
+ModifyStringMap(std::map<std::string, std::string> *map, const char *name, const char *value,
+                bool add) {
     if (add) {
         (*map)[name] = value;
         return;
@@ -228,12 +237,18 @@ char *FXHandler::EnvironmentReplace(const char *name, char *value) {
     if (env != nullptr) {
         ScopedLocalRef<jstring> _name(env, env->NewStringUTF(name));
         ScopedLocalRef<jstring> _value(env, env->NewStringUTF(value));
-        ScopedUtfChars result(env, reinterpret_cast<jstring>(env->CallStaticObjectMethod(java.nativeCall, java.replaceEnv, _name.get(), _value.get())), false);
+        ScopedUtfChars result(env,
+                              reinterpret_cast<jstring>(env->CallStaticObjectMethod(java.nativeCall,
+                                                                                    java.replaceEnv,
+                                                                                    _name.get(),
+                                                                                    _value.get())),
+                              false);
         // 这里由于jstring马上要被清理，因此必须复制字符串,这里缓存起来方便下次查找，避免造成内存泄露
         // 同时也会导致环境变量无法更新，但通常情况下环境变量是不会变的
         if (result.c_str() != nullptr) {
             char *copy = strdup(result.c_str());
-            LOGD("cache replace environment name: %s orig value: %s, replace value: %s", name, value, copy);
+            LOGD("cache replace environment name: %s orig value: %s, replace value: %s", name,
+                 value, copy);
             replace_env[name] = copy;
             return copy;
         }
@@ -261,7 +276,8 @@ bool FXHandler::PropertyIsBlacklisted(const char *name) {
 const char *FXHandler::PropertyReplace(const char *name, const char *value) {
     auto found = Get()->properties.find(name);
     if (found != Get()->properties.end() && !found->second.empty()) {
-        LOGD("found filter property name: %s, old value: %s, new value: %s", name, value, found->second.c_str());
+        LOGD("found filter property name: %s, old value: %s, new value: %s", name, value,
+             found->second.c_str());
         return found->second.c_str();
     }
     return nullptr;
@@ -271,7 +287,9 @@ FXHandler *FXHandler::Get() {
     return instance_;
 }
 
-bool FXHandler::RuntimeReplaceCommandArgv(RuntimeBean *bean, const char **new_command, const char **new_argv, jsize *block_size, jsize *new_argc) {
+bool FXHandler::RuntimeReplaceCommandArgv(RuntimeBean *bean, const char **new_command,
+                                          const char **new_argv, jsize *block_size,
+                                          jsize *new_argc) {
     bool result = false;
     if (bean->replace_command) {
         *new_command = bean->new_command.c_str();
@@ -361,7 +379,7 @@ RuntimeBean *FXHandler::FindRuntimeBean(const char *cmd, const char **argv, int 
     if (iter == instance_->runtime_blacklist.end()) {
         return nullptr;
     }
-    for (RuntimeBean &bean : iter->second) {
+    for (RuntimeBean &bean: iter->second) {
         if (!bean.match_parameter) {
             return &bean;
         }
@@ -390,7 +408,8 @@ std::vector<RuntimeBean> &FXHandler::GetRuntimeCmd(const char *cmd) {
 static int InitHook() {
     int error_code;
 
-    remote->CallCommonFunction(kCFAddSoinfoToGlobal, kSPAddress, nullptr, kSPNull, nullptr, &error_code);
+    remote->CallCommonFunction(kCFAddSoinfoToGlobal, kSPAddress, nullptr, kSPNull, nullptr,
+                               &error_code);
     if (error_code != kErrorNo) {
         LOGE("init global soinfo error, error code: %x", error_code);
         return error_code;
@@ -405,19 +424,37 @@ static int InitHook() {
     };
 
     if (find_value(kHFJavaExecvp) == kOOpen) {
-        VarLengthObject<const char *> *libs = VaArgsToVarLengthObject<const char *>(9, "libjavacore.so", "libnativehelper.so", "libnativeloader.so",
-                                                                                    "libart.so", "libopenjdk.so", "libopenjdkjvm.so",
-                                                                                    "libandroid_runtime.so", "libcutils.so", "libbase.so");
-        remote->CallCommonFunction(kCFCallManualRelinks, kSPAddress, nullptr, kSPNames, libs, &error_code);
+        VarLengthObject<const char *> *libs = VaArgsToVarLengthObject<const char *>(9,
+                                                                                    "libjavacore.so",
+                                                                                    "libnativehelper.so",
+                                                                                    "libnativeloader.so",
+                                                                                    "libart.so",
+                                                                                    "libopenjdk.so",
+                                                                                    "libopenjdkjvm.so",
+                                                                                    "libandroid_runtime.so",
+                                                                                    "libcutils.so",
+                                                                                    "libbase.so");
+        remote->CallCommonFunction(kCFCallManualRelinks, kSPAddress, nullptr, kSPNames, libs,
+                                   &error_code);
     } else {
-        VarLengthObject<const char *> *libs = VaArgsToVarLengthObject<const char *>(8, "libjavacore.so", "libnativehelper.so", "libnativeloader.so",
-                                                                                    "libart.so", "libopenjdkjvm.so", "libandroid_runtime.so",
-                                                                                    "libcutils.so", "libbase.so");
-        remote->CallCommonFunction(kCFCallManualRelinks, kSPAddress, nullptr, kSPNames, libs, &error_code);
+        VarLengthObject<const char *> *libs = VaArgsToVarLengthObject<const char *>(8,
+                                                                                    "libjavacore.so",
+                                                                                    "libnativehelper.so",
+                                                                                    "libnativeloader.so",
+                                                                                    "libart.so",
+                                                                                    "libopenjdkjvm.so",
+                                                                                    "libandroid_runtime.so",
+                                                                                    "libcutils.so",
+                                                                                    "libbase.so");
+        remote->CallCommonFunction(kCFCallManualRelinks, kSPAddress, nullptr, kSPNames, libs,
+                                   &error_code);
 
-        remote->CallCommonFunction(kCFAddRelinkFilterSymbol, kSPSymbol, "execvp", kSPNull, nullptr, &error_code);
-        remote->CallCommonFunction(kCFCallManualRelink, kSPAddress, nullptr, kSPName, "libopenjdk.so", &error_code);
-        remote->CallCommonFunction(kCFRemoveRelinkFilterSymbol, kSPSymbol, "execvp", kSPNull, nullptr, &error_code);
+        remote->CallCommonFunction(kCFAddRelinkFilterSymbol, kSPSymbol, "execvp", kSPNull, nullptr,
+                                   &error_code);
+        remote->CallCommonFunction(kCFCallManualRelink, kSPAddress, nullptr, kSPName,
+                                   "libopenjdk.so", &error_code);
+        remote->CallCommonFunction(kCFRemoveRelinkFilterSymbol, kSPSymbol, "execvp", kSPNull,
+                                   nullptr, &error_code);
     }
     LOGD("call manual relink library");
     char **env = FXHandler::GetEnviron();
@@ -449,9 +486,11 @@ static int ModifyHookOption(const char *name, int int_value, const char *string_
         return kEJNo;
     }
     if (index == kHFRelinkSymbolFilter) {
-        remote->CallCommonFunction(kCFAddRelinkFilterSymbol, kSPSymbol, string_value, kSPNull, nullptr, &error_code);
+        remote->CallCommonFunction(kCFAddRelinkFilterSymbol, kSPSymbol, string_value, kSPNull,
+                                   nullptr, &error_code);
         if (error_code != kErrorNo) {
-            LOGE("add global relink filter symbol failed, symbol name: %s, error code: %d", string_value, error_code);
+            LOGE("add global relink filter symbol failed, symbol name: %s, error code: %d",
+                 string_value, error_code);
         } else {
             LOGD("add global relink filter symbol success, symbol name: %s", string_value);
         }
@@ -463,7 +502,7 @@ static int ModifyHookOption(const char *name, int int_value, const char *string_
 }
 
 static int get_api_level() {
-    char value[92] = { 0 };
+    char value[92] = {0};
     if (__system_property_get("ro.build.version.sdk", value) < 1) return -1;
     int api_level = atoi(value);
     return (api_level > 0) ? api_level : -1;
@@ -478,11 +517,17 @@ static void InitHookConfig() {
     FXHandler::Get()->api = get_api_level();
     IoRedirect::SetPid(FXHandler::Get()->pid);
     int error_code;
-    const char *fake_name = static_cast<const char *>(remote->CallSoinfoFunction(kSFGetName, kSPOriginal, FXHandler::Get()->fake_linker_soinfo, kSPNull, nullptr, &error_code));
+    const char *fake_name = static_cast<const char *>(remote->CallSoinfoFunction(kSFGetName,
+                                                                                 kSPOriginal,
+                                                                                 FXHandler::Get()->fake_linker_soinfo,
+                                                                                 kSPNull, nullptr,
+                                                                                 &error_code));
     if (error_code == kErrorNo) {
         FXHandler::Get()->maps_rules[fake_name] = kMapsRemove;
     }
-    fake_name = static_cast<const char *>(remote->CallSoinfoFunction(kSFGetName, kSPAddress, nullptr, kSPNull, nullptr, &error_code));
+    fake_name = static_cast<const char *>(remote->CallSoinfoFunction(kSFGetName, kSPAddress,
+                                                                     nullptr, kSPNull, nullptr,
+                                                                     &error_code));
     if (error_code == kErrorNo) {
         FXHandler::Get()->maps_rules[fake_name] = kMapsRemove;
     }
@@ -492,7 +537,9 @@ static void InitHookConfig() {
     hook_init = true;
 }
 
-static jint NativeHook_AddIntBlackList(JNIEnv *env, jclass clazz, jint type, jstring name, jint value, jboolean add) {
+static jint
+NativeHook_AddIntBlackList(JNIEnv *env, jclass clazz, jint type, jstring name, jint value,
+                           jboolean add) {
     if (name == nullptr) {
         return kEJParameterNull;
     }
@@ -513,10 +560,12 @@ static jint NativeHook_AddIntBlackList(JNIEnv *env, jclass clazz, jint type, jst
             return kEJParameterType;
     }
     ModifyIntMap(_map, _name.c_str(), value, add);
+    LOGD("add int blacklist type: %d, name: %s, value: %d", type, _name.c_str(), value);
     return kEJNo;
 }
 
-static jint NativeHook_AddIntBlackLists(JNIEnv *env, jclass clazz, jint type, jobjectArray _names, jintArray _values, jboolean add) {
+static jint NativeHook_AddIntBlackLists(JNIEnv *env, jclass clazz, jint type, jobjectArray _names,
+                                        jintArray _values, jboolean add) {
     jsize len = env->GetArrayLength(_names);
     jint *values = add ? env->GetIntArrayElements(_values, nullptr) : nullptr;
     if (add && values == nullptr) {
@@ -545,10 +594,13 @@ static jint NativeHook_AddIntBlackLists(JNIEnv *env, jclass clazz, jint type, jo
     if (add) {
         env->ReleaseIntArrayElements(_values, values, 0);
     }
+    LOGD("add int blacklists type: %d", type);
     return kEJNo;
 }
 
-static jint NativeHook_AddStringBlackList(JNIEnv *env, jclass clazz, jint type, jstring name, jstring value, jboolean add) {
+static jint
+NativeHook_AddStringBlackList(JNIEnv *env, jclass clazz, jint type, jstring name, jstring value,
+                              jboolean add) {
     ScopedUtfChars _name(env, name);
     ScopedUtfChars _value(env, value, false);
     std::map<std::string, std::string> *_map;
@@ -622,8 +674,6 @@ static void NativeHook_ClearAll(JNIEnv *env, jclass clazz) {
     FXHandler::Get()->file_path_blacklist.clear();
     FXHandler::Get()->symbol_blacklist.clear();
     FXHandler::Get()->properties.clear();
-    // maps 规则不清除，包含内置的屏蔽
-//    maps_rules.clear();
 }
 
 static jint NativeHook_OpenJniMonitor(JNIEnv *env, jclass clazz, jboolean open) {
@@ -633,7 +683,8 @@ static jint NativeHook_OpenJniMonitor(JNIEnv *env, jclass clazz, jboolean open) 
     return kErrorNo;
 }
 
-static jint NativeHook_SetJniMonitorLib(JNIEnv *env, jclass clazz, jstring lib, jboolean contain, jboolean add) {
+static jint NativeHook_SetJniMonitorLib(JNIEnv *env, jclass clazz, jstring lib, jboolean contain,
+                                        jboolean add) {
     ScopedUtfChars lib_(env, lib);
     if (add) {
         JNIInterfaceMonitor::Get()->AddLibraryMonitor(lib_.c_str(), contain);
@@ -643,7 +694,9 @@ static jint NativeHook_SetJniMonitorLib(JNIEnv *env, jclass clazz, jstring lib, 
     return kErrorNo;
 }
 
-static jint NativeHook_SetJniMonitorAddress(JNIEnv *env, jclass clazz, jlong start, jlong end, jboolean contain, jboolean add) {
+static jint
+NativeHook_SetJniMonitorAddress(JNIEnv *env, jclass clazz, jlong start, jlong end, jboolean contain,
+                                jboolean add) {
     if (add) {
         JNIInterfaceMonitor::Get()->AddAddressMonitor(start, end, contain);
     } else {
@@ -652,7 +705,9 @@ static jint NativeHook_SetJniMonitorAddress(JNIEnv *env, jclass clazz, jlong sta
     return kErrorNo;
 }
 
-static jboolean NativeHook_SetRedirectFile(JNIEnv *env, jclass clazz, jstring src_, jstring redirect_, jboolean dir) {
+static jboolean
+NativeHook_SetRedirectFile(JNIEnv *env, jclass clazz, jstring src_, jstring redirect_,
+                           jboolean dir) {
     ScopedUtfChars src(env, src_);
     ScopedUtfChars redirect(env, redirect_);
     bool result;
@@ -669,7 +724,9 @@ static void NativeHook_RemoveRedirectFile(JNIEnv *env, jclass clazz, jstring src
     }
 }
 
-static jboolean NativeHook_SetFileAccess(JNIEnv *env, jclass clazz, jstring path_, jint uid_, jint gid_, jint access) {
+static jboolean
+NativeHook_SetFileAccess(JNIEnv *env, jclass clazz, jstring path_, jint uid_, jint gid_,
+                         jint access) {
     ScopedUtfChars path(env, path_);
     return IoRedirect::AddFileAccess(path.c_str(), uid_, gid_, access);
 }
@@ -688,7 +745,8 @@ static jint NativeHook_RelinkSpecialLibrary(JNIEnv *env, jclass clazz, jstring l
     int error_code;
 
     LOGD("Java invoke relink library: %s", lib.c_str());
-    remote->CallCommonFunction(kCFCallManualRelink, kSPAddress, nullptr, kSPName, lib.c_str(), &error_code);
+    remote->CallCommonFunction(kCFCallManualRelink, kSPAddress, nullptr, kSPName, lib.c_str(),
+                               &error_code);
     if (error_code != kErrorNo) {
         LOGE("Relink library failed, library name: %s, error code: %d", lib.c_str(), error_code);
     }
@@ -697,15 +755,18 @@ static jint NativeHook_RelinkSpecialLibrary(JNIEnv *env, jclass clazz, jstring l
 
 static char *VectorToBlock(const std::vector<std::string> &vector, jsize size) {
     char *block = new char[size];
-    for (auto &str : vector) {
+    for (auto &str: vector) {
         memcpy(block, str.c_str(), strlen(str.c_str()) + 1);
     }
     return block;
 }
 
-static jint NativeHook_SetRuntimeBlacklist(JNIEnv *env, jclass clazz, jstring old_cmd, jstring new_cmd, jobjectArray old_argv,
-                                           jboolean match_argv, jobjectArray new_argv, jboolean replace_argv, jstring input,
-                                           jstring output, jstring error) {
+static jint
+NativeHook_SetRuntimeBlacklist(JNIEnv *env, jclass clazz, jstring old_cmd, jstring new_cmd,
+                               jobjectArray old_argv,
+                               jboolean match_argv, jobjectArray new_argv, jboolean replace_argv,
+                               jstring input,
+                               jstring output, jstring error) {
     RuntimeBean bean;
     ScopedUtfChars _old_cmd(env, old_cmd);
     bean.command = _old_cmd.c_str();
@@ -757,19 +818,26 @@ static jint NativeHook_SetRuntimeBlacklist(JNIEnv *env, jclass clazz, jstring ol
     return kErrorNo;
 }
 
-static void NativeHook_Test1(JNIEnv *env, jclass clazz) {
-
-}
-
 static void NativeHook_Test(JNIEnv *env, jclass clazz) {
-    putenv((char *) "test_key=sanfengandroid");
+    int ret = putenv((char *) "test_key=sanfengandroid");
+    LOGD("add environments blacklist type: 3 NativeHook_Test test_key=sanfengandroid, result: %d",
+         ret);
 }
 
-static void NativeHook_Test2(JNIEnv *env, jclass clazz) {
+static jint NativeHook_AddEnvironmentsBlackList(JNIEnv *env, jclass clazz, jint type, jstring name,
+                                                jstring value, jboolean add) {
+    ScopedUtfChars _name(env, name);
+    ScopedUtfChars _value(env, value, true);
 
+    int ret = setenv(_name.c_str(), _value.c_str(), 1);
+    LOGD("add environments blacklist type: %d, name: %s, value: %s, result: %d", type,
+         _name.c_str(), _value.c_str(), ret);
+    return ret;
 }
 
-int JniRegisterNativeMethods(JNIEnv *env, const char *className, const JNINativeMethod *methods, int numMethod) {
+
+int JniRegisterNativeMethods(JNIEnv *env, const char *className, const JNINativeMethod *methods,
+                             int numMethod) {
     LOGD("Registering %s's %d native methods...", className, numMethod);
     jclass clazz = env->FindClass(className);
     if (clazz == nullptr) {
@@ -796,6 +864,8 @@ static JNINativeMethod gMethods[] = {
         NATIVE_METHOD(NativeHook, AddIntBlackList, "(ILjava/lang/String;IZ)I"),
         NATIVE_METHOD(NativeHook, AddIntBlackLists, "(I[Ljava/lang/String;[IZ)I"),
         NATIVE_METHOD(NativeHook, AddStringBlackList, "(ILjava/lang/String;Ljava/lang/String;Z)I"),
+        NATIVE_METHOD(NativeHook, AddEnvironmentsBlackList,
+                      "(ILjava/lang/String;Ljava/lang/String;Z)I"),
         NATIVE_METHOD(NativeHook, SetHookOptionInt, "(Ljava/lang/String;I)I"),
         NATIVE_METHOD(NativeHook, SetHookOptionString, "(Ljava/lang/String;Ljava/lang/String;)I"),
         NATIVE_METHOD(NativeHook, ClearBlackList, "(I)V"),
@@ -812,15 +882,14 @@ static JNINativeMethod gMethods[] = {
         NATIVE_METHOD(NativeHook, SetRuntimeBlacklist,
                       "(Ljava/lang/String;Ljava/lang/String;[Ljava/lang/String;Z[Ljava/lang/String;ZLjava/lang/String;Ljava/lang/String;Ljava/lang/String;)I"),
         NATIVE_METHOD(NativeHook, Test, "()V"),
-        NATIVE_METHOD(NativeHook, Test1, "()V"),
-
 };
 
 void JniRegisterJavaMethods(JNIEnv *env) {
     env->GetJavaVM(&jvm);
     jclass clazz = env->FindClass("com/sanfengandroid/fakeinterface/NativeCall");
     java.nativeCall = reinterpret_cast<jclass>(env->NewGlobalRef(clazz));
-    java.replaceEnv = env->GetStaticMethodID(clazz, "nativeReplaceEnv", "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;");
+    java.replaceEnv = env->GetStaticMethodID(clazz, "nativeReplaceEnv",
+                                             "(Ljava/lang/String;Ljava/lang/String;)Ljava/lang/String;");
 }
 
 /*
@@ -828,7 +897,8 @@ void JniRegisterJavaMethods(JNIEnv *env) {
  * */
 C_API API_PUBLIC
 void
-fake_load_library_init(JNIEnv *env, void *fake_soinfo, const RemoteInvokeInterface *interface, const char *cache_path, const char *config_path, const char *_process_name) {
+fake_load_library_init(JNIEnv *env, void *fake_soinfo, const RemoteInvokeInterface *interface,
+                       const char *cache_path, const char *config_path, const char *_process_name) {
     LOGD("Init Hook module, cache path: %s", cache_path);
     FXHandler::Get()->fake_linker_soinfo = fake_soinfo;
     remote = interface;
@@ -850,7 +920,8 @@ fake_load_library_init(JNIEnv *env, void *fake_soinfo, const RemoteInvokeInterfa
     CHECK(remote->CallNamespaceFunction);
 #endif
 
-    CHECK(JniRegisterNativeMethods(env, "com/sanfengandroid/fakeinterface/NativeHook", gMethods, NELEM(gMethods)) == 0);
+    CHECK(JniRegisterNativeMethods(env, "com/sanfengandroid/fakeinterface/NativeHook", gMethods,
+                                   NELEM(gMethods)) == 0);
     JNIInterfaceMonitor::Init(remote, env);
     JniRegisterJavaMethods(env);
     InitHookConfig();

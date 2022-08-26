@@ -176,7 +176,7 @@ public class LogUtil {
                     if (o == null) {
                         a[i] = "null";
                     } else if (isPrimitive(o.getClass()) || o instanceof Parcelable
-                            || !(o instanceof Serializable)) {
+                            || !(o instanceof Serializable) || o instanceof String) {
                         a[i] = Objects.toString(o);
                     } else {
                         try {
@@ -189,7 +189,8 @@ public class LogUtil {
                 }
                 return String.format(format, a);
             }
-        } catch (Throwable ignored) {
+        } catch (Throwable e) {
+            LogUtil.e("print error: %s", e);
         }
         return format;
     }

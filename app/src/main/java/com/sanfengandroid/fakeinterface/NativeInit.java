@@ -34,15 +34,6 @@ import java.util.Map;
 public class NativeInit {
     private static final String TAG = NativeInit.class.getSimpleName();
 
-    public static void initNative(Context context, String process) {
-        try {
-            NativeHook.initFakeLinker(context.getCacheDir().getAbsolutePath(), process);
-            NativeInit.nativeSync();
-        } catch (Throwable e) {
-            LogUtil.e(TAG, "native init error", e);
-        }
-    }
-
     public static void startNative() {
         LogUtil.v(TAG, "native init result: %s", NativeHook.startNativeHook().code);
     }
@@ -66,15 +57,16 @@ public class NativeInit {
         }
         for (Map.Entry<String, String> entry : GlobalConfig.getMap(DataModelType.FILE_REDIRECT_HIDE,
                 String.class).entrySet()) {
-            LogUtil.v(TAG, "add file redirect path src: %s, dst: %s, result: %s", entry.getKey(),
-                    entry.getValue(), NativeHook.addRedirectFile(entry.getKey(), entry.getValue()));
+            LogUtil.v(TAG, "add native file redirect path src: %s, dst: %s, result: %s",
+                    entry.getKey(), entry.getValue(),
+                    NativeHook.addRedirectFile(entry.getKey(), entry.getValue()));
         }
         for (Map.Entry<String, String> entry : GlobalConfig.getMap(DataModelType.FILE_ACCESS_HIDE,
                 String.class).entrySet()) {
             FileAccessModel model = new FileAccessModel();
             model.setValue(entry.getValue());
             LogUtil.v(TAG,
-                    "add file access control path: %s, uid: %d, gid: %d, access: %s, result: %s",
+                    "add native file access control path: %s, uid: %s, gid: %s, access: %s, result: %s",
                     entry.getKey(), model.getUid(), model.getGid(),
                     Integer.toOctalString(model.getAccess()),
                     NativeHook.setFilePermission(entry.getKey(), model.getUid(), model.getGid(),
@@ -134,9 +126,9 @@ public class NativeInit {
             }
             for (Map.Entry<String, EnvBean> entry : systemEnv.entrySet()) {
                 LogUtil.v(TAG, "add native %s string option name: %s, value: %s, result: %s",
-                        type.name(), entry.getKey(), entry.getValue().toString(),
-                        NativeHook.addBlackList(option, entry.getKey(),
-                                entry.getValue().toString()));
+                        type.name(), entry.getKey(), entry.getValue().value,
+                        NativeHook.addEnvironmentsBlacklist(option, entry.getKey(),
+                                entry.getValue().value));
             }
         } else {
             Map<String, String> map = GlobalConfig.getMap(type, String.class);
@@ -156,11 +148,20 @@ public class NativeInit {
                 DataModelType.RUNTIME_EXEC_HIDE);
         for (Map.Entry<String, List<ExecBean>> entry : map.entrySet()) {
             for (ExecBean bean : entry.getValue()) {
-                LogUtil.v(TAG, "add runtime option result: %s",
+                LogUtil.v(TAG, "add native runtime option result: %s",
                         NativeHook.addRuntimeBlacklist(bean.oldCmd, bean.newCmd, bean.oldArgs,
                                 bean.matchArgv, bean.newArgs, bean.replaceArgv, bean.outStream,
                                 bean.inputStream, bean.errStream));
             }
+        }
+    }
+
+    public static void initNative(Context context, String process) {
+        try {
+            NativeHook.initFakeLinker(context.getCacheDir().getAbsolutePath(), process);
+            NativeInit.nativeSync();
+        } catch (Throwable e) {
+            LogUtil.e(TAG, "native init error", e);
         }
     }
 }

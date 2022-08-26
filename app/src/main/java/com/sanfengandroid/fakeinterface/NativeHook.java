@@ -61,6 +61,9 @@ public final class NativeHook {
     private static native int nativeAddStringBlackList(int type, String name, String value,
             boolean add);
 
+    private static native int nativeAddEnvironmentsBlackList(int type, String name, String value,
+            boolean add);
+
     private static native int nativeSetHookOptionInt(String name, int value);
 
     private static native int nativeSetHookOptionString(String name, String value);
@@ -70,8 +73,6 @@ public final class NativeHook {
     private static native void nativeClearAll();
 
     public static native void nativeTest();
-
-    public static native void nativeTest1();
 
     private static native int nativeStartHook();
 
@@ -169,6 +170,20 @@ public final class NativeHook {
         }
     }
 
+    private static ErrorCode callEnvironmentsBlacklist(NativeOption.NativeStringOption option,
+            String name, String value) {
+        if (option == null || TextUtils.isEmpty(name) || TextUtils.isEmpty(value)) {
+            return ErrorCode.ERROR_JAVA_EXECUTE;
+        }
+        try {
+            return ErrorCode.codeToError(
+                    nativeAddEnvironmentsBlackList(option.ordinal(), name, value, true));
+        } catch (Throwable e) {
+            e.printStackTrace();
+            return ErrorCode.ERROR_JAVA_EXECUTE;
+        }
+    }
+
     private static ErrorCode callStringBlacklist(NativeOption.NativeStringOption option,
             String name, String value, boolean add) {
         if (option == null || TextUtils.isEmpty(name)) {
@@ -206,6 +221,11 @@ public final class NativeHook {
     public static ErrorCode addBlackList(NativeOption.NativeStringOption option, String name,
             String value) {
         return callStringBlacklist(option, name, value, true);
+    }
+
+    public static ErrorCode addEnvironmentsBlacklist(NativeOption.NativeStringOption option,
+            String name, String value) {
+        return callEnvironmentsBlacklist(option, name, value);
     }
 
     public static ErrorCode removeBlackList(NativeOption.NativeIntOption option, String name) {

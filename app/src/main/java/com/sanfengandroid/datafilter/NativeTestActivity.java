@@ -88,7 +88,6 @@ public class NativeTestActivity extends AppCompatActivity implements View.OnClic
                 AsyncTask.execute(() -> {
                     initTestData(this);
                     NativeInit.initNative(this, Util.getProcessName(this));
-                    NativeHook.nativeTest();
                     NativeInit.startNative();
                 });
             } catch (PackageManager.NameNotFoundException e) {
@@ -97,7 +96,6 @@ public class NativeTestActivity extends AppCompatActivity implements View.OnClic
         } else if (id == R.id.btn_load_test) {
             AsyncTask.execute(() -> {
                 initTestData(this);
-                NativeHook.nativeTest();
                 NativeInit.nativeSync();
             });
         } else if (id == R.id.btn_test_maps) {
@@ -127,10 +125,9 @@ public class NativeTestActivity extends AppCompatActivity implements View.OnClic
 
     public static void initTestData(Context context) {
         File cache = context.getCacheDir();
-        LogUtil.v(TAG, "context cacheDir: %s", cache.getAbsolutePath());
         Map<String, EnvBean> envs = GlobalConfig.getMap(DataModelType.SYSTEM_ENV_HIDE,
                 EnvBean.class);
-        EnvBean bean = new EnvBean(TEST_KEY, TEST_RULE);
+        EnvBean bean = new EnvBean(TEST_KEY, TEST_VALUE, TEST_RULE);
         envs.put(bean.name, bean);
         Map<String, String> global = GlobalConfig.getMap(DataModelType.GLOBAL_HIDE, String.class);
         global.put(TEST_KEY, TEST_RIGHT);
