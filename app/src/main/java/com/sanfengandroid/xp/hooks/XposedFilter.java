@@ -36,6 +36,7 @@ public class XposedFilter implements IHook {
         hooks.add(new HookSystemComponent());
         hooks.add(new HookClassLoad());
         hooks.add(new HookNativeMethodChecked());
+        hooks.add(new HookJavaIoClass());
     }
 
     @Override

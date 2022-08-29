@@ -21,6 +21,7 @@ import android.os.Parcelable;
 import android.util.Log;
 
 import com.alibaba.fastjson.JSONObject;
+import com.sanfengandroid.datafilter.BuildConfig;
 
 import java.io.Serializable;
 import java.util.Objects;
@@ -136,33 +137,35 @@ public class LogUtil {
         if (callbacks[level - Log.VERBOSE] != null) {
             callbacks[level - Log.VERBOSE].visit(state, level, tag, str, throwable);
         }
-        String[] ret = splitMsg(str);
-        for (int i = 0; i < ret.length; i++) {
-            String head;
-            if (i == 0) {
-                head = ADD_HEAD ? HEAD + tag : tag;
-            } else {
-                head = ADD_HEAD ? HEAD + tag + i : tag + i;
-                throwable = null;
-            }
-            switch (level) {
-                case Log.VERBOSE:
-                    Log.v(head, ret[i], throwable);
-                    break;
-                case Log.DEBUG:
-                    Log.d(head, ret[i], throwable);
-                    break;
-                case Log.INFO:
-                    Log.i(head, ret[i], throwable);
-                    break;
-                case Log.WARN:
-                    Log.w(head, ret[i], throwable);
-                    break;
-                case Log.ERROR:
-                    Log.e(head, ret[i], throwable);
-                    break;
-                default:
-                    break;
+        if (BuildConfig.DEBUG) {
+            String[] ret = splitMsg(str);
+            for (int i = 0; i < ret.length; i++) {
+                String head;
+                if (i == 0) {
+                    head = ADD_HEAD ? HEAD + tag : tag;
+                } else {
+                    head = ADD_HEAD ? HEAD + tag + i : tag + i;
+                    throwable = null;
+                }
+                switch (level) {
+                    case Log.VERBOSE:
+                        Log.v(head, ret[i], throwable);
+                        break;
+                    case Log.DEBUG:
+                        Log.d(head, ret[i], throwable);
+                        break;
+                    case Log.INFO:
+                        Log.i(head, ret[i], throwable);
+                        break;
+                    case Log.WARN:
+                        Log.w(head, ret[i], throwable);
+                        break;
+                    case Log.ERROR:
+                        Log.e(head, ret[i], throwable);
+                        break;
+                    default:
+                        break;
+                }
             }
         }
     }

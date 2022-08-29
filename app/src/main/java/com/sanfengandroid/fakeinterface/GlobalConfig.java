@@ -23,7 +23,6 @@ import android.util.Pair;
 
 import com.sanfengandroid.common.bean.EnvBean;
 import com.sanfengandroid.common.bean.ExecBean;
-import com.sanfengandroid.common.model.PackageModel;
 import com.sanfengandroid.common.model.RuntimeExecModel;
 import com.sanfengandroid.common.model.StringModel;
 import com.sanfengandroid.common.model.SystemEnvironmentModel;
@@ -74,6 +73,17 @@ public class GlobalConfig {
     private static final Map<String, String> fileAccessList = new HashMap<>();
 
     static {
+        for (final String s : DefaultLists.COMMON_KEYWORD_LIST) {
+            classBlacklist.put(s, s);
+            stackClassBlacklist.put(s, s);
+            packageBlacklist.put(s, s);
+            propBlacklist.put(s, "");
+            globalPropertyBlacklist.put(s, s);
+            componentKeyBlacklist.put(s, s);
+            fileBlacklist.put(s, s);
+            symbolBlacklist.put(s, s);
+            mapsBlacklist.put(s, MapsMode.MM_REMOVE.key);
+        }
         // 反射类过滤
         for (String s : DefaultLists.DEFAULT_CLASS_LIST) {
             classBlacklist.put(s, s);
@@ -83,14 +93,8 @@ public class GlobalConfig {
             stackClassBlacklist.put(s, s);
         }
         // 安装包过滤
-        packageBlacklist.put(PackageModel.XPOSED_PACKAGE_MASK, PackageModel.XPOSED_PACKAGE_MASK);
         for (String pkg : DefaultLists.DEFAULT_APPS_LIST) {
             packageBlacklist.put(pkg, pkg);
-        }
-
-        // 系统属性过滤
-        for (Pair<String, String> pair : DefaultLists.DEFAULT_SYSTEM_PROP_LIST) {
-            propBlacklist.put(pair.first, pair.second);
         }
         // 系统环境变量过滤
         for (EnvBean env : DefaultLists.DEFAULT_SYSTEM_ENV_LIST) {
@@ -119,10 +123,6 @@ public class GlobalConfig {
 
         for (Pair<String, String> pair : DefaultLists.DEFAULT_MAPS_RULE_LIST) {
             mapsBlacklist.put(pair.first, pair.second);
-        }
-
-        for (Pair<String, List<ExecBean>> pair : DefaultLists.DEFAULT_RUNTIME_LIST) {
-            runtimeBlackList.put(pair.first, pair.second);
         }
         maps = new Map[DataModelType.values().length];
         maps[DataModelType.NOTHING.ordinal()] = new HashMap<>();

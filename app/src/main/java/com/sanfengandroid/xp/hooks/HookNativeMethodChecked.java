@@ -17,8 +17,6 @@
 
 package com.sanfengandroid.xp.hooks;
 
-import android.os.Build;
-
 import com.sanfengandroid.common.Const;
 import com.sanfengandroid.common.util.LogUtil;
 import com.sanfengandroid.common.util.Util;
@@ -36,13 +34,13 @@ public class HookNativeMethodChecked implements IHook {
 
     @Override
     public void hook(ClassLoader loader) throws Throwable {
-        String name = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? "getModifiersInternal" : "getModifiers";
+        String name = "getModifiersInternal";
         Method method = Method.class.getSuperclass().getDeclaredMethod(name);
         GlobalConfig.addHookMethodModifierFilter(method);
         XC_MethodHook callback = new XC_MethodHook() {
 
             @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+            protected void afterHookedMethod(MethodHookParam param) {
                 if (!GlobalConfig.isHookMember((Member) param.thisObject)) {
                     return;
                 }

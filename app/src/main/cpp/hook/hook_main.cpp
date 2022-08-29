@@ -41,6 +41,8 @@ static struct {
     jmethodID replaceEnv;
 } java;
 
+static bool HasIntMapKeyword(std::map<std::string, int> &map, const char *name);
+
 static JavaVM *jvm;
 
 /*
@@ -140,12 +142,24 @@ static int GetHookConfigIndex(const char *name) {
 }
 
 static inline int FindMapIndex(std::map<std::string, int> &map, const char *name) {
+    if (HasIntMapKeyword(map, name)) {
+        LOGD("FindMapIndex HasIntMapKeyword name: %s ", name);
+        return kOOpen;
+    }
     auto iter = map.find(name);
     if (iter != map.end()) {
+        LOGD("FindMapIndex finded name: %d ", iter->second);
         return iter->second;
     }
     return NO_FOUND_INDEX;
 }
+
+static bool HasIntMapKeyword(std::map<std::string, int> &map, const char *name) {
+    return std::any_of(map.begin(), map.end(), [&](const auto &key) {
+        return strstr(name, key.first.c_str()) != nullptr;
+    });
+}
+
 
 static inline bool HasMapKey(std::map<std::string, std::string> &map, const char *name) {
     auto iter = map.find(name);
@@ -154,7 +168,7 @@ static inline bool HasMapKey(std::map<std::string, std::string> &map, const char
 
 static inline bool HasMapKeyword(std::map<std::string, std::string> &map, const char *name) {
     return std::any_of(map.begin(), map.end(), [&](const auto &key) {
-        return strstr(key.first.c_str(), name) != nullptr;
+        return strstr(name, key.first.c_str()) != nullptr;
     });
 }
 
@@ -377,8 +391,10 @@ bool FXHandler::RuntimeReplaceStream(RuntimeBean *bean, int fds[3]) {
 RuntimeBean *FXHandler::FindRuntimeBean(const char *cmd, const char **argv, int argc) {
     auto iter = instance_->runtime_blacklist.find(cmd);
     if (iter == instance_->runtime_blacklist.end()) {
+        LOGD("FindRuntimeBean cmd: %s, argc: %d, [NO]", cmd, argc);
         return nullptr;
     }
+    LOGD("FindRuntimeBean cmd: %s, argc: %d, [YES]", cmd, argc);
     for (RuntimeBean &bean: iter->second) {
         if (!bean.match_parameter) {
             return &bean;

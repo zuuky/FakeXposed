@@ -5,6 +5,7 @@ import android.content.pm.ParceledListSlice;
 import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 
+import com.alibaba.fastjson.JSONObject;
 import com.sanfengandroid.common.Const;
 import com.sanfengandroid.common.model.PackageModel;
 import com.sanfengandroid.common.model.base.DataModelType;
@@ -42,12 +43,13 @@ public class PmFilterUtil {
                     for (final String s : metaData.keySet()) {
                         if (s.contains(PackageModel.XPOSED_PACKAGE_MASK)) {
                             riIt.remove();
+                            LogUtil.w(Const.JAVA_MONITOR_STATE,
+                                    "info.activityInfo.applicationInfo: %s, metaData: %s, hide: %s",
+                                    info.activityInfo.packageName,
+                                    JSONObject.toJSONString(metaData.keySet()), info);
                             break;
                         }
                     }
-                    LogUtil.w(Const.JAVA_MONITOR_STATE,
-                            "info.activityInfo.applicationInfo: %s, metaData: %s, hide: %s",
-                            info.activityInfo.packageName, metaData.keySet(), info);
                     continue;
                 }
             }

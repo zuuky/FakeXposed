@@ -29,6 +29,7 @@ import com.sanfengandroid.common.util.LogUtil;
 import com.sanfengandroid.datafilter.BuildConfig;
 import com.sanfengandroid.datafilter.NativeTestActivity;
 import com.sanfengandroid.datafilter.SPProvider;
+import com.sanfengandroid.fakeinterface.GlobalConfig;
 import com.sanfengandroid.fakeinterface.NativeHook;
 import com.sanfengandroid.fakeinterface.NativeInit;
 import com.sanfengandroid.xp.hooks.XposedFilter;
@@ -36,6 +37,7 @@ import com.sanfengandroid.xp.hooks.XposedFilter;
 import java.lang.reflect.Constructor;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
+import de.robv.android.xposed.IXposedHookZygoteInit;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
@@ -45,7 +47,7 @@ import de.robv.android.xposed.callbacks.XC_LoadPackage;
 /**
  * @author sanfengAndroid
  */
-public class XposedEntry implements IXposedHookLoadPackage {
+public class XposedEntry implements IXposedHookLoadPackage, IXposedHookZygoteInit {
     private static final String TAG = XposedEntry.class.getSimpleName();
     private static boolean hasHook = false;
 
@@ -92,10 +94,11 @@ public class XposedEntry implements IXposedHookLoadPackage {
                 hookSelf(lpparam.classLoader);
                 // 自身获取 xps 模式
                 XpConfigAgent.setProcessMode(ProcessMode.SELF);
+                SPProvider.setAppLibPath(contextImpl, NativeHook.libraryPath);
                 NativeTestActivity.initTestData(contextImpl);
             } else {
                 XpConfigAgent.setProcessMode(ProcessMode.HOOK_APP);
-                //GlobalConfig.removeThis(lpparam.packageName);
+                GlobalConfig.removeThis(lpparam.packageName);
             }
             NativeInit.nativeSync();
             new XposedFilter().hook(lpparam.classLoader);
@@ -160,7 +163,15 @@ public class XposedEntry implements IXposedHookLoadPackage {
     }
 
     public static XSharedPreferences getPref(String path) {
-        XSharedPreferences pref = new XSharedPreferences(BuildConfig.APPLICATION_ID, path);
+        XSharedPreferences pref = getPref(BuildConfig.APPLICATION_ID, path);
+        if (pref == null) {
+            pref = getPref("com.sanfengandroid.datafilter", path);
+        }
+        return pref;
+    }
+
+    public static XSharedPreferences getPref(String packageName, String path) {
+        XSharedPreferences pref = new XSharedPreferences(packageName, path);
         LogUtil.d(TAG,
                 "XSharedPreferences pref file: %s, canRead: %s, path: %s, processMode: %s, pref.getAll(): %s",
                 pref.getFile().getAbsolutePath(), pref.getFile().canRead(), path,

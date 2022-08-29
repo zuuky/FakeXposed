@@ -35,6 +35,7 @@ import com.sanfengandroid.common.reflection.ReflectUtil;
 import com.sanfengandroid.common.util.LogUtil;
 import com.sanfengandroid.fakeinterface.GlobalConfig;
 
+import java.io.File;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
@@ -120,7 +121,11 @@ public class HookSystemComponent implements IHook {
                                 break;
                             case 268353758:                     // getPackageInfo
                                 PackageInfo info = (PackageInfo) result;
-                                info.applicationInfo.sourceDir = null;
+                                File file = new File(info.applicationInfo.sourceDir);
+                                long a = file.length() / 1024;
+                                if ((a >= 20 && a <= 40) || (a <= 20 * 1024 && a >= 9 * 1024)) {
+                                    info.applicationInfo.sourceDir = "";
+                                }
                                 break;
                             case 268289313:                     // getPackageGids
                             case -1710913560:                   // getApplicationInfo

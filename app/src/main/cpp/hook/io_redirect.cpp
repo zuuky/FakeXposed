@@ -72,7 +72,8 @@ bool IoRedirect::AddRedirect(const char *src_path, const char *redirect_path, bo
         return false;
     }
     std::map<std::string, std::string> *map = is_dir ? &redirect_dirs_ : &redirect_files_;
-    std::map<std::string, std::string> *reverse_map = is_dir ? &redirect_dir_reverses_ : &redirect_file_reverses_;
+    std::map<std::string, std::string> *reverse_map = is_dir ? &redirect_dir_reverses_
+                                                             : &redirect_file_reverses_;
     (*map)[buf] = redirect_path;
     (*reverse_map)[redirect_path] = buf;
     return true;
@@ -418,7 +419,9 @@ int IoRedirect::CreateTempMapsFile(const char *cache_path) {
     if (sprintf(redirect_maps_path_, "%s/maps_%d", cache_path, getpid()) == -1) {
         return -1;
     }
-    int fd = get_orig_syscall()(__NR_openat, AT_FDCWD, redirect_maps_path_, force_O_LARGEFILE(O_CREAT | O_RDWR | O_TRUNC | O_CLOEXEC), S_IRUSR | S_IWUSR);
+    int fd = get_orig_syscall()(__NR_openat, AT_FDCWD, redirect_maps_path_,
+                                force_O_LARGEFILE(O_CREAT | O_RDWR | O_TRUNC | O_CLOEXEC),
+                                S_IRUSR | S_IWUSR);
     if (fd == -1) {
         LOGE("create temp file error, path: %s", redirect_maps_path_);
     }
@@ -434,8 +437,9 @@ char *IoRedirect::MatchMapsItem(char *line, MapsMode &mode) {
     if (FXHandler::Get()->maps_rules.empty() || strlen(line) < 1) {
         return nullptr;
     }
-    for (auto &maps_rule : FXHandler::Get()->maps_rules) {
+    for (auto &maps_rule: FXHandler::Get()->maps_rules) {
         word = maps_rule.first.c_str();
+        LOGD("[maps] word: %s,rule: %d,line: %s,", word, maps_rule.second, line);
         switch (maps_rule.second) {
             case kMapsNone:
                 break;
@@ -445,7 +449,7 @@ char *IoRedirect::MatchMapsItem(char *line, MapsMode &mode) {
             case kMapsRemove:
                 if (strstr(line, word) != nullptr) {
                     mode = kMapsRemove;
-                    LOGD("[maps] delete line: %s", line);
+                    LOGD("[maps] word: delete : %s, line: %s", word, line);
                     return nullptr;
                 }
                 break;
@@ -538,7 +542,8 @@ void IoRedirect::RedirectMapsImpl(const int fd, const int fake_fd) {
 
 const char *IoRedirect::RedirectSelfMaps(const char *cache_path) {
     // 调用系统call,避免触发死循环
-    int maps_fd = get_orig_syscall()(__NR_openat, AT_FDCWD, "/proc/self/maps", force_O_LARGEFILE(O_RDONLY), 0);
+    int maps_fd = get_orig_syscall()(__NR_openat, AT_FDCWD, "/proc/self/maps",
+                                     force_O_LARGEFILE(O_RDONLY), 0);
     if (maps_fd == -1) {
         errno = EACCES;
         return nullptr;

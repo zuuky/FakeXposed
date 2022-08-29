@@ -201,7 +201,7 @@ public class NativeTestActivity extends AppCompatActivity implements View.OnClic
     private boolean testMaps() {
         LogUtil.d(TAG, "Hook before file exist: " + new File("/proc/self/maps").exists());
         try {
-            BufferedReader br = new BufferedReader(new FileReader(new File("/proc/self/maps")));
+            BufferedReader br = new BufferedReader(new FileReader("/proc/self/maps"));
             String line;
             while ((line = br.readLine()) != null) {
                 if (line.contains(BuildConfig.APPLICATION_ID)) {

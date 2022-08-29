@@ -51,7 +51,7 @@ public final class NativeHook {
      * Hook配置的默认保存路径
      */
     private static String configPath = "/data/system/sanfengandroid/fakexposed";
-    private static String libraryPath = null;
+    public static String libraryPath = null;
 
     private static native int nativeAddIntBlackList(int type, String name, int value, boolean add);
 

@@ -44,13 +44,15 @@ NATIVE_HOOK_DEF(jboolean, VMDebug_isDebuggerConnected, JNIEnv *, jclass) {
     return JNI_FALSE;
 }
 
-NATIVE_HOOK_DEF(jobjectArray, Throwable_nativeGetStackTrace, JNIEnv *env, jclass clazz, jobject javaStackState) {
+NATIVE_HOOK_DEF(jobjectArray, Throwable_nativeGetStackTrace, JNIEnv *env, jclass clazz,
+                jobject javaStackState) {
     jobjectArray stacks = orig_Throwable_nativeGetStackTrace(env, clazz, javaStackState);
     jsize len = env->GetArrayLength(stacks);
     std::vector<int> deletes;
     for (int i = 0; i < len; ++i) {
         ScopedLocalRef<jobject> obj(env, env->GetObjectArrayElement(stacks, i));
-        ScopedLocalRef<jstring> declaring_class(env, (jstring) env->GetObjectField(obj.get(), java_cache.java_lang_StackTraceElement_declaringClass));
+        ScopedLocalRef<jstring> declaring_class(env, (jstring) env->GetObjectField(obj.get(),
+                                                                                   java_cache.java_lang_StackTraceElement_declaringClass));
         ScopedUtfChars name(env, declaring_class.get());
         if (FXHandler::StackClassNameBlacklisted(name.c_str())) {
             LOGMD("found black list name: %s", name.c_str());
@@ -64,7 +66,8 @@ NATIVE_HOOK_DEF(jobjectArray, Throwable_nativeGetStackTrace, JNIEnv *env, jclass
     if (new_len == 0) {
         return nullptr;
     }
-    jobjectArray new_stacks = env->NewObjectArray(new_len, java_cache.java_lang_StackTraceElement, nullptr);
+    jobjectArray new_stacks = env->NewObjectArray(new_len, java_cache.java_lang_StackTraceElement,
+                                                  nullptr);
     jsize pos = 0;
     for (int i = 0; i < len; ++i) {
         if (std::find(deletes.begin(), deletes.end(), i) == deletes.end()) {
@@ -77,7 +80,8 @@ NATIVE_HOOK_DEF(jobjectArray, Throwable_nativeGetStackTrace, JNIEnv *env, jclass
 
 // static native Class<?> classForName(String className, boolean shouldInitialize,
 //        ClassLoader classLoader) throws ClassNotFoundException;
-NATIVE_HOOK_DEF(jclass, Class_classForName, JNIEnv *env, jclass clazz, jstring className, jboolean shouldInitialize, jobject classLoader) {
+NATIVE_HOOK_DEF(jclass, Class_classForName, JNIEnv *env, jclass clazz, jstring className,
+                jboolean shouldInitialize, jobject classLoader) {
     ScopedUtfChars name(env, className, false);
     LOGMV("Fake classForName: %s", name.c_str());
     if (FXHandler::ClassNameBlacklisted(name.c_str())) {
@@ -114,13 +118,15 @@ NATIVE_HOOK_DEF(jint, UNIXProcess_forkAndExec, JNIEnv *env, jobject process,
     jint pid;
     RuntimeBean *bean = FXHandler::FindRuntimeBean(cmd, pargv, argc);
     if (bean == nullptr) {
-        pid = orig_UNIXProcess_forkAndExec(env, process, prog, argBlock, argc, envBlock, envc, dir, std_fds, redirectErrorStream);
+        pid = orig_UNIXProcess_forkAndExec(env, process, prog, argBlock, argc, envBlock, envc, dir,
+                                           std_fds, redirectErrorStream);
     } else {
         const char *new_cmd = nullptr;
         const char *new_argv = nullptr;
         jint new_argc = argc;
         jsize block_length = 0;
         FXHandler::RuntimeReplaceCommandArgv(bean, &new_cmd, &new_argv, &block_length, &new_argc);
+        LOGMV("runtime exec new_cmd: %s, new_argc: %d,new_argv: %s", new_cmd, new_argc, new_argv);
         jbyteArray new_prog = prog;
         jbyteArray new_argBlock = argBlock;
         if (new_cmd != nullptr) {
@@ -132,10 +138,12 @@ NATIVE_HOOK_DEF(jint, UNIXProcess_forkAndExec, JNIEnv *env, jobject process,
             // 当没有参数时无需保证argBlock正确
             if (new_argc != 0) {
                 new_argBlock = env->NewByteArray(block_length);
-                env->SetByteArrayRegion(new_argBlock, 0, block_length, reinterpret_cast<const jbyte *>(new_argv));
+                env->SetByteArrayRegion(new_argBlock, 0, block_length,
+                                        reinterpret_cast<const jbyte *>(new_argv));
             }
         }
-        pid = orig_UNIXProcess_forkAndExec(env, process, new_prog, new_argBlock, new_argc, envBlock, envc, dir, std_fds, redirectErrorStream);
+        pid = orig_UNIXProcess_forkAndExec(env, process, new_prog, new_argBlock, new_argc, envBlock,
+                                           envc, dir, std_fds, redirectErrorStream);
         if (!env->ExceptionCheck()) {
             // 命令结束后就有对应的流产生
             // fds[0] stdin fds[1] stdout fds[2] stderr
@@ -152,14 +160,17 @@ NATIVE_HOOK_DEF(jint, UNIXProcess_forkAndExec, JNIEnv *env, jobject process,
     return pid;
 }
 
-static int GetFileDescriptorOfFD(JNIEnv *env, jobject fileDescriptor, jfieldID FileDescriptor_descriptor) {
+static int
+GetFileDescriptorOfFD(JNIEnv *env, jobject fileDescriptor, jfieldID FileDescriptor_descriptor) {
     if (fileDescriptor == nullptr) {
         return -1;
     }
     return env->GetIntField(fileDescriptor, FileDescriptor_descriptor);
 }
 
-static void SetFileDescriptorOfFD(JNIEnv *env, jobject fileDescriptor, jfieldID FileDescriptor_descriptor, int value) {
+static void
+SetFileDescriptorOfFD(JNIEnv *env, jobject fileDescriptor, jfieldID FileDescriptor_descriptor,
+                      int value) {
     if (fileDescriptor == nullptr) {
         return;
     }
@@ -174,7 +185,9 @@ NATIVE_HOOK_DEF(pid_t, ProcessManager_exec, JNIEnv *env, jclass clazz, jobjectAr
     char *array[length + 1];
     array[length] = nullptr;
     for (jsize i = 0; i < length; ++i) {
-        ScopedLocalRef<jstring> java_string(env, reinterpret_cast<jstring>(env->GetObjectArrayElement(javaCommands, i)));
+        ScopedLocalRef<jstring> java_string(env,
+                                            reinterpret_cast<jstring>(env->GetObjectArrayElement(
+                                                    javaCommands, i)));
         char *string = const_cast<char *>(env->GetStringUTFChars(java_string.get(), nullptr));
         array[i] = string;
     }
@@ -183,37 +196,43 @@ NATIVE_HOOK_DEF(pid_t, ProcessManager_exec, JNIEnv *env, jclass clazz, jobjectAr
     const char *old_argv = length > 1 ? array[1] : nullptr;
     RuntimeBean *bean = FXHandler::FindRuntimeBean(array[0], &old_argv, length - 1);
     if (bean == nullptr) {
-        pid = orig_ProcessManager_exec(env, clazz, javaCommands, javaEnvironment, javaWorkingDirectory, inDescriptor, outDescriptor, errDescriptor, redirectErrorStream);
+        pid = orig_ProcessManager_exec(env, clazz, javaCommands, javaEnvironment,
+                                       javaWorkingDirectory, inDescriptor, outDescriptor,
+                                       errDescriptor, redirectErrorStream);
     } else {
         const char *new_cmd = nullptr;
         const char *new_argv = nullptr;
         jsize block_size = 0;
         jsize new_argc = length - 1;
         jobjectArray javaNewCommands = javaCommands;
-        if (FXHandler::RuntimeReplaceCommandArgv(bean, &new_cmd, &new_argv, &block_size, &new_argc)) {
-            javaNewCommands = env->NewObjectArray(new_argc + 1, JNIHelper::java_lang_String, nullptr);
+        if (FXHandler::RuntimeReplaceCommandArgv(bean, &new_cmd, &new_argv, &block_size,
+                                                 &new_argc)) {
+            javaNewCommands = env->NewObjectArray(new_argc + 1, JNIHelper::java_lang_String,
+                                                  nullptr);
             if (new_cmd == nullptr) {
                 new_cmd = array[0];
             }
             ScopedLocalRef<jstring> cmd_(env, env->NewStringUTF(new_cmd));
             env->SetObjectArrayElement(javaNewCommands, 0, cmd_.get());
             if ((new_argv != nullptr || new_argc != length - 1)) {
-                if (new_argc > 0){
+                if (new_argc > 0) {
                     const char *vectors[new_argc];
                     initVectorFromBlock(vectors, new_argv, new_argc);
                     for (int i = 0; i < new_argc; ++i) {
-                        ScopedLocalRef<jstring> arg(env,env->NewStringUTF(vectors[i]));
+                        ScopedLocalRef<jstring> arg(env, env->NewStringUTF(vectors[i]));
                         env->SetObjectArrayElement(javaNewCommands, i + 1, arg.get());
                     }
                 }
-            }else{
+            } else {
                 for (int i = 1; i < new_argc; ++i) {
-                    ScopedLocalRef<jstring> arg(env,env->NewStringUTF(array[i]));
+                    ScopedLocalRef<jstring> arg(env, env->NewStringUTF(array[i]));
                     env->SetObjectArrayElement(javaNewCommands, i, arg.get());
                 }
             }
         }
-        pid = orig_ProcessManager_exec(env, clazz, javaNewCommands, javaEnvironment, javaWorkingDirectory, inDescriptor, outDescriptor, errDescriptor, redirectErrorStream);
+        pid = orig_ProcessManager_exec(env, clazz, javaNewCommands, javaEnvironment,
+                                       javaWorkingDirectory, inDescriptor, outDescriptor,
+                                       errDescriptor, redirectErrorStream);
         if (!env->ExceptionCheck()) {
             static jfieldID FileDescriptor_descriptor = nullptr;
             if (FileDescriptor_descriptor == nullptr) {
@@ -239,7 +258,9 @@ NATIVE_HOOK_DEF(pid_t, ProcessManager_exec, JNIEnv *env, jclass clazz, jobjectAr
         env->ExceptionClear();
     }
     for (jsize i = 0; i < length; ++i) {
-        ScopedLocalRef<jstring> java_string(env, reinterpret_cast<jstring>(env->GetObjectArrayElement(javaCommands, i)));
+        ScopedLocalRef<jstring> java_string(env,
+                                            reinterpret_cast<jstring>(env->GetObjectArrayElement(
+                                                    javaCommands, i)));
         env->ReleaseStringUTFChars(java_string.get(), array[i]);
     }
     return pid;
@@ -249,23 +270,33 @@ struct {
     HookRegisterNativeUnit gVMDebug =
             FAST_NATIVE_METHOD(VMDebug, isDebuggerConnected, "()Z", true);
     HookRegisterNativeUnit gThrowable =
-            FAST_NATIVE_METHOD(Throwable, nativeGetStackTrace, "(Ljava/lang/Object;)[Ljava/lang/StackTraceElement;", true);
+            FAST_NATIVE_METHOD(Throwable, nativeGetStackTrace,
+                               "(Ljava/lang/Object;)[Ljava/lang/StackTraceElement;", true);
     HookRegisterNativeUnit gClass =
-            FAST_NATIVE_METHOD(Class, classForName, "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;", true);
+            FAST_NATIVE_METHOD(Class, classForName,
+                               "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;",
+                               true);
 
-    HookRegisterNativeUnit gUNIXProcess = NATIVE_METHOD(UNIXProcess, forkAndExec, "([B[BI[BI[B[IZ)I", false);
+    HookRegisterNativeUnit gUNIXProcess = NATIVE_METHOD(UNIXProcess, forkAndExec,
+                                                        "([B[BI[BI[B[IZ)I", false);
     HookRegisterNativeUnit gProcessManager =
             NATIVE_METHOD(ProcessManager, exec,
-                          "([Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Ljava/io/FileDescriptor;Ljava/io/FileDescriptor;Ljava/io/FileDescriptor;Z)I", true);
+                          "([Ljava/lang/String;[Ljava/lang/String;Ljava/lang/String;Ljava/io/FileDescriptor;Ljava/io/FileDescriptor;Ljava/io/FileDescriptor;Z)I",
+                          true);
 } java_hooks;
 
 static void CacheJNIData(JNIEnv *env) {
-    java_cache.java_lang_StackTraceElement = JNIHelper::CacheClass(env, "java/lang/StackTraceElement");
-    java_cache.java_lang_StackTraceElement_declaringClass = env->GetFieldID(java_cache.java_lang_StackTraceElement, "declaringClass", JNIHelper::java_lang_String_sign);
-    java_cache.java_lang_ClassNotFoundException = JNIHelper::CacheClass(env, "java/lang/ClassNotFoundException");
+    java_cache.java_lang_StackTraceElement = JNIHelper::CacheClass(env,
+                                                                   "java/lang/StackTraceElement");
+    java_cache.java_lang_StackTraceElement_declaringClass = env->GetFieldID(
+            java_cache.java_lang_StackTraceElement, "declaringClass",
+            JNIHelper::java_lang_String_sign);
+    java_cache.java_lang_ClassNotFoundException = JNIHelper::CacheClass(env,
+                                                                        "java/lang/ClassNotFoundException");
 }
 
-static int RegisterNativeMethods(JNIEnv *env, const char *class_name, HookRegisterNativeUnit *items, int len) {
+static int
+RegisterNativeMethods(JNIEnv *env, const char *class_name, HookRegisterNativeUnit *items, int len) {
     ScopedLocalRef<jclass> c(env, FindClass(env, class_name));
     if (c.get() == nullptr) {
         return -1;
@@ -276,13 +307,19 @@ static int RegisterNativeMethods(JNIEnv *env, const char *class_name, HookRegist
 bool JNHook::InitJavaNativeHook(JNIEnv *env) {
     JNIHelper::Init(env);
     CacheJNIData(env);
-    LOGD("register VMDebug result: %d", RegisterNativeMethods(env, "dalvik/system/VMDebug", &java_hooks.gVMDebug, 1));
-    LOGD("register Throwable result: %d", RegisterNativeMethods(env, "java/lang/Throwable", &java_hooks.gThrowable, 1));
-    LOGD("register Throwable result: %d", RegisterNativeMethods(env, "java/lang/Class", &java_hooks.gClass, 1));
+    LOGD("register VMDebug result: %d",
+         RegisterNativeMethods(env, "dalvik/system/VMDebug", &java_hooks.gVMDebug, 1));
+    LOGD("register Throwable result: %d",
+         RegisterNativeMethods(env, "java/lang/Throwable", &java_hooks.gThrowable, 1));
+    LOGD("register Throwable result: %d",
+         RegisterNativeMethods(env, "java/lang/Class", &java_hooks.gClass, 1));
     if (FXHandler::Get()->api >= __ANDROID_API_N__) {
-        LOGD("register UNIXProcess result: %d", RegisterNativeMethods(env, "java/lang/UNIXProcess", &java_hooks.gUNIXProcess, 1));
+        LOGD("register UNIXProcess result: %d",
+             RegisterNativeMethods(env, "java/lang/UNIXProcess", &java_hooks.gUNIXProcess, 1));
     } else {
-        LOGD("register ProcessManager result: %d", RegisterNativeMethods(env, "java/lang/ProcessManager", &java_hooks.gProcessManager, 1));
+        LOGD("register ProcessManager result: %d",
+             RegisterNativeMethods(env, "java/lang/ProcessManager", &java_hooks.gProcessManager,
+                                   1));
     }
     return true;
 }
