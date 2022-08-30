@@ -31,28 +31,25 @@ import java.util.List;
  */
 public class DefaultLists {
 
-    public static final List<String> COMMON_KEYWORD_LIST = Arrays.asList("su", "supersu",
-            "daemonsu", "root", "superuser.apk", "ZUPERFAKEFILE", "xposed", "edxposed", "lsposed",
-            "magisk", "self", "TracerPid", "vxp", "XposedBridge", "sanfengandroid", "fake");
+    //COMMON_KEYWORD
+    public static final List<String> COMMON_KEYWORD_LIST = Arrays.asList("supersu", "daemonsu",
+            "root", "superuser", "zuperfakefile", "xposed", "lsposed", "magisk", "self",
+            "TracerPid", "XposedBridge", "ZygoteInit", "system");
 
     public static final List<String> DEFAULT_APPS_LIST = Arrays.asList("org.lsposed.manager",
             "org.meowcat.edxposed.manager", "de.robv.android.xposed.installer");
 
-    public static final List<String> DEFAULT_KEYWORD_LIST = Arrays.asList("magiskinit", "superuser",
-            "Superuser", "noshufou", "rootcloak", "chainfire", "titanium", "Titanium", "substrate",
-            "greenify", "daemonsu", "busybox", "titanium", ".tmpsu", "rootcloak2", "magisk32",
-            "magisk64", "magiskhide");
+    public static final List<String> DEFAULT_KEYWORD_LIST = Arrays.asList("noshufou", "rootcloak",
+            "chainfire", "titanium", "substrate", "greenify", "busybox", "titanium", "tmpsu");
 
     public static final List<String> DEFAULT_FILES_LIST = COMMON_KEYWORD_LIST;
 
     public static final List<String> DEFAULT_SYMBOL_LIST = Arrays.asList(
             "riru_is_zygote_methods_replaced", "riru_get_version");
 
-    public static final List<String> DEFAULT_CLASS_LIST = Arrays.asList(
+    public static final List<String> DEFAULT_CLASS_LIST = Arrays.asList("de.robv.android.xposed",
             "de.robv.android.xposed.XposedBridge", "de.robv.android.xposed.XposedHelpers",
             "com.android.internal.os.ZygoteInit");
-
-    public static final List<String> DEFAULT_STACK_LIST = DEFAULT_CLASS_LIST;
 
     public static final Pair<String, String>[] DEFAULT_GLOBAL_PROPERTY_LIST = new Pair[]{
             new Pair<>("ro.build.selinux", "1"), new Pair<>("ro.build.tags", "release-keys"),

@@ -154,23 +154,36 @@ static inline int FindMapIndex(std::map<std::string, int> &map, const char *name
     return NO_FOUND_INDEX;
 }
 
+static inline const char *strstrIgnore(const char *str, const char *subStr) {
+    size_t len = strlen(subStr);
+    if (len == 0) {
+        return nullptr;
+    }
+    while (*str) {
+        if (strncasecmp(str, subStr, len) == 0) {
+            return str;
+        }
+        ++str;
+    }
+    return nullptr;
+}
+
 static bool HasIntMapKeyword(std::map<std::string, int> &map, const char *name) {
     return std::any_of(map.begin(), map.end(), [&](const auto &key) {
-        return strstr(name, key.first.c_str()) != nullptr;
+        return strstrIgnore(name, key.first.c_str()) != nullptr;
     });
 }
 
-
 static inline bool HasMapKey(std::map<std::string, std::string> &map, const char *name) {
-    auto iter = map.find(name);
-    return iter != map.end();
+    return map.find(name) != map.end();
 }
 
 static inline bool HasMapKeyword(std::map<std::string, std::string> &map, const char *name) {
     return std::any_of(map.begin(), map.end(), [&](const auto &key) {
-        return strstr(name, key.first.c_str()) != nullptr;
+        return strstrIgnore(name, key.first.c_str()) != nullptr;
     });
 }
+
 
 static inline const char *FindStringOption(const char *name) {
     auto iter = string_option.find(name);

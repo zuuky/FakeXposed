@@ -46,11 +46,11 @@ public class XpApplication extends Application implements ViewModelStoreOwner {
     protected void attachBaseContext(Context base) {
         super.attachBaseContext(base);
         xpApplication = this;
+        SPProvider.setProcessMode(ProcessMode.SELF);
         if (BuildConfig.APPLICATION_ID.equals(Util.getProcessName(base))) {
             mStore = new ViewModelStore();
             viewModel = new ViewModelProvider(this).get(ApplicationViewModel.class);
         }
-        SPProvider.setProcessMode(ProcessMode.SELF);
     }
 
     @NonNull

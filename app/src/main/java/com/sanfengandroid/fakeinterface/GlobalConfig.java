@@ -74,23 +74,20 @@ public class GlobalConfig {
 
     static {
         for (final String s : DefaultLists.COMMON_KEYWORD_LIST) {
-            classBlacklist.put(s, s);
-            stackClassBlacklist.put(s, s);
             packageBlacklist.put(s, s);
             propBlacklist.put(s, "");
             globalPropertyBlacklist.put(s, s);
             componentKeyBlacklist.put(s, s);
             fileBlacklist.put(s, s);
-            symbolBlacklist.put(s, s);
             mapsBlacklist.put(s, MapsMode.MM_REMOVE.key);
         }
-        // 反射类过滤
+        // 类过滤
         for (String s : DefaultLists.DEFAULT_CLASS_LIST) {
             classBlacklist.put(s, s);
-        }
-        // 函数堆栈过滤
-        for (String s : DefaultLists.DEFAULT_STACK_LIST) {
+            classBlacklist.put(s.replaceAll("\\.", "/"), s.replaceAll("\\.", "/"));
             stackClassBlacklist.put(s, s);
+            stackClassBlacklist.put(s.replaceAll("\\.", "/"), s.replaceAll("\\.", "/"));
+
         }
         // 安装包过滤
         for (String pkg : DefaultLists.DEFAULT_APPS_LIST) {

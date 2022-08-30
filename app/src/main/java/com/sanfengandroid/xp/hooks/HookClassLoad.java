@@ -61,12 +61,12 @@ public class HookClassLoad implements IHook {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 String name = (String) param.args[0];
-                LogUtil.d(TAG, "edxposed find class %s", name);
+                LogUtil.d(TAG, "BaseDexClassLoader find class %s", name);
                 if (TextUtils.isEmpty(name)) {
                     return;
                 }
                 if (isChild(loader, (ClassLoader) param.thisObject) && GlobalConfig.stringContainBlackList(name, DataModelType.LOAD_CLASS_HIDE)) {
-                    LogUtil.w(Const.JAVA_MONITOR_STATE, "edxpose looking for blocked classes: %s", name);
+                    LogUtil.w(Const.JAVA_MONITOR_STATE, "BaseDexClassLoader looking for blocked classes: %s", name);
                     param.setResult(null);
                     param.setThrowable(new ClassNotFoundException(name));
                 }

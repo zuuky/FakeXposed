@@ -32,24 +32,17 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
-import com.google.android.material.snackbar.Snackbar;
-import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.sanfengandroid.common.model.base.DataModelType;
-import com.sanfengandroid.common.util.LogUtil;
 import com.sanfengandroid.datafilter.BuildConfig;
 import com.sanfengandroid.datafilter.R;
-import com.sanfengandroid.datafilter.SPProvider;
 import com.sanfengandroid.datafilter.XpApplication;
 import com.sanfengandroid.datafilter.viewmodel.ApplicationViewModel;
 import com.sanfengandroid.fakeinterface.Installer;
 
-public class MainFragment extends Fragment implements View.OnClickListener {
+public class MainFragment extends Fragment {
 
     public static final String VIEW_TAG = "Main";
-    private static final boolean SHOW_INSTALL = true;
     private ApplicationViewModel mViewModel;
-    private SwitchMaterial installHookConfig;
-    private View tipView, updateCard;
 
     public static MainFragment newInstance() {
         return new MainFragment();
@@ -68,13 +61,20 @@ public class MainFragment extends Fragment implements View.OnClickListener {
     public void onResume() {
         super.onResume();
         mViewModel.setDataModelType(DataModelType.NOTHING);
-        long time = SPProvider.getHookConfigurationInstallTime(requireContext());
-        long time1 = SPProvider.getConfigurationUpdateTime(requireContext());
-        updateCard.setVisibility(time != 0 && time != time1 ? View.VISIBLE : View.GONE);
+        AsyncTask.execute(() -> {
+            String tip = "success";
+            boolean success;
+            try {
+                success = Installer.installHookFile(requireContext());
+            } catch (Exception e) {
+                tip = e.getMessage();
+                success = false;
+            }
+            mViewModel.setMessage(success ? "success" : tip);
+        });
     }
 
     public static boolean isActive() {
-        LogUtil.d("Prevent inlining");
         return TextUtils.equals(XpApplication.getInstance().getString(R.string.set_gid), "123");
     }
 
@@ -97,50 +97,6 @@ public class MainFragment extends Fragment implements View.OnClickListener {
         String tip = getString(active ? R.string.status_normal : R.string.status_warning) + "("
                 + BuildConfig.APP_TYPE + ")";
         status.setText(tip);
-
-        updateCard = view.findViewById(R.id.update_card);
-        view.findViewById(R.id.sync_hook_configuration).setOnClickListener(this);
-        installHookConfig = view.findViewById(R.id.install_hook_configuration);
-        installHookConfig.setOnClickListener(this);
-        installHookConfig.setChecked(
-                SPProvider.getHookConfigurationInstallTime(this.getContext()) != 0);
-        mViewModel.setSnackMessageObserver(this,
-                s -> Snackbar.make(requireView(), s, Snackbar.LENGTH_SHORT).show());
-        if (!SHOW_INSTALL) {
-            installHookConfig.setVisibility(View.GONE);
-            updateCard.setVisibility(View.GONE);
-        }
         return view;
-    }
-
-    @Override
-    public void onClick(View v) {
-        int id = v.getId();
-        if (id == R.id.install_hook_configuration || id == R.id.sync_hook_configuration) {
-            AsyncTask.execute(() -> {
-                String tip;
-                boolean success;
-                boolean uninstall =
-                        id != R.id.sync_hook_configuration && !installHookConfig.isChecked();
-                try {
-                    success = uninstall ? Installer.uninstallHookFile(requireContext())
-                                        : Installer.installHookFile(requireContext());
-                    tip = uninstall ? getString(R.string.success_uninstall_hook_configuration)
-                                    : getString(R.string.success_install_hook_configuration);
-                } catch (Exception e) {
-                    tip = e.getMessage();
-                    success = false;
-                }
-                mViewModel.setMessage(tip);
-                boolean finalSuccess = success;
-                installHookConfig.post(() -> {
-                    installHookConfig.setChecked(uninstall != finalSuccess);
-                    if (uninstall && !finalSuccess) {
-                        return;
-                    }
-                    updateCard.setVisibility(finalSuccess ? View.GONE : View.VISIBLE);
-                });
-            });
-        }
     }
 }

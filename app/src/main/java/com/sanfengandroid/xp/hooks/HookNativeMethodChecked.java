@@ -25,6 +25,7 @@ import com.sanfengandroid.fakeinterface.GlobalConfig;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Objects;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
@@ -35,7 +36,7 @@ public class HookNativeMethodChecked implements IHook {
     @Override
     public void hook(ClassLoader loader) throws Throwable {
         String name = "getModifiersInternal";
-        Method method = Method.class.getSuperclass().getDeclaredMethod(name);
+        Method method = Objects.requireNonNull(Method.class.getSuperclass()).getDeclaredMethod(name);
         GlobalConfig.addHookMethodModifierFilter(method);
         XC_MethodHook callback = new XC_MethodHook() {
 
