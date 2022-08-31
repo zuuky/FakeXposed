@@ -24,9 +24,10 @@ import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
 
+import androidx.annotation.Keep;
+
 import com.sanfengandroid.common.reflection.ReflectUtil;
 import com.sanfengandroid.common.util.LogUtil;
-import com.sanfengandroid.common.util.Util;
 import com.sanfengandroid.datafilter.SPProvider;
 import com.sanfengandroid.fakelinker.BuildConfig;
 import com.sanfengandroid.fakelinker.ErrorCode;
@@ -40,18 +41,16 @@ import eu.chainfire.libsuperuser.Shell;
 
 /**
  * Native Hook入口
- * 1. 先调用{@link #initFakeLinker}或{@link #defaultInitFakeLinker(Context)}初始化模块路径和缓存路径
+ * 1. 先调用{@link #initFakeLinker}或 初始化模块路径和缓存路径
  * 2. 调用 XXX设置各种配置
  * 3. 调用{@link #startNativeHook()}开启NativeHook
  */
 @SuppressWarnings("JavaJniMissingFunction")
+@Keep
 public final class NativeHook {
     private static final String TAG = NativeHook.class.getSimpleName();
-    /**
-     * Hook配置的默认保存路径
-     */
-    private static String configPath = "/data/system/sanfengandroid/fakexposed";
     public static String libraryPath = null;
+    private static String configPath = "/data/system/sanfengandroid/fakexposed";
 
     private static native int nativeAddIntBlackList(int type, String name, int value, boolean add);
 
@@ -118,13 +117,11 @@ public final class NativeHook {
         }
     }
 
-    public static ErrorCode clearAll() {
+    public static void clearAll() {
         try {
             nativeClearAll();
-            return ErrorCode.ERROR_NO;
         } catch (Throwable e) {
             Log.e(TAG, "clear all native data failed: " + e.getMessage(), e);
-            return ErrorCode.ERROR_JAVA_EXECUTE;
         }
     }
 
@@ -613,10 +610,9 @@ public final class NativeHook {
 
     public static String getDefaultHookModulePath() {
         File hookModuleFile = new File(libraryPath, getSoFileName(libraryPath, com.sanfengandroid.datafilter.BuildConfig.HOOK_HIGH_MODULE_NAME));
+        LogUtil.d(TAG, "defaultHookModulePath : %s", hookModuleFile.getAbsolutePath());
         // 文件不存在时复制过去
-        if (!hookModuleFile.exists()) {
-            runShell(hookModuleFile.getAbsolutePath());
-        }
+        runShell(hookModuleFile);
         return hookModuleFile.getAbsolutePath();
     }
 
@@ -624,18 +620,20 @@ public final class NativeHook {
         return configPath;
     }
 
-    private static void runShell(String path) {
-        synchronized (TAG) {
-            String basePath = path.split("/lib/")[0];
-            String cmdLine = "unzip -o " + basePath + "/base.apk" + " \"*/*.so\" -d " + basePath
-                    + "; chmod 755 " + path + "; chown system:system " + path;
-            LogUtil.v(TAG, "cmd line : %s", cmdLine);
-            try {
-                List<String> result = Shell.SU.run(cmdLine);
-                LogUtil.v(TAG, "copy success: %s, path: %s", result, path);
-            } catch (Exception e) {
-                LogUtil.e(TAG, "copy failed: %s", path, e);
-            }
+    private static void runShell(File file) {
+        String path = file.getAbsolutePath();
+        String basePath = path.split("/lib/")[0];
+        String cmdLine = "unzip -o " + basePath + "/base.apk" + " \"*/*.so\" -d " + basePath
+                + "; chmod 755 " + path + "; chown system:system " + path;
+        if (file.exists()) {
+            cmdLine = "chmod 755 " + path + "; chown system:system " + path;
+        }
+        LogUtil.d(TAG, "cmd line : %s", cmdLine);
+        try {
+            List<String> result = Shell.SU.run(cmdLine);
+            LogUtil.d(TAG, "cmd line copy success: %s, path: %s", result, path);
+        } catch (Exception e) {
+            LogUtil.d(TAG, "cmd line copy failed: %s", path, e);
         }
     }
 
@@ -645,10 +643,8 @@ public final class NativeHook {
 
     public static File getDefaultFakeLinkerPath() {
         File fakeLinkerFile = new File(libraryPath, getSoFileName(libraryPath, BuildConfig.LINKER_MODULE_NAME + Build.VERSION.SDK_INT));
-        // 文件不存在时复制过去
-        if (!fakeLinkerFile.exists()) {
-            runShell(fakeLinkerFile.getAbsolutePath());
-        }
+        LogUtil.d(TAG, "defaultFakeLinkerPath : %s", fakeLinkerFile.getAbsolutePath());
+        runShell(fakeLinkerFile);
         return fakeLinkerFile;
     }
 
@@ -658,16 +654,6 @@ public final class NativeHook {
             return "lib" + name + "64.so";
         }
         return "lib" + name + ".so";
-    }
-
-    public static void defaultInitFakeLinker(Context context) {
-        try {
-            initLibraryPath(context);
-        } catch (PackageManager.NameNotFoundException ignore) {
-        }
-        FakeLinker.initFakeLinker(getDefaultFakeLinkerPath().getAbsolutePath(),
-                getDefaultHookModulePath(), context.getCacheDir().getAbsolutePath(),
-                getConfigPath(), Util.getProcessName(context));
     }
 
     public static void initFakeLinker(String cacheDir, String processName) {

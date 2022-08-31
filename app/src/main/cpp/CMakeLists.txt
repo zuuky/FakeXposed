@@ -85,9 +85,9 @@ find_library( # Sets the name of the path variable.
 target_link_libraries(
         ${HOOK_MODULE_NAME}
         ${log-lib})
-#set_target_properties(${HOOK_MODULE_NAME} PROPERTIES
-#        RUNTIME_OUTPUT_DIRECTORY
-#        ${CMAKE_CURRENT_SOURCE_DIR}/../jniLibs/${THIS_BUILD_TYPE}/${COPY_DIR})
+set_target_properties(${HOOK_MODULE_NAME} PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY
+        ${CMAKE_CURRENT_SOURCE_DIR}/../jniLibs/${THIS_BUILD_TYPE}/${COPY_DIR})
 
 set_target_properties(${HOOK_MODULE_NAME} PROPERTIES
         LIBRARY_OUTPUT_DIRECTORY
