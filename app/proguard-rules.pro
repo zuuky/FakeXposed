@@ -20,15 +20,14 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
--dontusemixedcaseclassnames
+#-dontusemixedcaseclassnames
 
--keep public class com.sanfengandroid.fakeinterface.* {
-    *;
+-keep public class com.sanfengandroid.fakeinterface.** {
+    public *;
 }
--keep public class com.sanfengandroid.xp.XposedEntry{
-
+-keep public class com.sanfengandroid.xp.XposedEntry {
 }
 
--keep public class com.sanfengandroid.datafilter.ui.fragments.MainFragment{
+-keep public class com.sanfengandroid.datafilter.ui.fragments.MainFragment {
     public static boolean isActive();
 }

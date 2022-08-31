@@ -248,29 +248,40 @@ struct RemoteInvokeInterface {
 
     int (*HookJniNatives)(HookJniUnit *items, size_t len);
 
-    void *(*CallSoinfoFunction)(SoinfoFunType fun_type, SoinfoParamType find_type, const void *find_param,
-                                SoinfoParamType param_type, const void *param, int *error_code);
+    void *
+    (*CallSoinfoFunction)(SoinfoFunType fun_type, SoinfoParamType find_type, const void *find_param,
+                          SoinfoParamType param_type, const void *param, int *error_code);
 
-    void *(*CallCommonFunction)(CommonFunType fun_type, SoinfoParamType find_type, const void *find_param,
-                                SoinfoParamType param_type, const void *param, int *error_code);
+    void *
+    (*CallCommonFunction)(CommonFunType fun_type, SoinfoParamType find_type, const void *find_param,
+                          SoinfoParamType param_type, const void *param, int *error_code);
 
 #if __ANDROID_API__ >= __ANDROID_API_N__
 
     void *
-    (*CallNamespaceFunction)(NamespaceFunType fun_type, NamespaceParamType find_type, const void *find_param, NamespaceParamType param_type, const void *param, int *error_code);
+    (*CallNamespaceFunction)(NamespaceFunType fun_type, NamespaceParamType find_type,
+                             const void *find_param, NamespaceParamType param_type,
+                             const void *param, int *error_code);
 
-    /*android_namespace_t * */void *(*CallCreateNamespaceImpl)(const char *name, const char *ld_library_path, const char *default_library_path, uint64_t type,
-                                                               const char *permitted_when_isolated_path, /* android_namespace_t * */ void *parent_namespace,
-                                                               const void *caller_addr);
+    /*android_namespace_t * */void *
+    (*CallCreateNamespaceImpl)(const char *name, const char *ld_library_path,
+                               const char *default_library_path, uint64_t type,
+                               const char *permitted_when_isolated_path, /* android_namespace_t * */
+                               void *parent_namespace,
+                               const void *caller_addr);
 
-    void *(*CallDlopenImpl)(const char *filename, int flags, const /*android_dlextinfo*/void *extinfo, void *caller_addr);
+    void *
+    (*CallDlopenImpl)(const char *filename, int flags, const /*android_dlextinfo*/void *extinfo,
+                      void *caller_addr);
 
-    bool (*CallDlsymImpl)(void *handle, const char *symbol, const char *version, void *caller_addr, void **sym);
+    bool (*CallDlsymImpl)(void *handle, const char *symbol, const char *version, void *caller_addr,
+                          void **sym);
 
 #else
     void* (*CallDlopenImpl)(const char* filename, int flag, /* const android_dlextinfo* */const void* extinfo);
     void* (*CallDlsymImpl)(void* __handle, const char* __symbol);
 #endif
+
     int (*HookNativeFunction)(JNIEnv *env, jclass clazz, HookRegisterNativeUnit *items, size_t len);
 };
 
@@ -283,6 +294,8 @@ struct RemoteInvokeInterface {
  * @param config_path 针对Hook模块配置文件的目录,非必要参数,可以从Java层动态初始化参数
  * @param process_name 当前进程的进程名,避免native麻烦获取
  * */
-extern void (*fake_load_library_init_ptr)(JNIEnv *env, void *fake_soinfo, const RemoteInvokeInterface *interface, const char *cache_path, const char *config_path,
+extern void (*fake_load_library_init_ptr)(JNIEnv *env, void *fake_soinfo,
+                                          const RemoteInvokeInterface *interface,
+                                          const char *cache_path, const char *config_path,
                                           const char *process_name);
 __END_DECLS

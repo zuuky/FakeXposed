@@ -38,13 +38,13 @@ INTERCEPT_SYSCALL(openat, int fd, const char *pathname, int flags, int mode) {
     LOG("syscall fd: %d, path: %s, flags: %d, mode: %d", fd, pathname, flags, mode);
     IS_BLACKLIST_FILE(pathname);
     const char *fake_path = IoRedirect::RedirectMaps(pathname);
-    LOGW("Fake 'maps': syscall, pathname: %s, path: %s", pathname,
+    LOGMW("Fake 'maps': syscall, pathname: %s, path: %s", pathname,
          fake_path);
 
     if (fake_path != nullptr) {
         int fd_ = orig_syscall(__NR_openat, AT_FDCWD, fake_path, force_O_LARGEFILE(flags), mode);
         if (fd_ != -1) {
-            LOGW("Fake 'maps': syscall fd: %d, path: %s", fd_, fake_path);
+            LOGMW("Fake 'maps': syscall fd: %d, path: %s", fd_, fake_path);
             get_orig_unlink()(fake_path);
             return fd_;
         }
@@ -84,7 +84,8 @@ INTERCEPT_SYSCALL(fstatat, int dir_fd, const char *path, struct stat *buf, int f
     if (file_access == nullptr) {
         return result;
     }
-    LOGD("syscall redirect file stat: %s, orig access: %d, modify access: %d", path, buf->st_mode & ~07777,
+    LOGD("syscall redirect file stat: %s, orig access: %d, modify access: %d", path,
+         buf->st_mode & ~07777,
          file_access->access);
     buf->st_mode &= ~07777;
     buf->st_mode |= file_access->access;
@@ -112,14 +113,16 @@ INTERCEPT_SYSCALL(fchmodat, int fd, const char *path, mode_t mode) {
 }
 
 INTERCEPT_SYSCALL(fchownat, int dir_fd, const char *path, uid_t owner, gid_t group, int flags) {
-    LOG("syscall fd: %d, path: %s, owner: %d, group: %d, flags: %d", dir_fd, path, owner, group, flags);
+    LOG("syscall fd: %d, path: %s, owner: %d, group: %d, flags: %d", dir_fd, path, owner, group,
+        flags);
     IS_BLACKLIST_FILE(path);
     return orig_syscall(number, dir_fd, IoRedirect::GetRedirect(path), owner, group, flags);
 }
 
 INTERCEPT_SYSCALL(linkat, int old_dir_fd, const char *old_path, int new_dir_fd,
                   const char *new_path, int flags) {
-    LOG("syscall old fd: %d, old path: %s, new fd: %d, new path: %s, flags: %d", old_dir_fd, old_path,
+    LOG("syscall old fd: %d, old path: %s, new fd: %d, new path: %s, flags: %d", old_dir_fd,
+        old_path,
         new_dir_fd, new_path, flags);
     IS_BLACKLIST_FILE(old_path);
     return orig_syscall(number, old_dir_fd, IoRedirect::GetRedirect(old_path), new_dir_fd,
@@ -160,7 +163,8 @@ INTERCEPT_SYSCALL(readlinkat, int dir_fd, const char *path, char *buf, size_t bu
 
 INTERCEPT_SYSCALL(renameat, int old_dir_fd, const char *old_path, int new_dir_fd,
                   const char *new_path, unsigned flags) {
-    LOG("syscall old fd: %d, old path: %s, new fd: %d, new path: %s flags: %d", old_dir_fd, old_path,
+    LOG("syscall old fd: %d, old path: %s, new fd: %d, new path: %s flags: %d", old_dir_fd,
+        old_path,
         new_dir_fd, new_path, flags);
     IS_BLACKLIST_FILE(old_path);
     return orig_syscall(number, old_dir_fd, IoRedirect::GetRedirect(old_path), new_dir_fd,

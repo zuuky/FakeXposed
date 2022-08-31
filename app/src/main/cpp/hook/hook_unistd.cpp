@@ -23,9 +23,11 @@ STUB_SYMBOL HOOK_DEF(int, access, const char *pathname, int mode) {
     return faccessat(AT_FDCWD, pathname, mode, 0);
 }
 
-FUN_INTERCEPT HOOK_DEF(int, linkat, int old_dir_fd, const char *old_path, int new_dir_fd, const char *new_path, int flags) {
+FUN_INTERCEPT HOOK_DEF(int, linkat, int old_dir_fd, const char *old_path, int new_dir_fd,
+                       const char *new_path, int flags) {
     IS_BLACKLIST_FILE(old_path);
-    return get_orig_linkat()(old_dir_fd, IoRedirect::GetRedirect(old_path), new_dir_fd, IoRedirect::GetRedirect(new_path), flags);
+    return get_orig_linkat()(old_dir_fd, IoRedirect::GetRedirect(old_path), new_dir_fd,
+                             IoRedirect::GetRedirect(new_path), flags);
 }
 
 STUB_SYMBOL HOOK_DEF(int, link, const char *old_path, const char *new_path) {
@@ -52,14 +54,16 @@ FUN_INTERCEPT HOOK_DEF(int, chdir, const char *path) {
 
 FUN_INTERCEPT HOOK_DEF(int, symlinkat, const char *old_path, int new_dir_fd, const char *new_path) {
     IS_BLACKLIST_FILE(old_path);
-    return get_orig_symlinkat()(IoRedirect::GetRedirect(old_path), new_dir_fd, IoRedirect::GetRedirect(new_path));
+    return get_orig_symlinkat()(IoRedirect::GetRedirect(old_path), new_dir_fd,
+                                IoRedirect::GetRedirect(new_path));
 }
 
 STUB_SYMBOL HOOK_DEF(int, symlink, const char *old_path, const char *new_path) {
     return symlinkat(old_path, AT_FDCWD, new_path);
 }
 
-FUN_INTERCEPT HOOK_DEF(ssize_t, readlinkat, int dir_fd, const char *path, char *buf, size_t buf_size) {
+FUN_INTERCEPT HOOK_DEF(ssize_t, readlinkat, int dir_fd, const char *path, char *buf,
+                       size_t buf_size) {
     IS_BLACKLIST_FILE(path);
     const char *redirect = IoRedirect::GetRedirect(path);
     ssize_t result = get_orig_readlinkat()(dir_fd, redirect, buf, buf_size);
@@ -83,7 +87,8 @@ STUB_SYMBOL HOOK_DEF(ssize_t, readlink, const char *path, char *buf, size_t size
     return readlinkat(AT_FDCWD, path, buf, size);
 }
 
-FUN_INTERCEPT HOOK_DEF(int, fchownat, int dir_fd, const char *path, uid_t owner, gid_t group, int flags) {
+FUN_INTERCEPT HOOK_DEF(int, fchownat, int dir_fd, const char *path, uid_t owner, gid_t group,
+                       int flags) {
     IS_BLACKLIST_FILE(path);
     return get_orig_fchownat()(dir_fd, IoRedirect::GetRedirect(path), owner, group, flags);
 }

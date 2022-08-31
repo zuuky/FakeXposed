@@ -34,10 +34,10 @@ import com.sanfengandroid.common.model.base.BaseKeyValueEditDataModel;
 import com.sanfengandroid.common.model.base.BaseKeyValueModel;
 import com.sanfengandroid.common.model.base.ShowDataModel;
 import com.sanfengandroid.common.util.FileUtil;
-import com.sanfengandroid.fakeinterface.FileAccessMask;
 import com.sanfengandroid.datafilter.R;
 import com.sanfengandroid.datafilter.XpApplication;
 import com.sanfengandroid.datafilter.ui.FileBrowseLayout;
+import com.sanfengandroid.fakeinterface.FileAccessMask;
 
 import java.io.File;
 

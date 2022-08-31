@@ -19,8 +19,6 @@ package com.sanfengandroid.common.bean;
 
 import android.text.TextUtils;
 
-import androidx.annotation.NonNull;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

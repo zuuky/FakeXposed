@@ -48,7 +48,8 @@ std::string JNIHelper::GetObjectClassName(JNIEnv *env, jobject obj) {
     if (__predict_false(proxy.ExceptionCheck())) {
         return "There is an unhandled exception, this operation will be ignored";
     }
-    ScopedLocalRef<jclass> clazz(&proxy, (jclass) proxy.CallObjectMethod(obj, java_lang_Object_getClass));
+    ScopedLocalRef<jclass> clazz(&proxy,
+                                 (jclass) proxy.CallObjectMethod(obj, java_lang_Object_getClass));
     if (__predict_false(proxy.ExceptionCheck())) {
         proxy.ExceptionClear();
         return "call getClass exception occurs";
@@ -117,7 +118,8 @@ std::string JNIHelper::ToString(JNIEnv *env, jmethodID methodID) {
     if (__predict_false(proxy.ExceptionCheck())) {
         return "There is an unhandled exception, this operation will be ignored";
     }
-    ScopedLocalRef<jobject> method(&proxy, proxy.ToReflectedMethod(java_lang_Object, methodID, false));
+    ScopedLocalRef<jobject> method(&proxy,
+                                   proxy.ToReflectedMethod(java_lang_Object, methodID, false));
     if (__predict_false(proxy.ExceptionCheck())) {
         proxy.ExceptionClear();
         return "Method.toString exception occurs";
@@ -152,7 +154,8 @@ std::string JNIHelper::GetMethodName(JNIEnv *env, jmethodID mid) {
     }
     jobject obj = proxy.ToReflectedMethod(JNIHelper::java_lang_reflect_Method, mid, false);
     ScopedLocalRef<jobject> method_obj(&proxy, obj);
-    auto name = reinterpret_cast<jstring>(proxy.CallObjectMethod(method_obj.get(), java_lang_reflect_Method_getName));
+    auto name = reinterpret_cast<jstring>(proxy.CallObjectMethod(method_obj.get(),
+                                                                 java_lang_reflect_Method_getName));
     if (__predict_false(proxy.ExceptionCheck())) {
         proxy.ExceptionClear();
         return "Method.getName exception occurs";
@@ -166,8 +169,11 @@ std::string JNIHelper::GetFieldName(JNIEnv *env, jfieldID fieldId) {
     if (__predict_false(proxy.ExceptionCheck())) {
         return "There is an unhandled exception, this operation will be ignored";
     }
-    ScopedLocalRef<jobject> field_obj(env, proxy.ToReflectedField(JNIHelper::java_lang_reflect_Field, fieldId, false));
-    auto name = reinterpret_cast<jstring>(proxy.CallObjectMethod(field_obj.get(), java_lang_reflect_Field_getName));
+    ScopedLocalRef<jobject> field_obj(env,
+                                      proxy.ToReflectedField(JNIHelper::java_lang_reflect_Field,
+                                                             fieldId, false));
+    auto name = reinterpret_cast<jstring>(proxy.CallObjectMethod(field_obj.get(),
+                                                                 java_lang_reflect_Field_getName));
     if (__predict_false(proxy.ExceptionCheck())) {
         proxy.ExceptionClear();
         return "Field.getName exception occurs";
@@ -213,9 +219,11 @@ void JNIHelper::ClearException(JNIEnv *env) {
     }
 }
 
-static jmethodID CacheMethod(JNIEnv *env, jclass c, bool is_static, const char *name, const char *signature) {
+static jmethodID
+CacheMethod(JNIEnv *env, jclass c, bool is_static, const char *name, const char *signature) {
     jmethodID mid;
-    mid = is_static ? env->GetStaticMethodID(c, name, signature) : env->GetMethodID(c, name, signature);
+    mid = is_static ? env->GetStaticMethodID(c, name, signature) : env->GetMethodID(c, name,
+                                                                                    signature);
     return mid;
 }
 
@@ -229,11 +237,16 @@ void JNIHelper::Init(JNIEnv *env) {
     CHECK(java_lang_reflect_Field = CacheClass(env, "java/lang/reflect/Field"));
     CHECK(java_lang_String = CacheClass(env, "java/lang/String"));
 
-    CHECK(java_lang_Object_toString = CacheMethod(env, java_lang_Object, false, "toString", "()Ljava/lang/String;"));
-    CHECK(java_lang_Object_getClass = CacheMethod(env, java_lang_Object, false, "getClass", "()Ljava/lang/Class;"));
-    CHECK(java_lang_Class_getName = CacheMethod(env, java_lang_Class, false, "getName", "()Ljava/lang/String;"));
-    CHECK(java_lang_reflect_Method_getName = CacheMethod(env, java_lang_reflect_Method, false, "getName", "()Ljava/lang/String;"));
-    CHECK(java_lang_reflect_Field_getName = CacheMethod(env, java_lang_reflect_Field, false, "getName", "()Ljava/lang/String;"));
+    CHECK(java_lang_Object_toString = CacheMethod(env, java_lang_Object, false, "toString",
+                                                  "()Ljava/lang/String;"));
+    CHECK(java_lang_Object_getClass = CacheMethod(env, java_lang_Object, false, "getClass",
+                                                  "()Ljava/lang/Class;"));
+    CHECK(java_lang_Class_getName = CacheMethod(env, java_lang_Class, false, "getName",
+                                                "()Ljava/lang/String;"));
+    CHECK(java_lang_reflect_Method_getName = CacheMethod(env, java_lang_reflect_Method, false,
+                                                         "getName", "()Ljava/lang/String;"));
+    CHECK(java_lang_reflect_Field_getName = CacheMethod(env, java_lang_reflect_Field, false,
+                                                        "getName", "()Ljava/lang/String;"));
 
     init_ = true;
 }

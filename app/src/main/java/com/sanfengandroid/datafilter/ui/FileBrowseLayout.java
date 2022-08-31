@@ -29,7 +29,7 @@ import com.sanfengandroid.datafilter.listener.ICallExternal;
 public class FileBrowseLayout {
 
     public static void setFileBrowse(Context context, TextInputLayout layout,
-            FileBrowseResult callback) {
+                                     FileBrowseResult callback) {
         if (!(context instanceof ICallExternal)) {
             layout.setEndIconMode(TextInputLayout.END_ICON_NONE);
             return;

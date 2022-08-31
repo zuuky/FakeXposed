@@ -73,7 +73,7 @@ FUN_INTERCEPT HOOK_DEF(FILE *, fopen, const char *path, const char *mode) {
     if (fake_path != nullptr) {
         FILE *fd = get_orig_fopen()(fake_path, mode);
         if (fd != nullptr) {
-            LOGW("Fake: The maps file has been redirected, fd: %s", fake_path);
+            LOGMW("Fake: The maps file has been redirected, fd: %s", fake_path);
             get_orig_unlink()(fake_path);
             return fd;
         }
@@ -91,7 +91,7 @@ FUN_INTERCEPT HOOK_DEF(struct dirent *, readdir, DIR *dirp) {
     int found;
     do {
         if (FXHandler::FileNameIsBlacklisted(ret->d_name)) {
-            LOGW("Fake: Found blacklist file: %s, reading next...", ret->d_name);
+            LOGMW("Fake: Found blacklist file: %s, reading next...", ret->d_name);
             ret = orig_readdir(dirp);
             found = 1;
         } else {
@@ -101,9 +101,11 @@ FUN_INTERCEPT HOOK_DEF(struct dirent *, readdir, DIR *dirp) {
     return ret;
 }
 
-FUN_INTERCEPT HOOK_DEF(int, renameat, int old_dir_fd, const char *old_path, int new_dir_fd, const char *new_path) {
+FUN_INTERCEPT HOOK_DEF(int, renameat, int old_dir_fd, const char *old_path, int new_dir_fd,
+                       const char *new_path) {
     IS_BLACKLIST_FILE(old_path);
-    return get_orig_renameat()(old_dir_fd, IoRedirect::GetRedirect(old_path), new_dir_fd, IoRedirect::GetRedirect(new_path));
+    return get_orig_renameat()(old_dir_fd, IoRedirect::GetRedirect(old_path), new_dir_fd,
+                               IoRedirect::GetRedirect(new_path));
 }
 
 STUB_SYMBOL HOOK_DEF(int, rename, const char *old_path, const char *new_path) {

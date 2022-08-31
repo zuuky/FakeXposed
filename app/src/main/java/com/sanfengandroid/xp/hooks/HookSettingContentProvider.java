@@ -27,7 +27,9 @@ import com.sanfengandroid.xp.RemoteCall;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
 
-/** 提供数据同步,暂时不使用,因为如果能Hook system_server则意味着拿的到root权限,通过root搬迁配置数据更加方便
+/**
+ * 提供数据同步,暂时不使用,因为如果能Hook system_server则意味着拿的到root权限,通过root搬迁配置数据更加方便
+ *
  * @author sanfengAndroid
  */
 public class HookSettingContentProvider implements IHook {

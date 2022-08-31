@@ -35,7 +35,8 @@ FUN_INTERCEPT HOOK_DEF(int, fstatat, int dir_fd, const char *path, struct stat *
     if (file_access == nullptr) {
         return result;
     }
-    LOGD("redirect file stat: %s, orig access: %d, modify access: %d", path, buf->st_mode & ~07777, file_access->access);
+    LOGD("redirect file stat: %s, orig access: %d, modify access: %d", path, buf->st_mode & ~07777,
+         file_access->access);
     buf->st_mode &= ~07777;
 
     buf->st_mode |= file_access->access;
@@ -72,7 +73,8 @@ STUB_SYMBOL HOOK_DEF(int, mknod, const char *path, mode_t mode, dev_t dev) {
 
 // mkfifo 多数用于多进程通讯,更改本进程的路径可能会影响到其它进程使用,因此不拦截
 
-FUN_INTERCEPT HOOK_DEF(int, utimensat, int dirfd, const char *pathname, const struct timespec times[2], int flags) {
+FUN_INTERCEPT HOOK_DEF(int, utimensat, int dirfd, const char *pathname,
+                       const struct timespec times[2], int flags) {
     IS_BLACKLIST_FILE(pathname);
     return get_orig_utimensat()(dirfd, IoRedirect::GetRedirect(pathname), times, flags);
 }

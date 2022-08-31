@@ -3,6 +3,7 @@
 //
 
 #pragma once
+
 #include "hook_common.h"
 
 HOOK_DECLARE(long, syscall, long number, ...);

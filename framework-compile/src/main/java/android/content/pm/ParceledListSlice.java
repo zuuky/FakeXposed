@@ -28,10 +28,25 @@ import java.util.List;
  * multiple transactions if needed.
  *
  * @see BaseParceledListSlice
- *
- * @hide
  */
 public class ParceledListSlice<T extends Parcelable> extends BaseParceledListSlice<T> {
+    public static final Parcelable.ClassLoaderCreator<ParceledListSlice> CREATOR = new Parcelable.ClassLoaderCreator<ParceledListSlice>() {
+        @Override
+        public ParceledListSlice createFromParcel(Parcel in) {
+            return new ParceledListSlice(in, null);
+        }
+
+        @Override
+        public ParceledListSlice createFromParcel(Parcel in, ClassLoader loader) {
+            return new ParceledListSlice(in, loader);
+        }
+
+        @Override
+        public ParceledListSlice[] newArray(int size) {
+            return new ParceledListSlice[size];
+        }
+    };
+
     public ParceledListSlice(List<T> list) {
         super(list);
     }
@@ -41,14 +56,14 @@ public class ParceledListSlice<T extends Parcelable> extends BaseParceledListSli
     }
 
     public static <T extends Parcelable> ParceledListSlice<T> emptyList() {
-        return new ParceledListSlice<T>(Collections.<T> emptyList());
+        return new ParceledListSlice<T>(Collections.<T>emptyList());
     }
 
     @Override
     public int describeContents() {
         int contents = 0;
         final List<T> list = getList();
-        for (int i=0; i<list.size(); i++) {
+        for (int i = 0; i < list.size(); i++) {
             contents |= list.get(i).describeContents();
         }
         return contents;
@@ -68,23 +83,4 @@ public class ParceledListSlice<T extends Parcelable> extends BaseParceledListSli
     protected Parcelable.Creator<?> readParcelableCreator(Parcel from, ClassLoader loader) {
         throw new UnsupportedOperationException("Stub");
     }
-
-    @SuppressWarnings("unchecked")
-    public static final Parcelable.ClassLoaderCreator<ParceledListSlice> CREATOR =
-            new Parcelable.ClassLoaderCreator<ParceledListSlice>() {
-                @Override
-                public ParceledListSlice createFromParcel(Parcel in) {
-                    return new ParceledListSlice(in, null);
-                }
-
-                @Override
-                public ParceledListSlice createFromParcel(Parcel in, ClassLoader loader) {
-                    return new ParceledListSlice(in, loader);
-                }
-
-                @Override
-                public ParceledListSlice[] newArray(int size) {
-                    return new ParceledListSlice[size];
-                }
-            };
 }

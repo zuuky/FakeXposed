@@ -27,6 +27,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <dist:module dist:instant="true" />
+
     <application
             android:allowBackup="true"
             android:icon="@mipmap/ic_launcher"
@@ -50,9 +51,9 @@
                 tools:ignore="ExportedContentProvider"
                 android:authorities="${applicationId}"
                 android:name=".XPContentProvider"
-                android:exported="true"
+                android:exported="false"
                 android:process=":sp"
-                android:enabled="true" />
+                android:enabled="false" />
 
         <activity android:name=".NativeTestActivity" />
 

@@ -56,7 +56,9 @@ public:
 
     static void *FindLibcSymbolRealAddress(const char *name);
 
-    static bool RuntimeReplaceCommandArgv(RuntimeBean *bean, const char **new_command, const char **new_argv, jsize *block_size, jsize *new_argc);
+    static bool
+    RuntimeReplaceCommandArgv(RuntimeBean *bean, const char **new_command, const char **new_argv,
+                              jsize *block_size, jsize *new_argc);
 
     static bool RuntimeReplaceStream(RuntimeBean *bean, int fds[3]);
 
@@ -124,29 +126,33 @@ private:
     C_API ret (*get_orig_##func(void))(__VA_ARGS__);                                                                \
     C_API API_PUBLIC ret func(__VA_ARGS__)
 
-C_API API_PUBLIC void fake_load_library_init(JNIEnv *env, void *fake_soinfo, const RemoteInvokeInterface *interface, const char *cache_path, const char *config_path,
-                                             const char *process_name);
+C_API API_PUBLIC void
+fake_load_library_init(JNIEnv *env, void *fake_soinfo, const RemoteInvokeInterface *interface,
+                       const char *cache_path, const char *config_path,
+                       const char *process_name);
 
 extern const RemoteInvokeInterface *remote;
-
-int force_O_LARGEFILE(int flags);
-
-#define IS_BLACKLIST_FILE(name)                                                         \
-    if (FXHandler::FileNameIsBlacklisted(name)) {                                       \
-        LOGW("Fake '%s': access blacklist file %s",__FUNCTION__,  name);                \
-        errno = ENOENT;                                                                 \
-        return -1;                                                                      \
-    }
-
-#define IS_BLACKLIST_FILE_RETURN(name, ret) \
-    if (FXHandler::FileNameIsBlacklisted(name)) {                                       \
-        LOGW("Fake '%s': access blacklist file %s",__FUNCTION__,  name);                \
-        errno = ENOENT;                                                                 \
-        return ret;                                                                      \
-    }
 
 #define LOGMV(format, ...) LOGV("[Monitor %s] "#format, __FUNCTION__, __VA_ARGS__)
 #define LOGMD(format, ...) LOGD("[Monitor %s] "#format, __FUNCTION__, __VA_ARGS__)
 #define LOGMI(format, ...) LOGI("[Monitor %s] "#format, __FUNCTION__, __VA_ARGS__)
 #define LOGMW(format, ...) LOGW("[Monitor %s] "#format, __FUNCTION__, __VA_ARGS__)
 #define LOGME(format, ...) LOGE("[Monitor %s] "#format, __FUNCTION__, __VA_ARGS__)
+
+int force_O_LARGEFILE(int flags);
+
+#define IS_BLACKLIST_FILE(name)                                                         \
+    if (FXHandler::FileNameIsBlacklisted(name)) {                                       \
+        LOGMW("Fake '%s': blacklist file %s",__FUNCTION__,  name);                \
+        errno = ENOENT;                                                                 \
+        return -1;                                                                      \
+    }
+
+#define IS_BLACKLIST_FILE_RETURN(name, ret) \
+    if (FXHandler::FileNameIsBlacklisted(name)) {                                       \
+        LOGMW("Fake '%s': blacklist file %s",__FUNCTION__,  name);                \
+        errno = ENOENT;                                                                 \
+        return ret;                                                                      \
+    }
+
+

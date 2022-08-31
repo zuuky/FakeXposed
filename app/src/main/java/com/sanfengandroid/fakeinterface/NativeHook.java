@@ -56,13 +56,13 @@ public final class NativeHook {
     private static native int nativeAddIntBlackList(int type, String name, int value, boolean add);
 
     private static native int nativeAddIntBlackLists(int type, String[] names, int[] values,
-            boolean add);
+                                                     boolean add);
 
     private static native int nativeAddStringBlackList(int type, String name, String value,
-            boolean add);
+                                                       boolean add);
 
     private static native int nativeAddEnvironmentsBlackList(int type, String name, String value,
-            boolean add);
+                                                             boolean add);
 
     private static native int nativeSetHookOptionInt(String name, int value);
 
@@ -91,11 +91,11 @@ public final class NativeHook {
     private static native int nativeSetJniMonitorLib(String name, boolean contain, boolean add);
 
     private static native int nativeSetJniMonitorAddress(long start, long end, boolean contain,
-            boolean add);
+                                                         boolean add);
 
     private static native int nativeSetRuntimeBlacklist(String oldCmd, String newCmd,
-            String[] oldArgv, boolean matchArgv, String[] newArgv, boolean replaceArgv,
-            String input, String output, String error);
+                                                        String[] oldArgv, boolean matchArgv, String[] newArgv, boolean replaceArgv,
+                                                        String input, String output, String error);
 
     public static ErrorCode openJniMonitor() {
         try {
@@ -129,7 +129,7 @@ public final class NativeHook {
     }
 
     public static ErrorCode setJniMonitorAddress(long start, long end, boolean contain,
-            boolean add) {
+                                                 boolean add) {
         try {
             if (end < start) {
                 return ErrorCode.ERROR_JAVA_EXECUTE;
@@ -158,7 +158,7 @@ public final class NativeHook {
     }
 
     private static ErrorCode callIntBlacklist(NativeOption.NativeIntOption option, String name,
-            int value, boolean add) {
+                                              int value, boolean add) {
         if (option == null || TextUtils.isEmpty(name)) {
             return ErrorCode.ERROR_JAVA_EXECUTE;
         }
@@ -171,7 +171,7 @@ public final class NativeHook {
     }
 
     private static ErrorCode callEnvironmentsBlacklist(NativeOption.NativeStringOption option,
-            String name, String value) {
+                                                       String name, String value) {
         if (option == null || TextUtils.isEmpty(name) || TextUtils.isEmpty(value)) {
             return ErrorCode.ERROR_JAVA_EXECUTE;
         }
@@ -185,7 +185,7 @@ public final class NativeHook {
     }
 
     private static ErrorCode callStringBlacklist(NativeOption.NativeStringOption option,
-            String name, String value, boolean add) {
+                                                 String name, String value, boolean add) {
         if (option == null || TextUtils.isEmpty(name)) {
             return ErrorCode.ERROR_JAVA_EXECUTE;
         }
@@ -206,7 +206,7 @@ public final class NativeHook {
     }
 
     public static ErrorCode addBlackList(NativeOption.NativeIntOption option, String name,
-            NativeHookStatus value) {
+                                         NativeHookStatus value) {
         if (value == null) {
             return ErrorCode.ERROR_JAVA_EXECUTE;
         }
@@ -219,12 +219,12 @@ public final class NativeHook {
      * @param value  字符串值
      */
     public static ErrorCode addBlackList(NativeOption.NativeStringOption option, String name,
-            String value) {
+                                         String value) {
         return callStringBlacklist(option, name, value, true);
     }
 
     public static ErrorCode addEnvironmentsBlacklist(NativeOption.NativeStringOption option,
-            String name, String value) {
+                                                     String name, String value) {
         return callEnvironmentsBlacklist(option, name, value);
     }
 
@@ -243,7 +243,7 @@ public final class NativeHook {
      * @return 添加黑名单是否成功
      */
     public static ErrorCode addBlackLists(NativeOption.NativeIntOption option, String[] names,
-            NativeHookStatus[] values) {
+                                          NativeHookStatus[] values) {
         if (option == null) {
             return ErrorCode.ERROR_JAVA_EXECUTE;
         }
@@ -300,8 +300,8 @@ public final class NativeHook {
     }
 
     public static ErrorCode addRuntimeBlacklist(String oldCmd, String newCmd, String[] oldArgv,
-            boolean matchArgv, String[] newArgv, boolean replaceArgv, String input, String output,
-            String error) {
+                                                boolean matchArgv, String[] newArgv, boolean replaceArgv, String input, String output,
+                                                String error) {
         if (TextUtils.isEmpty(oldCmd)) {
             return ErrorCode.ERROR_JAVA_EXECUTE;
         }
@@ -567,7 +567,7 @@ public final class NativeHook {
             throws PackageManager.NameNotFoundException {
         try {
             libraryPath = findLibraryPath();
-            LogUtil.d(TAG, "initLibraryPath find library at: %s", libraryPath);
+            LogUtil.d(TAG, "initLibraryPath findLibraryPath: %s", libraryPath);
             if (libraryPath == null) {
                 initLibraryPath(context);
             }
@@ -612,9 +612,7 @@ public final class NativeHook {
     }
 
     public static String getDefaultHookModulePath() {
-        String name = "lib" + com.sanfengandroid.datafilter.BuildConfig.HOOK_HIGH_MODULE_NAME;
-        File hookModuleFile = new File(libraryPath,
-                FileInstaller.isRunning64Bit() ? name + "64.so" : name + ".so");
+        File hookModuleFile = new File(libraryPath, getSoFileName(libraryPath, com.sanfengandroid.datafilter.BuildConfig.HOOK_HIGH_MODULE_NAME));
         // 文件不存在时复制过去
         if (!hookModuleFile.exists()) {
             runShell(hookModuleFile.getAbsolutePath());
@@ -646,14 +644,20 @@ public final class NativeHook {
     }
 
     public static File getDefaultFakeLinkerPath() {
-        String name = "lib" + BuildConfig.LINKER_MODULE_NAME + Build.VERSION.SDK_INT;
-        File fakeLinkerFile = new File(libraryPath,
-                FileInstaller.isRunning64Bit() ? name + "64.so" : name + ".so");
+        File fakeLinkerFile = new File(libraryPath, getSoFileName(libraryPath, BuildConfig.LINKER_MODULE_NAME + Build.VERSION.SDK_INT));
         // 文件不存在时复制过去
         if (!fakeLinkerFile.exists()) {
             runShell(fakeLinkerFile.getAbsolutePath());
         }
         return fakeLinkerFile;
+    }
+
+    private static String getSoFileName(String libraryPath, String name) {
+        String suffix = libraryPath.substring(libraryPath.lastIndexOf("/") + 1);
+        if (suffix.contains("64")) {
+            return "lib" + name + "64.so";
+        }
+        return "lib" + name + ".so";
     }
 
     public static void defaultInitFakeLinker(Context context) {

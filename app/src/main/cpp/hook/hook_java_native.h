@@ -6,7 +6,7 @@
 
 #include "hook_common.h"
 
-class JNHook{
+class JNHook {
 public:
     static bool InitJavaNativeHook(JNIEnv *env);
 };

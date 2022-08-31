@@ -16,22 +16,22 @@
   -->
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
-            android:id="@+id/action_search"
-            android:title="@string/search"
-            app:showAsAction="ifRoom"
-            app:actionViewClass="androidx.appcompat.widget.SearchView" />
+        android:id="@+id/action_search"
+        android:title="@string/search"
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        app:showAsAction="ifRoom" />
     <item
-            android:id="@+id/action_filter_system_app"
-            android:orderInCategory="100"
-            android:title="@string/filter_system_app"
-            android:checkable="true"
-            app:showAsAction="ifRoom"
-            android:checkMark="?android:attr/listChoiceIndicatorMultiple" />
+        android:id="@+id/action_filter_system_app"
+        android:checkMark="?android:attr/listChoiceIndicatorMultiple"
+        android:checkable="true"
+        android:orderInCategory="100"
+        android:title="@string/filter_system_app"
+        app:showAsAction="ifRoom" />
     <item
-            android:id="@+id/save"
-            app:showAsAction="always"
-            android:title="@string/save" />
+        android:id="@+id/save"
+        android:title="@string/save"
+        app:showAsAction="always" />
 </menu>

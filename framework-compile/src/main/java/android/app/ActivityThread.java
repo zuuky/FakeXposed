@@ -26,11 +26,11 @@ public final class ActivityThread {
         throw new UnsupportedOperationException("Stub");
     }
 
-    public final LoadedApk getPackageInfoNoCheck(ApplicationInfo ai,
-                                                 CompatibilityInfo compatInfo) {
+    public static String currentProcessName() {
         throw new UnsupportedOperationException("Stub");
     }
-    public static String currentProcessName() {
+
+    public LoadedApk getPackageInfoNoCheck(ApplicationInfo ai, CompatibilityInfo compatInfo) {
         throw new UnsupportedOperationException("Stub");
     }
 }

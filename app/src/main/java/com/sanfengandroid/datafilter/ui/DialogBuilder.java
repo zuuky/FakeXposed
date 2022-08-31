@@ -28,7 +28,7 @@ public class DialogBuilder {
     }
 
     public static void confirmShow(Context context, int title, int message,
-            DialogInterface.OnClickListener negativeCallback) {
+                                   DialogInterface.OnClickListener negativeCallback) {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(context).setTitle(title)
                 .setNegativeButton(R.string.confirm, negativeCallback);
         if (message != 0) {
@@ -38,17 +38,17 @@ public class DialogBuilder {
     }
 
     public static void confirmCancelShow(Context context, int title,
-            DialogInterface.OnClickListener positiveCallback,
-            DialogInterface.OnClickListener negativeCallback) {
+                                         DialogInterface.OnClickListener positiveCallback,
+                                         DialogInterface.OnClickListener negativeCallback) {
         new MaterialAlertDialogBuilder(context).setTitle(title)
                 .setPositiveButton(R.string.confirm, positiveCallback)
                 .setNegativeButton(R.string.cancel, negativeCallback).show();
     }
 
     public static void confirmNeutralShow(Context context, int title,
-            DialogInterface.OnClickListener positiveCallback,
-            DialogInterface.OnClickListener neutralCallback,
-            DialogInterface.OnClickListener negativeCallback) {
+                                          DialogInterface.OnClickListener positiveCallback,
+                                          DialogInterface.OnClickListener neutralCallback,
+                                          DialogInterface.OnClickListener negativeCallback) {
         new MaterialAlertDialogBuilder(context).setTitle(title)
                 .setPositiveButton(R.string.confirm, positiveCallback)
                 .setNeutralButton(R.string.cancel, neutralCallback)
@@ -56,8 +56,8 @@ public class DialogBuilder {
     }
 
     public static void confirmNeutralShow(Context context, int title, String message, int positive,
-            int neutral, int negative, DialogInterface.OnClickListener positiveCallback,
-            DialogInterface.OnClickListener negativeCallback) {
+                                          int neutral, int negative, DialogInterface.OnClickListener positiveCallback,
+                                          DialogInterface.OnClickListener negativeCallback) {
         new MaterialAlertDialogBuilder(context).setTitle(title).setMessage(message)
                 .setPositiveButton(positive, positiveCallback).setNegativeButton(negative, null)
                 .setNeutralButton(neutral, negativeCallback).show();

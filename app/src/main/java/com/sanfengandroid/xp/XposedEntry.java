@@ -84,20 +84,20 @@ public class XposedEntry implements IXposedHookLoadPackage {
             LogUtil.v(TAG, "targetSDK: %s, current class loader: %s",
                     lpparam.appInfo.targetSdkVersion, XposedEntry.class.getClassLoader());
             Context contextImpl = createAppContext(lpparam.appInfo);
-            XpConfigAgent.setDataMode(XpDataMode.X_SP);
+            SPProvider.setDataMode(XpDataMode.X_SP);
             NativeHook.initLibraryPath(contextImpl, lpparam.appInfo.targetSdkVersion);
             NativeHook.initFakeLinker(contextImpl.getCacheDir().getAbsolutePath(),
                     lpparam.processName);
+            GlobalConfig.removeThis(lpparam.packageName);
             if (BuildConfig.APPLICATION_ID.equals(lpparam.packageName)
                     || BuildConfig.APPLICATION_ID.equals(lpparam.processName)) {
                 hookSelf(lpparam.classLoader);
                 // 自身获取 xps 模式
-                XpConfigAgent.setProcessMode(ProcessMode.SELF);
+                SPProvider.setProcessMode(ProcessMode.SELF);
                 SPProvider.setAppLibPath(contextImpl, NativeHook.libraryPath);
                 NativeTestActivity.initTestData(contextImpl);
             } else {
-                XpConfigAgent.setProcessMode(ProcessMode.HOOK_APP);
-                GlobalConfig.removeThis(lpparam.packageName);
+                SPProvider.setProcessMode(ProcessMode.HOOK_APP);
             }
             NativeInit.nativeSync();
             new XposedFilter().hook(lpparam.classLoader);
@@ -174,7 +174,7 @@ public class XposedEntry implements IXposedHookLoadPackage {
         LogUtil.d(TAG,
                 "XSharedPreferences pref file: %s, canRead: %s, path: %s, processMode: %s, pref.getAll(): %s",
                 pref.getFile().getAbsolutePath(), pref.getFile().canRead(), path,
-                XpConfigAgent.getProcessMode(), pref.getAll());
+                SPProvider.getProcessMode(), pref.getAll());
         return pref.getFile().canRead() ? pref : null;
     }
 }

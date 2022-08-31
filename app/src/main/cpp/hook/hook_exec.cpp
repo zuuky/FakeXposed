@@ -13,10 +13,10 @@ enum ExecVariant {
 };
 
 FUN_INTERCEPT HOOK_DEF(int, execve, const char *filename, char *const argv[], char *const envp[]) {
-    LOGMV("cmd %s ", filename);
+    LOGMV("exec cmd %s ", filename);
     int i = 0;
     while (argv[i] != nullptr) {
-        LOGMV("cmd arg %d: %s ", i, filename);
+        LOGMV("exec cmd arg %s, %d, %s ", filename, i, argv[i]);
         i++;
     }
     IS_BLACKLIST_FILE(filename);
@@ -24,7 +24,6 @@ FUN_INTERCEPT HOOK_DEF(int, execve, const char *filename, char *const argv[], ch
 }
 
 STUB_SYMBOL int __execl(const char *name, const char *argv0, ExecVariant variant, va_list ap) {
-    // Count the arguments.
     IS_BLACKLIST_FILE(name);
     va_list count_ap;
     va_copy(count_ap, ap);
@@ -88,7 +87,8 @@ FUN_INTERCEPT HOOK_DEF(int, execvp, const char *name, char *const *argv) {
     }
     void *caller = __builtin_return_address(0);
     int error_code = 0;
-    char *so_name = static_cast<char *>(remote->CallSoinfoFunction(kSFGetName, kSPAddress, caller, kSPNull, nullptr, &error_code));
+    char *so_name = static_cast<char *>(remote->CallSoinfoFunction(kSFGetName, kSPAddress, caller,
+                                                                   kSPNull, nullptr, &error_code));
     if (strcmp(so_name, "libopenjdk.so") == 0) {
         // 屏蔽java层调用
         return -1;
@@ -102,6 +102,7 @@ FUN_INTERCEPT HOOK_DEF(int, execvpe, const char *name, char *const *argv, char *
     return get_orig_execvpe()(IoRedirect::GetRedirectFile(name), argv, envp);
 }
 
-FUN_INTERCEPT HOOK_DEF(int, fexecve, int __fd, char *const *__argv, char *const *__envp) __INTRODUCED_IN(28) {
+FUN_INTERCEPT HOOK_DEF(int, fexecve, int __fd, char *const *__argv,
+                       char *const *__envp) __INTRODUCED_IN(28) {
     return get_orig_fexecve()(__fd, __argv, __envp);
 }

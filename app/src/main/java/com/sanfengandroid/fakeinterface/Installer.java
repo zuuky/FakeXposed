@@ -31,9 +31,6 @@ public class Installer {
         setRoot(true);
         FileInstaller.setConfigPath(NativeHook.getConfigPath());
         File[] files = SPProvider.getAllConfigurationFiles(context);
-        //if (files == null || files.length <= 0) {
-        //    files = SPProvider.initAllConfigurationFiles(context);
-        //}
         FileInstaller.installFile(context, files, root);
         return true;
     }

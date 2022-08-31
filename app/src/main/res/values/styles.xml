@@ -35,6 +35,7 @@
     <style name="ThemeOverlay.XpFilter.PopupTheme" parent="ThemeOverlay.AppCompat.DayNight">
         <item name="android:radioButtonStyle">@style/Widget.XpFilter.PopupMenuRadioButton</item>
     </style>
+
     <style name="Widget.XpFilter.PopupMenuRadioButton" parent="Widget.AppCompat.CompoundButton.RadioButton">
         <item name="enforceMaterialTheme">true</item>
         <item name="useMaterialThemeColors">true</item>
@@ -56,7 +57,8 @@
     </style>
 
     <style name="Widget.XpFilter.TextInputLayout" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">
-        <item name="hintTextAppearance">@style/TextAppearance.XpFilter.TextInputLayout.HintText</item>
+        <item name="hintTextAppearance">@style/TextAppearance.XpFilter.TextInputLayout.HintText
+        </item>
         <item name="hintTextColor">?attr/colorPrimary</item>
         <item name="android:paddingBottom">8dp</item>
         <item name="boxStrokeColor">@color/textInputOutlineColor</item>

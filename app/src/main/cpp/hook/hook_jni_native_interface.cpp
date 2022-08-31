@@ -25,8 +25,7 @@ JNIInterfaceMonitor *JNIInterfaceMonitor::singleton = nullptr;
     {offsetof(JNINativeInterface,name), reinterpret_cast<void *>(HookJni##name), reinterpret_cast<void **>(&original_jni.name)}
 
 static bool IsMonitor(uintptr_t addr) {
-//    return JNIInterfaceMonitor::Get()->InMonitoring(addr);
-    return true;
+    return JNIInterfaceMonitor::Get()->InMonitoring(addr);
 }
 
 #define HOOK_NATIVE_CALL_TYPE_METHOD_DEF(_jtype, _jname)                                                                        \
@@ -41,7 +40,7 @@ static bool IsMonitor(uintptr_t addr) {
             if(env->ExceptionCheck()){                                                                                          \
                 return result;                                                                                                  \
             }                                                                                                                   \
-            LOGV("class: %s, methodId: %s, result: %s", JNIHelper::GetObjectClassName(env, obj).c_str(),                         \
+            LOG("class: %s, methodId: %s, result: %s", JNIHelper::GetObjectClassName(env, obj).c_str(),                         \
             JNIHelper::ToString(env, methodID).c_str(), JNIHelper::ToString(env, result).c_str());                              \
         }                                                                                                                       \
         return result;                                                                                                          \
@@ -57,7 +56,7 @@ static bool IsMonitor(uintptr_t addr) {
             if(env->ExceptionCheck()){                                                                                          \
                 return result;                                                                                                  \
             }                                                                                                                   \
-            LOGV("class: %s, methodId: %s, result: %s", JNIHelper::GetObjectClassName(env, clazz).c_str(),                       \
+            LOG("class: %s, methodId: %s, result: %s", JNIHelper::GetObjectClassName(env, clazz).c_str(),                       \
             JNIHelper::ToString(env, methodID).c_str(), JNIHelper::ToString(env, result).c_str());                              \
         }                                                                                                                       \
         return result;                                                                                                          \
@@ -71,7 +70,7 @@ static bool IsMonitor(uintptr_t addr) {
             if(env->ExceptionCheck()){                                                                                          \
                 return result;                                                                                                  \
             }                                                                                                                   \
-            LOGV("class: %s, methodId: %s, result: %s", JNIHelper::GetObjectClassName(env, obj).c_str(),                         \
+            LOG("class: %s, methodId: %s, result: %s", JNIHelper::GetObjectClassName(env, obj).c_str(),                         \
             JNIHelper::ToString(env, methodID).c_str(), JNIHelper::ToString(env, result).c_str());                              \
         }                                                                                                                       \
         return result;                                                                                                          \
@@ -83,7 +82,7 @@ static bool IsMonitor(uintptr_t addr) {
             if(env->ExceptionCheck()){                                                                                          \
                 return result;                                                                                                  \
             }                                                                                                                   \
-            LOGV("class: %s, methodId: %s, result: %s", JNIHelper::GetObjectClassName(env, clazz).c_str(),                       \
+            LOG("class: %s, methodId: %s, result: %s", JNIHelper::GetObjectClassName(env, clazz).c_str(),                       \
             JNIHelper::ToString(env, methodID).c_str(), JNIHelper::ToString(env, result).c_str());                              \
         }                                                                                                                       \
         return result;                                                                                                          \
@@ -97,7 +96,7 @@ static bool IsMonitor(uintptr_t addr) {
             if(env->ExceptionCheck()){                                                                                          \
                 return result;                                                                                                  \
             }                                                                                                                   \
-            LOGV("class: %s, methodId: %s, result: %s", JNIHelper::GetObjectClassName(env, obj).c_str(),                         \
+            LOG("class: %s, methodId: %s, result: %s", JNIHelper::GetObjectClassName(env, obj).c_str(),                         \
             JNIHelper::ToString(env, methodID).c_str(), JNIHelper::ToString(env, result).c_str());                              \
         }                                                                                                                       \
         return result;                                                                                                          \
@@ -109,7 +108,7 @@ static bool IsMonitor(uintptr_t addr) {
             if(env->ExceptionCheck()){                                                                                          \
                 return result;                                                                                                  \
             }                                                                                                                   \
-            LOGV("class: %s, methodId: %s, result: %s", JNIHelper::GetObjectClassName(env, clazz).c_str(),                       \
+            LOG("class: %s, methodId: %s, result: %s", JNIHelper::GetObjectClassName(env, clazz).c_str(),                       \
             JNIHelper::ToString(env, methodID).c_str(), JNIHelper::ToString(env, result).c_str());                              \
         }                                                                                                                       \
         return result;                                                                                                          \
@@ -156,7 +155,7 @@ HOOK_NATIVE_CALL_TYPE_DEF(jdouble, Double);
             if(env->ExceptionCheck()){                                                                                      \
                 return result;                                                                                              \
             }                                                                                                               \
-            LOGV("class: %s, field: %s, result: %s", JNIHelper::GetObjectClassName(env, obj).c_str(),                        \
+            LOG("class: %s, field: %s, result: %s", JNIHelper::GetObjectClassName(env, obj).c_str(),                        \
             JNIHelper::ToString(env, fieldID).c_str(), JNIHelper::ToString(env, result).c_str());                           \
         }                                                                                                                   \
         return result;                                                                                                      \
@@ -168,7 +167,7 @@ HOOK_NATIVE_CALL_TYPE_DEF(jdouble, Double);
             if(env->ExceptionCheck()){                                                                                      \
                 return result;                                                                                              \
             }                                                                                                               \
-            LOGV("class: %s, field: %s, result: %s",JNIHelper::GetClassName(env, clazz).c_str(),                             \
+            LOG("class: %s, field: %s, result: %s",JNIHelper::GetClassName(env, clazz).c_str(),                             \
             JNIHelper::ToString(env, fieldID).c_str(), JNIHelper::ToString(env, result).c_str());                           \
         }                                                                                                                   \
         return result;                                                                                                      \
@@ -176,7 +175,7 @@ HOOK_NATIVE_CALL_TYPE_DEF(jdouble, Double);
     static void HookJniSet##_jname##Field(JNIEnv *env, jobject obj, jfieldID fieldID, _jtype value)                         \
     {                                                                                                                       \
         if (IsMonitor((uintptr_t) __builtin_return_address(0))) {                                                           \
-            LOGV("class: %s, field: %s, value: %s", JNIHelper::GetObjectClassName(env, obj).c_str(),                         \
+            LOG("class: %s, field: %s, value: %s", JNIHelper::GetObjectClassName(env, obj).c_str(),                         \
             JNIHelper::ToString(env, fieldID).c_str(), JNIHelper::ToString(env, value).c_str());                            \
         }                                                                                                                   \
         original_functions->Set##_jname##Field(env, obj, fieldID, value);                                                   \
@@ -184,7 +183,7 @@ HOOK_NATIVE_CALL_TYPE_DEF(jdouble, Double);
     static void HookJniSetStatic##_jname##Field(JNIEnv *env, jclass clazz, jfieldID fieldID, _jtype value)                  \
     {                                                                                                                       \
         if (IsMonitor((uintptr_t) __builtin_return_address(0))) {                                                           \
-            LOGV("class: %s, field: %s, value: %s", JNIHelper::GetClassName(env, clazz).c_str(),                             \
+            LOG("class: %s, field: %s, value: %s", JNIHelper::GetClassName(env, clazz).c_str(),                             \
             JNIHelper::ToString(env, fieldID).c_str(),  JNIHelper::ToString(env, value).c_str());                           \
         }                                                                                                                   \
         original_functions->SetStatic##_jname##Field(env, clazz, fieldID, value);                                           \
@@ -216,13 +215,13 @@ HOOK_NATIVE_FIELD_TYPE_DEF(jdouble, Double);
 
 HOOK_NATIVE_DEF(jint, RegisterNatives, JNIEnv *env, jclass c, const JNINativeMethod *methods,
                 jint nMethods) {
-    LOGV("start register native function %p", __builtin_return_address(0));
+    LOG("start register native function %p", __builtin_return_address(0));
     jint ret = original_functions->RegisterNatives(env, c, methods, nMethods);
     if (ret != JNI_ERR && !original_functions->ExceptionCheck(env)) {
         std::string cls = JNIHelper::GetClassName(env, c);
         for (int i = 0; i < nMethods; ++i) {
-            LOGV("native register class: %s, method name: %s, function signature: %s, register address: %p",
-                 cls.c_str(), methods[i].name, methods[i].signature, methods[i].fnPtr);
+            LOG("native register class: %s, method name: %s, function signature: %s, register address: %p",
+                cls.c_str(), methods[i].name, methods[i].signature, methods[i].fnPtr);
         }
     }
     return ret;
@@ -233,8 +232,8 @@ HOOK_NATIVE_DEF(void, CallVoidMethod, JNIEnv *env, jobject obj, jmethodID method
     va_start(args, methodID);
     original_functions->CallVoidMethodV(env, obj, methodID, args);
     va_end(args);
-    LOGV("class: %s, methodId: %s", JNIHelper::GetObjectClassName(env, obj).c_str(),
-         JNIHelper::ToString(env, methodID).c_str());
+    LOG("class: %s, methodId: %s", JNIHelper::GetObjectClassName(env, obj).c_str(),
+        JNIHelper::ToString(env, methodID).c_str());
     if (IsMonitor((uintptr_t) __builtin_return_address(0))) {
         if (original_functions->ExceptionCheck(env)) {
             return;
@@ -244,8 +243,8 @@ HOOK_NATIVE_DEF(void, CallVoidMethod, JNIEnv *env, jobject obj, jmethodID method
 
 HOOK_NATIVE_DEF(void, CallVoidMethodV, JNIEnv *env, jobject obj, jmethodID methodID, va_list args) {
     original_functions->CallVoidMethodV(env, obj, methodID, args);
-    LOGV("class: %s, methodId: %s", JNIHelper::GetObjectClassName(env, obj).c_str(),
-         JNIHelper::ToString(env, methodID).c_str());
+    LOG("class: %s, methodId: %s", JNIHelper::GetObjectClassName(env, obj).c_str(),
+        JNIHelper::ToString(env, methodID).c_str());
     if (IsMonitor((uintptr_t) __builtin_return_address(0))) {
         if (original_functions->ExceptionCheck(env)) {
             return;
@@ -255,8 +254,8 @@ HOOK_NATIVE_DEF(void, CallVoidMethodV, JNIEnv *env, jobject obj, jmethodID metho
 
 HOOK_NATIVE_DEF(void, CallVoidMethodA, JNIEnv *env, jobject obj, jmethodID methodID,
                 const jvalue *args) {
-    LOGV("class: %s, methodId: %s", JNIHelper::GetObjectClassName(env, obj).c_str(),
-         JNIHelper::ToString(env, methodID).c_str());
+    LOG("class: %s, methodId: %s", JNIHelper::GetObjectClassName(env, obj).c_str(),
+        JNIHelper::ToString(env, methodID).c_str());
     original_functions->CallVoidMethodA(env, obj, methodID, args);
     if (IsMonitor((uintptr_t) __builtin_return_address(0))) {
         if (original_functions->ExceptionCheck(env)) {
@@ -270,8 +269,8 @@ HOOK_NATIVE_DEF(void, CallStaticVoidMethod, JNIEnv *env, jclass clazz, jmethodID
     va_start(args, methodID);
     original_functions->CallStaticVoidMethodV(env, clazz, methodID, args);
     va_end(args);
-    LOGV("class: %s, methodId: %s", JNIHelper::GetClassName(env, clazz).c_str(),
-         JNIHelper::ToString(env, methodID).c_str());
+    LOG("class: %s, methodId: %s", JNIHelper::GetClassName(env, clazz).c_str(),
+        JNIHelper::ToString(env, methodID).c_str());
     if (IsMonitor((uintptr_t) __builtin_return_address(0))) {
         if (original_functions->ExceptionCheck(env)) {
             return;
@@ -282,8 +281,8 @@ HOOK_NATIVE_DEF(void, CallStaticVoidMethod, JNIEnv *env, jclass clazz, jmethodID
 HOOK_NATIVE_DEF(void, CallStaticVoidMethodV, JNIEnv *env, jclass clazz, jmethodID methodID,
                 va_list args) {
     original_functions->CallStaticVoidMethodV(env, clazz, methodID, args);
-    LOGV("class: %s, methodId: %s", JNIHelper::GetClassName(env, clazz).c_str(),
-         JNIHelper::ToString(env, methodID).c_str());
+    LOG("class: %s, methodId: %s", JNIHelper::GetClassName(env, clazz).c_str(),
+        JNIHelper::ToString(env, methodID).c_str());
     if (IsMonitor((uintptr_t) __builtin_return_address(0))) {
         if (original_functions->ExceptionCheck(env)) {
             return;
@@ -294,8 +293,8 @@ HOOK_NATIVE_DEF(void, CallStaticVoidMethodV, JNIEnv *env, jclass clazz, jmethodI
 HOOK_NATIVE_DEF(void, CallStaticVoidMethodA, JNIEnv *env, jclass clazz, jmethodID methodID,
                 const jvalue *args) {
     original_functions->CallStaticVoidMethodA(env, clazz, methodID, args);
-    LOGV("class: %s, methodId: %s", JNIHelper::GetClassName(env, clazz).c_str(),
-         JNIHelper::ToString(env, methodID).c_str());
+    LOG("class: %s, methodId: %s", JNIHelper::GetClassName(env, clazz).c_str(),
+        JNIHelper::ToString(env, methodID).c_str());
     if (IsMonitor((uintptr_t) __builtin_return_address(0))) {
         if (original_functions->ExceptionCheck(env)) {
             return;
@@ -305,7 +304,7 @@ HOOK_NATIVE_DEF(void, CallStaticVoidMethodA, JNIEnv *env, jclass clazz, jmethodI
 
 HOOK_NATIVE_DEF(jclass, FindClass, JNIEnv *env, const char *name) {
     jclass result = original_functions->FindClass(env, name);
-    LOGV("class name: %s, result: %p", name, result);
+    LOG("class name: %s, result: %p", name, result);
     if (IsMonitor((uintptr_t) __builtin_return_address(0))) {
         if (original_functions->ExceptionCheck(env)) {
             return result;
@@ -318,8 +317,8 @@ HOOK_NATIVE_DEF(jclass, FindClass, JNIEnv *env, const char *name) {
 HOOK_NATIVE_DEF(jfieldID, GetFieldID, JNIEnv *env, jclass clazz, const char *name,
                 const char *sig) {
     jfieldID result = original_functions->GetFieldID(env, clazz, name, sig);
-    LOGV("class id: %s, field name: %s, sig: %s, result: %p",
-         JNIHelper::GetClassName(env, clazz).c_str(), name, sig, result);
+    LOG("class id: %s, field name: %s, sig: %s, result: %p",
+        JNIHelper::GetClassName(env, clazz).c_str(), name, sig, result);
     if (IsMonitor((uintptr_t) __builtin_return_address(0))) {
         if (original_functions->ExceptionCheck(env)) {
             return result;
@@ -331,8 +330,8 @@ HOOK_NATIVE_DEF(jfieldID, GetFieldID, JNIEnv *env, jclass clazz, const char *nam
 HOOK_NATIVE_DEF(jfieldID, GetStaticFieldID, JNIEnv *env, jclass clazz, const char *name,
                 const char *sig) {
     jfieldID result = original_functions->GetStaticFieldID(env, clazz, name, sig);
-    LOGV("class id: %s, field name: %s, sig: %s, result: %p",
-         JNIHelper::GetClassName(env, clazz).c_str(), name, sig, result);
+    LOG("class id: %s, field name: %s, sig: %s, result: %p",
+        JNIHelper::GetClassName(env, clazz).c_str(), name, sig, result);
     if (IsMonitor((uintptr_t) __builtin_return_address(0))) {
         if (original_functions->ExceptionCheck(env)) {
             return result;
@@ -344,8 +343,8 @@ HOOK_NATIVE_DEF(jfieldID, GetStaticFieldID, JNIEnv *env, jclass clazz, const cha
 HOOK_NATIVE_DEF(jmethodID, GetMethodID, JNIEnv *env, jclass clazz, const char *name,
                 const char *sig) {
     jmethodID result = original_functions->GetMethodID(env, clazz, name, sig);
-    LOGV("class id: %s, method name: %s, sig: %s, result: %p",
-         JNIHelper::GetClassName(env, clazz).c_str(), name, sig, result);
+    LOG("class id: %s, method name: %s, sig: %s, result: %p",
+        JNIHelper::GetClassName(env, clazz).c_str(), name, sig, result);
     if (IsMonitor((uintptr_t) __builtin_return_address(0))) {
         if (original_functions->ExceptionCheck(env)) {
             return result;
@@ -357,8 +356,8 @@ HOOK_NATIVE_DEF(jmethodID, GetMethodID, JNIEnv *env, jclass clazz, const char *n
 HOOK_NATIVE_DEF(jmethodID, GetStaticMethodID, JNIEnv *env, jclass clazz, const char *name,
                 const char *sig) {
     jmethodID result = original_functions->GetStaticMethodID(env, clazz, name, sig);
-    LOGV("class id: %s, method name: %s, sig: %s, result: %p",
-         JNIHelper::GetClassName(env, clazz).c_str(), name, sig, result);
+    LOG("class id: %s, method name: %s, sig: %s, result: %p",
+        JNIHelper::GetClassName(env, clazz).c_str(), name, sig, result);
     if (IsMonitor((uintptr_t) __builtin_return_address(0))) {
         if (original_functions->ExceptionCheck(env)) {
             return result;

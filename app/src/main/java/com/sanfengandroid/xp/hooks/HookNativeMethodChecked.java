@@ -48,7 +48,7 @@ public class HookNativeMethodChecked implements IHook {
                 try {
                     int modify = (int) param.getResult();
                     modify = modify & ~Modifier.NATIVE;
-                    LogUtil.w(Const.JAVA_MONITOR_STATE,  "Fix Hook Native flag: %s", Util.getMemberFullName((Member) param.thisObject));
+                    LogUtil.w(Const.JAVA_MONITOR_STATE, "Fix Hook Native flag: %s", Util.getMemberFullName((Member) param.thisObject));
                     param.setResult(modify);
                 } catch (Throwable e) {
                     LogUtil.e(TAG, "replace native modify error", e);

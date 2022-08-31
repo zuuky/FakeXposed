@@ -71,7 +71,6 @@ public class PackageEditModel implements EditDataModel {
     @Override
     public View onCreateView(Context context) {
         ApplicationViewModel viewModel = XpApplication.getViewModel();
-        List<InstallPackageModel> all = viewModel.getInstalledAll();
         List<PackageModel> selects = (List<PackageModel>) viewModel.getDataValue();
         Set<String> added = new HashSet<>();
         if (selects != null) {
@@ -80,17 +79,6 @@ public class PackageEditModel implements EditDataModel {
             }
         }
         List<AddPackageBean> data = new ArrayList<>();
-        for (InstallPackageModel pm : all) {
-            if (!added.contains(pm.pkg)) {
-                AddPackageBean bean = new AddPackageBean();
-                bean.icon = pm.icon;
-                bean.appName = pm.appName;
-                bean.checked = false;
-                bean.packageName = pm.pkg;
-                bean.isSystem = pm.isSystemApp;
-                data.add(bean);
-            }
-        }
         addPackageBeans = data;
         View view = LayoutInflater.from(context).inflate(R.layout.select_add_view, null, false);
         RecyclerView rv = view.findViewById(R.id.add_select_rv);

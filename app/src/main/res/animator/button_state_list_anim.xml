@@ -1,5 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ Copyright (c) 2021 FakeXposed by sanfengAndroid.
   ~
   ~ Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,59 +16,59 @@
   -->
 
 <selector xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:tools="http://schemas.android.com/tools">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Pressed state -->
     <item
-            android:state_enabled="true"
-            android:state_pressed="true">
+        android:state_enabled="true"
+        android:state_pressed="true">
         <set>
             <objectAnimator
-                    android:duration="100"
-                    android:propertyName="translationZ"
-                    android:valueTo="2dp"
-                    android:valueType="floatType" />
+                android:duration="100"
+                android:propertyName="translationZ"
+                android:valueTo="2dp"
+                android:valueType="floatType" />
             <objectAnimator
-                    android:duration="0"
-                    android:propertyName="elevation"
-                    android:valueTo="6dp"
-                    android:valueType="floatType" />
+                android:duration="0"
+                android:propertyName="elevation"
+                android:valueTo="6dp"
+                android:valueType="floatType" />
         </set>
     </item>
 
     <!-- Hover state. This is triggered via mouse. -->
     <item
-            android:state_enabled="true"
-            android:state_hovered="true">
+        android:state_enabled="true"
+        android:state_hovered="true">
         <set>
             <objectAnimator
-                    android:duration="100"
-                    android:propertyName="translationZ"
-                    android:valueTo="2dp"
-                    android:valueType="floatType" />
+                android:duration="100"
+                android:propertyName="translationZ"
+                android:valueTo="2dp"
+                android:valueType="floatType" />
             <objectAnimator
-                    android:duration="0"
-                    android:propertyName="elevation"
-                    android:valueTo="6dp"
-                    android:valueType="floatType" />
+                android:duration="0"
+                android:propertyName="elevation"
+                android:valueTo="6dp"
+                android:valueType="floatType" />
         </set>
     </item>
 
     <!-- Focused state. This is triggered via keyboard. -->
     <item
-            android:state_enabled="true"
-            android:state_focused="true">
+        android:state_enabled="true"
+        android:state_focused="true">
         <set>
             <objectAnimator
-                    android:duration="100"
-                    android:propertyName="translationZ"
-                    android:valueTo="2dp"
-                    android:valueType="floatType" />
+                android:duration="100"
+                android:propertyName="translationZ"
+                android:valueTo="2dp"
+                android:valueType="floatType" />
             <objectAnimator
-                    android:duration="0"
-                    android:propertyName="elevation"
-                    android:valueTo="6dp"
-                    android:valueType="floatType" />
+                android:duration="0"
+                android:propertyName="elevation"
+                android:valueTo="6dp"
+                android:valueType="floatType" />
         </set>
     </item>
 
@@ -77,17 +76,17 @@
     <item android:state_enabled="true">
         <set>
             <objectAnimator
-                    android:duration="100"
-                    android:propertyName="translationZ"
-                    android:startDelay="100"
-                    android:valueTo="0dp"
-                    android:valueType="floatType"
-                    tools:ignore="UnusedAttribute" />
+                android:duration="100"
+                android:propertyName="translationZ"
+                android:startDelay="100"
+                android:valueTo="0dp"
+                android:valueType="floatType"
+                tools:ignore="UnusedAttribute" />
             <objectAnimator
-                    android:duration="0"
-                    android:propertyName="elevation"
-                    android:valueTo="6dp"
-                    android:valueType="floatType" />
+                android:duration="0"
+                android:propertyName="elevation"
+                android:valueTo="6dp"
+                android:valueType="floatType" />
         </set>
     </item>
 
@@ -95,15 +94,15 @@
     <item>
         <set>
             <objectAnimator
-                    android:duration="0"
-                    android:propertyName="translationZ"
-                    android:valueTo="0dp"
-                    android:valueType="floatType" />
+                android:duration="0"
+                android:propertyName="translationZ"
+                android:valueTo="0dp"
+                android:valueType="floatType" />
             <objectAnimator
-                    android:duration="0"
-                    android:propertyName="elevation"
-                    android:valueTo="0dp"
-                    android:valueType="floatType" />
+                android:duration="0"
+                android:propertyName="elevation"
+                android:valueTo="0dp"
+                android:valueType="floatType" />
         </set>
     </item>
 

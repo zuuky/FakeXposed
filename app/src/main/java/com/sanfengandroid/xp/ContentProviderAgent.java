@@ -42,7 +42,6 @@ public class ContentProviderAgent {
     private static final String TAG = ContentProviderAgent.class.getSimpleName();
     private static final Uri URI = Const.XP_CONTENT_URI;
     private static final Bundle SUCCESS;
-    private static ContentProviderAgent singleton = null;
 
     static {
         SUCCESS = new RemoteArgsBuild().success().build();
@@ -54,14 +53,7 @@ public class ContentProviderAgent {
     }
 
     public static ContentProviderAgent getInstance() {
-        if (singleton == null) {
-            synchronized (ContentProviderAgent.class) {
-                if (singleton == null) {
-                    singleton = new ContentProviderAgent();
-                }
-            }
-        }
-        return singleton;
+        return SingletonHolder.singleton;
     }
 
     public static boolean setHookAppEnable(Context context, String pkg, Boolean enable) {
@@ -70,7 +62,7 @@ public class ContentProviderAgent {
     }
 
     public static boolean setAppStringConfig(Context context, String pkg, DataModelType type,
-            String value) {
+                                             String value) {
         RemoteArgsBuild build = new RemoteArgsBuild(pkg).setDataType(type).setString(value);
         return new RemoteArgsUnpack(
                 callRemote(context, RemoteCall.SET_APP_STRING_CONFIG, build.build())).success();
@@ -253,6 +245,10 @@ public class ContentProviderAgent {
         SPProvider.putAppStringConfig(mContext.get(), caller.getPackageNonNull(),
                 caller.getDataType(), caller.getString());
         return SUCCESS;
+    }
+
+    private static final class SingletonHolder {
+        static final ContentProviderAgent singleton = new ContentProviderAgent();
     }
 
     private static class RemoteArgsBuild {

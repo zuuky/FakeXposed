@@ -29,10 +29,6 @@ import java.util.Random;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
 
-/**
- * @author sanfengAndroid
- * @date 2020/10/30
- */
 public class SecureThrowable {
     private static final String TAG = XposedFilter.TAG;
     private static final Random ran = new Random();
@@ -87,8 +83,9 @@ public class SecureThrowable {
             }
             int pos = -1;
             for (int i = 0; i < elements.length; i++) {
-                if (TextUtils.equals(keyElement.getClassName(), elements[i].getClassName()) &&
-                        TextUtils.equals(keyElement.getMethodName(), elements[i].getMethodName())) {
+                if (TextUtils.equals(keyElement.getClassName(), elements[i].getClassName())
+                        && TextUtils.equals(keyElement.getMethodName(),
+                        elements[i].getMethodName())) {
                     pos = i;
                     break;
                 }
@@ -97,9 +94,11 @@ public class SecureThrowable {
                 return e;
             }
             // Hook回调后会少一层栈帧,因此需要恢复它
-            StackTraceElement[] newElements = pos == 0 ? elements : new StackTraceElement[elements.length - pos];
-            newElements[0] = new StackTraceElement(method.getDeclaringClass().getName(), method.getName(),
-                    method.getDeclaringClass().getSimpleName() + ".java", ran.nextInt(3874));
+            StackTraceElement[] newElements =
+                    pos == 0 ? elements : new StackTraceElement[elements.length - pos];
+            newElements[0] = new StackTraceElement(method.getDeclaringClass().getName(),
+                    method.getName(), method.getDeclaringClass().getSimpleName() + ".java",
+                    ran.nextInt(3874));
             System.arraycopy(elements, pos + 1, newElements, 1, newElements.length - 1);
             e.setStackTrace(newElements);
         } catch (Throwable t) {
@@ -118,8 +117,8 @@ public class SecureThrowable {
         }
         int pos = -1;
         for (int i = 0; i < elements.length; i++) {
-            if (TextUtils.equals(keyElement.getClassName(), elements[i].getClassName()) &&
-                    TextUtils.equals(keyElement.getMethodName(), elements[i].getMethodName())) {
+            if (TextUtils.equals(keyElement.getClassName(), elements[i].getClassName())
+                    && TextUtils.equals(keyElement.getMethodName(), elements[i].getMethodName())) {
                 pos = i;
                 break;
             }

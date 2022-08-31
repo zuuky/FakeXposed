@@ -33,10 +33,10 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.sanfengandroid.common.model.base.BaseKeyValueModel;
 import com.sanfengandroid.common.model.base.EditDataModel;
 import com.sanfengandroid.common.model.base.ShowDataModel;
-import com.sanfengandroid.fakeinterface.MapsMode;
 import com.sanfengandroid.datafilter.R;
 import com.sanfengandroid.datafilter.XpApplication;
 import com.sanfengandroid.datafilter.viewmodel.ApplicationViewModel;
+import com.sanfengandroid.fakeinterface.MapsMode;
 
 
 public class MapsRuleModel extends BaseKeyValueModel {

@@ -16,32 +16,32 @@
   -->
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto">
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <PreferenceCategory android:title="@string/about_app">
         <Preference
-                app:key="native_tip"
-                app:icon="@drawable/ic_descriptor_24dp"
-                android:title="@string/native_hook_descriptor" />
+            android:title="@string/native_hook_descriptor"
+            app:icon="@drawable/ic_descriptor_24dp"
+            app:key="native_tip" />
         <Preference
-                app:key="github"
-                app:icon="@drawable/ic_github_24dp"
-                android:title="@string/github" />
+            android:title="@string/github"
+            app:icon="@drawable/ic_github_24dp"
+            app:key="github" />
         <Preference
-                app:key="follow_wechat"
-                app:icon="@drawable/ic_wechat_24dp"
-                android:title="@string/wechat_public_descriptor" />
+            android:title="@string/wechat_public_descriptor"
+            app:icon="@drawable/ic_wechat_24dp"
+            app:key="follow_wechat" />
         <Preference
-                app:key="donate"
-                app:icon="@drawable/ic_donate_24dp"
-                android:title="@string/donate" />
+            android:title="@string/donate"
+            app:icon="@drawable/ic_donate_24dp"
+            app:key="donate" />
         <Preference
-                app:key="share"
-                app:icon="@drawable/ic_shared_24dp"
-                android:title="@string/share" />
+            android:title="@string/share"
+            app:icon="@drawable/ic_shared_24dp"
+            app:key="share" />
         <Preference
-            app:key="version"
-                app:icon="@drawable/ic_descriptor_24dp"
-                android:title="@string/version"/>
+            android:title="@string/version"
+            app:icon="@drawable/ic_descriptor_24dp"
+            app:key="version" />
     </PreferenceCategory>
 </PreferenceScreen>

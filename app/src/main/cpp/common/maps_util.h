@@ -40,7 +40,7 @@ public:
         return page != nullptr;
     }
 
-    gaddress GetStartAddress() const{
+    gaddress GetStartAddress() const {
         return start_address_;
     }
 

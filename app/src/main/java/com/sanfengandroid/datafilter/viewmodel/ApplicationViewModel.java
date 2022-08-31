@@ -17,12 +17,7 @@
 
 package com.sanfengandroid.datafilter.viewmodel;
 
-import android.content.Context;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
 import android.os.AsyncTask;
-import android.os.Bundle;
 import android.os.Looper;
 import android.text.TextUtils;
 import android.util.Pair;
@@ -38,7 +33,6 @@ import com.sanfengandroid.common.model.PackageModel;
 import com.sanfengandroid.common.model.base.DataModelType;
 import com.sanfengandroid.common.model.base.ShowDataModel;
 import com.sanfengandroid.common.util.LogUtil;
-import com.sanfengandroid.datafilter.BuildConfig;
 import com.sanfengandroid.datafilter.SPProvider;
 import com.sanfengandroid.datafilter.XpApplication;
 import com.sanfengandroid.fakeinterface.GlobalConfig;
@@ -49,15 +43,12 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
 
 /**
  * @author sanfengAndroid
@@ -109,62 +100,6 @@ public class ApplicationViewModel extends ViewModel {
 
     public LiveData<List<InstallPackageModel>> getInstalled() {
         return installed;
-    }
-
-    public List<InstallPackageModel> getInstalledAll() {
-        initInstalledPackage();
-        return installed.getValue();
-    }
-
-    private void initInstalledPackage() {
-        if (installed.getValue() != null) {
-            return;
-        }
-        synchronized (installed) {
-            if (installed.getValue() != null) {
-                return;
-            }
-            AsyncTask.execute(() -> {
-                Context context = XpApplication.getInstance();
-                List<InstallPackageModel> list = new ArrayList<>();
-                PackageManager pm = context.getPackageManager();
-                Set<String> xpApks = new HashSet<>();
-                List<PackageInfo> infos = pm.getInstalledPackages(PackageManager.GET_META_DATA);
-                for (PackageInfo info : infos) {
-                    InstallPackageModel item = new InstallPackageModel();
-                    if (info.packageName.equals(BuildConfig.APPLICATION_ID)) {
-                        SPProvider.setAppLibPath(context.getApplicationContext(),
-                                info.applicationInfo.nativeLibraryDir);
-                    }
-                    item.pkg = info.packageName;
-                    item.appName = info.applicationInfo.loadLabel(pm).toString();
-                    item.versionName = info.versionName;
-                    item.versionCode = info.getLongVersionCode();
-                    item.isXposedModule = isXposedModule(info.applicationInfo.metaData);
-                    item.icon = info.applicationInfo.loadIcon(pm);
-                    item.isSystemApp =
-                            (info.applicationInfo.flags & ApplicationInfo.FLAG_SYSTEM) != 0;
-                    list.add(item);
-                    apks.put(item.pkg, item);
-                    if (item.isXposedModule) {
-                        xpApks.add(item.pkg);
-                    }
-                    LogUtil.d("installed apk: %s", info);
-                }
-                LogUtil.d("xpApks: %s", xpApks);
-                Collections.sort(list);
-                installed.postValue(list);
-                SPProvider.setXposedList(context, xpApks);
-            });
-        }
-    }
-
-    private boolean isXposedModule(Bundle bundle) {
-        if (bundle != null) {
-            return bundle.containsKey("xposeddescription") || bundle.containsKey("xposedminversion")
-                    || bundle.containsKey("xposedmodule");
-        }
-        return false;
     }
 
     public InstallPackageModel getInstallApp(String pkg) {
@@ -250,7 +185,7 @@ public class ApplicationViewModel extends ViewModel {
     }
 
     public void setEditModelObserver(LifecycleOwner owner,
-            Observer<Pair<ShowDataModel, Integer>> observer) {
+                                     Observer<Pair<ShowDataModel, Integer>> observer) {
         editModel.observe(owner, editDataModel -> {
             if (editDataModel != null && editDataModel.first != null) {
                 observer.onChanged(editDataModel);
@@ -259,7 +194,7 @@ public class ApplicationViewModel extends ViewModel {
     }
 
     public void setDataObserver(LifecycleOwner owner,
-            Observer<List<? extends ShowDataModel>> observer) {
+                                Observer<List<? extends ShowDataModel>> observer) {
         data.observe(owner, showDataModels -> {
             if (showDataModels != null) {
                 observer.onChanged(showDataModels);

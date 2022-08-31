@@ -68,6 +68,34 @@ public class ExecBean {
      */
     public String errStream;
 
+    public static String[] toJavaStringArguments(String input) {
+        if (input == null || input.isEmpty()) {
+            return null;
+        }
+        String[] parameters = input.split(" ");
+        if (parameters.length == 1) {
+            return parameters;
+        }
+        List<String> list = new ArrayList<>();
+        String str = null;
+        for (String parameter : parameters) {
+            if (str == null) {
+                str = parameter;
+                continue;
+            }
+            if (str.endsWith("\\")) {
+                str += parameter;
+            } else {
+                str = parameter;
+                list.add(str);
+            }
+        }
+        if (str != null) {
+            list.add(str);
+        }
+        return list.toArray(new String[0]);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -98,34 +126,6 @@ public class ExecBean {
                 '}';
     }
 
-    public static String[] toJavaStringArguments(String input) {
-        if (input == null || input.isEmpty()) {
-            return null;
-        }
-        String[] parameters = input.split(" ");
-        if (parameters.length == 1) {
-            return parameters;
-        }
-        List<String> list = new ArrayList<>();
-        String str = null;
-        for (String parameter : parameters) {
-            if (str == null) {
-                str = parameter;
-                continue;
-            }
-            if (str.endsWith("\\")) {
-                str += parameter;
-            } else {
-                str = parameter;
-                list.add(str);
-            }
-        }
-        if (str != null){
-            list.add(str);
-        }
-        return list.toArray(new String[0]);
-    }
-
     public void transform() {
         if (!TextUtils.isEmpty(oldArgv)) {
             oldArgs = toJavaStringArguments(oldArgv);
@@ -133,7 +133,7 @@ public class ExecBean {
         if (!TextUtils.isEmpty(newArgv) && replaceArgv) {
             newArgs = toJavaStringArguments(newArgv);
         }
-        if (!TextUtils.isEmpty(inputStream) && !inputStream.endsWith("\n")){
+        if (!TextUtils.isEmpty(inputStream) && !inputStream.endsWith("\n")) {
             inputStream += "\n";
         }
     }

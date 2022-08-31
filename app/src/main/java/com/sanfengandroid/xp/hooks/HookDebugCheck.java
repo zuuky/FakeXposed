@@ -17,6 +17,8 @@
 
 package com.sanfengandroid.xp.hooks;
 
+import static com.sanfengandroid.xp.hooks.XposedFilter.TAG;
+
 import android.content.ContentResolver;
 import android.os.Build;
 import android.provider.Settings;
@@ -32,12 +34,6 @@ import java.lang.reflect.Method;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 
-import static com.sanfengandroid.xp.hooks.XposedFilter.TAG;
-
-/**
- * @author sanfengAndroid
- * @date 2020/11/01
- */
 public class HookDebugCheck implements IHook {
     @Override
     public void hook(ClassLoader loader) throws Exception {

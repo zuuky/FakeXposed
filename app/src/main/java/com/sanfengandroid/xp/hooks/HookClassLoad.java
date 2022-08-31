@@ -22,9 +22,9 @@ import android.text.TextUtils;
 import com.sanfengandroid.common.Const;
 import com.sanfengandroid.common.model.base.DataModelType;
 import com.sanfengandroid.common.util.LogUtil;
+import com.sanfengandroid.datafilter.BuildConfig;
 import com.sanfengandroid.fakeinterface.GlobalConfig;
 import com.sanfengandroid.fakeinterface.NativeHook;
-import com.sanfengandroid.datafilter.BuildConfig;
 
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
@@ -46,32 +46,37 @@ public class HookClassLoad implements IHook {
     @Override
     public void hook(ClassLoader loader) throws Throwable {
         LogUtil.v(TAG, "hide class load");
-        XposedHelpers.findAndHookMethod(ClassLoader.class, "defineClass", String.class, byte[].class, int.class, int.class, new XC_MethodHook() {
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                String name = (String) param.args[0];
-                if (TextUtils.equals(name, BuildConfig.APPLICATION_ID)) {
-                    LogUtil.d(TAG, "define class get self class");
-                    param.setResult(NativeHook.class);
-                }
-            }
-        });
+        XposedHelpers.findAndHookMethod(ClassLoader.class, "defineClass", String.class,
+                byte[].class, int.class, int.class, new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        String name = (String) param.args[0];
+                        if (TextUtils.equals(name, BuildConfig.APPLICATION_ID)) {
+                            LogUtil.d(TAG, "define class get self class");
+                            param.setResult(NativeHook.class);
+                        }
+                    }
+                });
 
-        XposedHelpers.findAndHookMethod("dalvik.system.BaseDexClassLoader", loader, "findClass", String.class, new XC_MethodHook() {
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                String name = (String) param.args[0];
-                LogUtil.d(TAG, "BaseDexClassLoader find class %s", name);
-                if (TextUtils.isEmpty(name)) {
-                    return;
-                }
-                if (isChild(loader, (ClassLoader) param.thisObject) && GlobalConfig.stringContainBlackList(name, DataModelType.LOAD_CLASS_HIDE)) {
-                    LogUtil.w(Const.JAVA_MONITOR_STATE, "BaseDexClassLoader looking for blocked classes: %s", name);
-                    param.setResult(null);
-                    param.setThrowable(new ClassNotFoundException(name));
-                }
-            }
-        });
+        XposedHelpers.findAndHookMethod("dalvik.system.BaseDexClassLoader", loader, "findClass",
+                String.class, new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        String name = (String) param.args[0];
+                        LogUtil.d(TAG, "BaseDexClassLoader find class %s", name);
+                        if (TextUtils.isEmpty(name)) {
+                            return;
+                        }
+                        if (isChild(loader, (ClassLoader) param.thisObject)
+                                && GlobalConfig.stringContainBlackList(name,
+                                DataModelType.LOAD_CLASS_HIDE)) {
+                            LogUtil.w(Const.JAVA_MONITOR_STATE,
+                                    "BaseDexClassLoader looking for blocked classes: %s", name);
+                            param.setResult(null);
+                            param.setThrowable(new ClassNotFoundException(name));
+                        }
+                    }
+                });
 
         LogUtil.d(TAG, "hook class loader success");
     }

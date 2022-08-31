@@ -16,24 +16,24 @@
   -->
 
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="35dp"
-        android:layout_margin="4dp"
-        android:clickable="true"
-        android:focusable="true"
-        app:cardCornerRadius="4dp"
-        android:minHeight="?android:attr/listPreferredItemHeight"
-        android:background="?attr/selectableItemBackground">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="35dp"
+    android:layout_margin="4dp"
+    android:background="?attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true"
+    android:minHeight="?android:attr/listPreferredItemHeight"
+    android:orientation="vertical"
+    app:cardCornerRadius="4dp">
 
     <com.google.android.material.textview.MaterialTextView
-            android:id="@+id/item_number"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:text="@string/add_item"
-            android:textStyle="bold"
-            android:textColor="?attr/colorAccent" />
+        android:id="@+id/item_number"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center"
+        android:text="@string/add_item"
+        android:textColor="?attr/colorAccent"
+        android:textStyle="bold" />
 
 </com.google.android.material.card.MaterialCardView>

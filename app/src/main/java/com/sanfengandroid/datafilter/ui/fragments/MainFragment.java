@@ -48,6 +48,10 @@ public class MainFragment extends Fragment {
         return new MainFragment();
     }
 
+    public static boolean isActive() {
+        return TextUtils.equals(XpApplication.getInstance().getString(R.string.set_gid), "123");
+    }
+
     @Override
     public void onCreate(
             @Nullable
@@ -72,10 +76,6 @@ public class MainFragment extends Fragment {
             }
             mViewModel.setMessage(success ? "success" : tip);
         });
-    }
-
-    public static boolean isActive() {
-        return TextUtils.equals(XpApplication.getInstance().getString(R.string.set_gid), "123");
     }
 
     @SuppressLint("UseCompatLoadingForDrawables")

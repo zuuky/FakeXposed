@@ -209,7 +209,7 @@ public class AppBarActivity extends AppCompatActivity {
                     return;
                 }
                 String note = getResources().getConfiguration().locale.getCountry().equals("CN")
-                              ? app.getNoteCN() : app.getNoteEN();
+                        ? app.getNoteCN() : app.getNoteEN();
                 getSnackView().post(
                         () -> DialogBuilder.confirmNeutralShow(AppBarActivity.this, R.string.update,
                                 note, R.string.update, R.string.ignore, R.string.cancel,

@@ -95,12 +95,11 @@ public class InstalledPackageFragment extends Fragment implements Filterable, Ap
             });
             mViewModel.initHookApps();
         });
-        mViewModel.getInstalledAll();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_recycler_view, container, false);
         RecyclerView recyclerView = view.findViewById(R.id.list);
         if (recyclerView != null) {

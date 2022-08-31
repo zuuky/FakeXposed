@@ -30,7 +30,8 @@ public:
     ScopedLocalRef(JNIEnv *env, T localRef) : mEnv(env), proxy_(nullptr), mLocalRef(localRef) {
     }
 
-    ScopedLocalRef(ProxyJNIEnv *proxy, T localRef) : mEnv(nullptr), proxy_(proxy), mLocalRef(localRef) {
+    ScopedLocalRef(ProxyJNIEnv *proxy, T localRef) : mEnv(nullptr), proxy_(proxy),
+                                                     mLocalRef(localRef) {
     }
 
     ~ScopedLocalRef() {

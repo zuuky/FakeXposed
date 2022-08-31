@@ -70,7 +70,8 @@ bool MapsUtil::UnlockPageProtect() const {
     while (page_ != nullptr && page_->start != 0) {
         if ((page_->old_protect & PROT_WRITE) == 0) {
             page_->new_protect = page_->old_protect | PROT_WRITE | PROT_READ;
-            if (mprotect(reinterpret_cast<void *>(page_->start), page_->end - page_->start, page_->new_protect) < 0) {
+            if (mprotect(reinterpret_cast<void *>(page_->start), page_->end - page_->start,
+                         page_->new_protect) < 0) {
                 return false;
             }
         } else {
@@ -95,7 +96,8 @@ bool MapsUtil::RecoveryPageProtect(PageProtect *protect) {
     PageProtect *page_ = protect;
     while (page_ != nullptr && page_->start != 0) {
         if (page_->old_protect != page_->new_protect) {
-            if (mprotect(reinterpret_cast<void *>(page_->start), page_->end - page_->start, page_->old_protect) < 0) {
+            if (mprotect(reinterpret_cast<void *>(page_->start), page_->end - page_->start,
+                         page_->old_protect) < 0) {
                 return false;
             }
         }
@@ -143,7 +145,9 @@ bool MapsUtil::UnlockAddressProtect(void *address) {
         return true;
     }
     page->new_protect = page->old_protect | PROT_WRITE;
-    bool success = mprotect(GSIZE_TO_POINTER(page->start), page->end - page->start, page->new_protect) == 0;
+    bool success =
+            mprotect(GSIZE_TO_POINTER(page->start), page->end - page->start, page->new_protect) ==
+            0;
     if (!success) {
         PageProtectFree();
         return false;
@@ -239,7 +243,8 @@ bool MapsUtil::GetMapsLine() {
 }
 
 bool MapsUtil::FormatLine() {
-    return sscanf(line_, "%" SCNx64 "-%" SCNx64 " %s %*x %*s %*s %s", &start_address_, &end_address_, protect_, path_) == 4;
+    return sscanf(line_, "%" SCNx64 "-%" SCNx64 " %s %*x %*s %*s %s", &start_address_,
+                  &end_address_, protect_, path_) == 4;
 }
 
 int MapsUtil::FormatProtect() {
@@ -269,7 +274,8 @@ void MapsUtil::CloseMaps() {
 
 bool MapsUtil::CheckPage() {
     if (page->start == 0 || page->end == 0) {
-        LOGE("read memory protect failed, start: 0x%" PRIx64 ", end: 0x%" PRIx64, page->start, page->end);
+        LOGE("read memory protect failed, start: 0x%" PRIx64 ", end: 0x%" PRIx64, page->start,
+             page->end);
         PageProtectFree();
         return false;
     }

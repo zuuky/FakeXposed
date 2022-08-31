@@ -1,20 +1,3 @@
-/*
- * Copyright (c) 2021 FakeXposed by sanfengAndroid.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- *
- */
-
 package android.content.pm;
 
 import android.os.Binder;
@@ -30,18 +13,16 @@ import java.util.List;
 /**
  * Transfer a large list of Parcelable objects across an IPC.  Splits into
  * multiple transactions if needed.
- *
+ * <p>
  * Caveat: for efficiency and security, all elements must be the same concrete type.
  * In order to avoid writing the class name of each object, we must ensure that
  * each object is the same type, or else unparceling then reparceling the data may yield
  * a different result if the class name encoded in the Parcelable is a Base type.
  * See b/17671747.
- *
- * @hide
  */
 abstract class BaseParceledListSlice<T> implements Parcelable {
-    private static String TAG = "ParceledListSlice";
-    private static boolean DEBUG = false;
+    private static final String TAG = "ParceledListSlice";
+    private static final boolean DEBUG = false;
 
     /*
      * TODO get this number from somewhere else. For now set it to a quarter of
@@ -83,7 +64,7 @@ abstract class BaseParceledListSlice<T> implements Parcelable {
 
             mList.add(parcelable);
 
-            if (DEBUG) Log.d(TAG, "Read inline #" + i + ": " + mList.get(mList.size()-1));
+            if (DEBUG) Log.d(TAG, "Read inline #" + i + ": " + mList.get(mList.size() - 1));
             i++;
         }
         if (i >= N) {
@@ -107,11 +88,19 @@ abstract class BaseParceledListSlice<T> implements Parcelable {
 
                 mList.add(parcelable);
 
-                if (DEBUG) Log.d(TAG, "Read extra #" + i + ": " + mList.get(mList.size()-1));
+                if (DEBUG) Log.d(TAG, "Read extra #" + i + ": " + mList.get(mList.size() - 1));
                 i++;
             }
             reply.recycle();
             data.recycle();
+        }
+    }
+
+    private static void verifySameType(final Class<?> expected, final Class<?> actual) {
+        if (!actual.equals(expected)) {
+            throw new IllegalArgumentException("Can't unparcel type "
+                    + actual.getName() + " in list of type "
+                    + expected.getName());
         }
     }
 
@@ -123,14 +112,6 @@ abstract class BaseParceledListSlice<T> implements Parcelable {
             return (T) classLoaderCreator.createFromParcel(p, loader);
         }
         return (T) creator.createFromParcel(p);
-    }
-
-    private static void verifySameType(final Class<?> expected, final Class<?> actual) {
-        if (!actual.equals(expected)) {
-            throw new IllegalArgumentException("Can't unparcel type "
-                    + actual.getName() + " in list of type "
-                    + expected.getName());
-        }
     }
 
     public List<T> getList() {

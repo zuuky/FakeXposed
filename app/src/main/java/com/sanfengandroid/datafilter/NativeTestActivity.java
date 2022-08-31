@@ -55,6 +55,54 @@ public class NativeTestActivity extends AppCompatActivity implements View.OnClic
     private static final String TEST_RULE = "sanfeng";
     private static final String TEST_RIGHT = "android";
 
+    public static void initTestData(Context context) {
+        File cache = context.getCacheDir();
+        Map<String, EnvBean> envs = GlobalConfig.getMap(DataModelType.SYSTEM_ENV_HIDE,
+                EnvBean.class);
+        EnvBean bean = new EnvBean(TEST_KEY, TEST_VALUE, TEST_RULE);
+        envs.put(bean.name, bean);
+        Map<String, String> global = GlobalConfig.getMap(DataModelType.GLOBAL_HIDE, String.class);
+        global.put(TEST_KEY, TEST_RIGHT);
+        Map<String, String> globalProperty = GlobalConfig.getMap(
+                DataModelType.GLOBAL_SYSTEM_PROPERTY_HIDE, String.class);
+        globalProperty.put("ro.zygote", TEST_RIGHT);
+        Map<String, String> mapHide = GlobalConfig.getMap(DataModelType.MAPS_HIDE, String.class);
+        mapHide.put(BuildConfig.APPLICATION_ID, MapsMode.MM_REMOVE.key);
+        try {
+            File file = new File(cache, "su");
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            file = new File(cache, TEST_KEY);
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            Map<String, String> map = GlobalConfig.getMap(DataModelType.FILE_HIDE, String.class);
+            map.put(file.getAbsolutePath(), file.getAbsolutePath());
+            file = new File(cache, TEST_KEY + TEST_RULE);
+            FileWriter fw = new FileWriter(file);
+            fw.write("test value");
+            fw.flush();
+            fw.close();
+            file = new File(cache, TEST_KEY + TEST_RIGHT);
+            fw = new FileWriter(file);
+            fw.write("has been redirect");
+            fw.flush();
+            fw.close();
+            map = GlobalConfig.getMap(DataModelType.FILE_REDIRECT_HIDE, String.class);
+            map.put(new File(cache, TEST_KEY + TEST_RULE).getAbsolutePath(),
+                    file.getAbsolutePath());
+            file = new File(cache, TEST_VALUE);
+            if (!file.exists()) {
+                file.createNewFile();
+            }
+            map = GlobalConfig.getMap(DataModelType.FILE_ACCESS_HIDE, String.class);
+            map.put(file.getAbsolutePath(), "-1:-1:" + FileAccessMask.USR_READ.mode);
+        } catch (Throwable e) {
+            LogUtil.e(TAG, "error initializing test data", e);
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -121,54 +169,6 @@ public class NativeTestActivity extends AppCompatActivity implements View.OnClic
 
     private void tip(String msg, boolean success) {
         Toast.makeText(this, msg + (success ? ": 通过" : ": 未通过"), Toast.LENGTH_SHORT).show();
-    }
-
-    public static void initTestData(Context context) {
-        File cache = context.getCacheDir();
-        Map<String, EnvBean> envs = GlobalConfig.getMap(DataModelType.SYSTEM_ENV_HIDE,
-                EnvBean.class);
-        EnvBean bean = new EnvBean(TEST_KEY, TEST_VALUE, TEST_RULE);
-        envs.put(bean.name, bean);
-        Map<String, String> global = GlobalConfig.getMap(DataModelType.GLOBAL_HIDE, String.class);
-        global.put(TEST_KEY, TEST_RIGHT);
-        Map<String, String> globalProperty = GlobalConfig.getMap(
-                DataModelType.GLOBAL_SYSTEM_PROPERTY_HIDE, String.class);
-        globalProperty.put("ro.zygote", TEST_RIGHT);
-        Map<String, String> mapHide = GlobalConfig.getMap(DataModelType.MAPS_HIDE, String.class);
-        mapHide.put(BuildConfig.APPLICATION_ID, MapsMode.MM_REMOVE.key);
-        try {
-            File file = new File(cache, "su");
-            if (!file.exists()) {
-                file.createNewFile();
-            }
-            file = new File(cache, TEST_KEY);
-            if (!file.exists()) {
-                file.createNewFile();
-            }
-            Map<String, String> map = GlobalConfig.getMap(DataModelType.FILE_HIDE, String.class);
-            map.put(file.getAbsolutePath(), file.getAbsolutePath());
-            file = new File(cache, TEST_KEY + TEST_RULE);
-            FileWriter fw = new FileWriter(file);
-            fw.write("test value");
-            fw.flush();
-            fw.close();
-            file = new File(cache, TEST_KEY + TEST_RIGHT);
-            fw = new FileWriter(file);
-            fw.write("has been redirect");
-            fw.flush();
-            fw.close();
-            map = GlobalConfig.getMap(DataModelType.FILE_REDIRECT_HIDE, String.class);
-            map.put(new File(cache, TEST_KEY + TEST_RULE).getAbsolutePath(),
-                    file.getAbsolutePath());
-            file = new File(cache, TEST_VALUE);
-            if (!file.exists()) {
-                file.createNewFile();
-            }
-            map = GlobalConfig.getMap(DataModelType.FILE_ACCESS_HIDE, String.class);
-            map.put(file.getAbsolutePath(), "-1:-1:" + FileAccessMask.USR_READ.mode);
-        } catch (Throwable e) {
-            LogUtil.e(TAG, "error initializing test data", e);
-        }
     }
 
     private boolean testHideClass() {

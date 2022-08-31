@@ -73,6 +73,10 @@ public class SPProvider {
         return mode;
     }
 
+    public static ProcessMode getProcessMode() {
+        return processMode;
+    }
+
     public static void setProcessMode(ProcessMode mode) {
         processMode = mode;
     }
@@ -207,12 +211,12 @@ public class SPProvider {
     }
 
     public static void putAppStringConfig(Context context, String pkg, DataModelType type,
-            JSONArray array) {
+                                          JSONArray array) {
         putAppStringConfig(context, pkg, type, array.toString());
     }
 
     public static void putAppStringConfig(Context context, String pkg, DataModelType type,
-            String value) {
+                                          String value) {
         getAppConfig(context, pkg).edit().putString(type.spKey, value)
                 .putBoolean(INIT_KEY + type.spKey, true).apply();
         updateConfigurationTime(context);
@@ -234,7 +238,7 @@ public class SPProvider {
     }
 
     public static Map<String, List<ShowDataModel>> getAppData(Context context,
-            SharedPreferences sp) {
+                                                              SharedPreferences sp) {
         Map<String, List<ShowDataModel>> data = new HashMap<>();
         for (DataModelType type : DataModelType.values()) {
             if (sp.getBoolean(INIT_KEY + type.spKey, false)) {
@@ -271,10 +275,10 @@ public class SPProvider {
     }
 
     public static Map<String, Set<ShowDataModel>> getOverloadAppAvailable(Context context,
-            SharedPreferences sp) {
+                                                                          SharedPreferences sp) {
         Map<String, List<ShowDataModel>> global =
                 getHookAppEnable(context) ? getAppData(context, Const.GLOBAL_PACKAGE)
-                                          : new HashMap<>();
+                        : new HashMap<>();
         Map<String, List<ShowDataModel>> app = getAppData(context, sp);
         Map<String, Set<ShowDataModel>> res = new HashMap<>();
         for (DataModelType type : DataModelType.values()) {
@@ -299,7 +303,7 @@ public class SPProvider {
     }
 
     public static Map<String, Set<ShowDataModel>> getOverloadAppAvailable(Context context,
-            String pkg) {
+                                                                          String pkg) {
         return getOverloadAppAvailable(context, getAppConfig(context, pkg));
     }
 

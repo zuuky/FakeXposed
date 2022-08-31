@@ -45,8 +45,8 @@ import de.robv.android.xposed.XposedBridge;
  * 这里应该监听有属性变化然后再次调整
  */
 public class HookSystemClass implements IHook {
-    private final String PropsName = "props";
     private static final String TAG = HookSystemClass.class.getSimpleName();
+    private final String PropsName = "props";
     private final Observer envObserver = (o, arg) -> {
         if (arg != null) {
             replaceEnvs();

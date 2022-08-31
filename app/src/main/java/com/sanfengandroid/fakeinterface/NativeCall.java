@@ -30,7 +30,7 @@ public class NativeCall {
         EnvBean bean = GlobalConfig.getEnvBlacklistValue(name);
         if (bean != null) {
             String replace = bean.replace(value);
-            LogUtil.w(Const.JAVA_MONITOR_STATE,  "native get env name: %s, orig value: %s, replace: %s", name, value, replace);
+            LogUtil.w(Const.JAVA_MONITOR_STATE, "native get env name: %s, orig value: %s, replace: %s", name, value, replace);
             return replace;
         }
         return null;

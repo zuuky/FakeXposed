@@ -16,61 +16,61 @@
   -->
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        xmlns:tools="http://schemas.android.com/tools"
-        tools:context="com.sanfengandroid.datafilter.ui.activties.MainActivity">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="com.sanfengandroid.datafilter.ui.activties.MainActivity">
 
     <item
-            android:id="@+id/action_search"
-            android:title="@string/search"
-            app:showAsAction="ifRoom"
-            app:actionViewClass="androidx.appcompat.widget.SearchView" />
+        android:id="@+id/action_search"
+        android:title="@string/search"
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
+        app:showAsAction="ifRoom" />
     <item
-            android:id="@+id/action_filter_system_app"
-            android:orderInCategory="100"
-            android:title="@string/filter_system_app"
-            app:showAsAction="never">
+        android:id="@+id/action_filter_system_app"
+        android:orderInCategory="100"
+        android:title="@string/filter_system_app"
+        app:showAsAction="never">
         <menu>
             <group android:checkableBehavior="single">
                 <item
-                        android:id="@+id/disable_system"
-                        android:title="@string/disable" />
+                    android:id="@+id/disable_system"
+                    android:title="@string/disable" />
                 <item
-                        android:id="@+id/filter_system"
-                        android:title="@string/show_system" />
+                    android:id="@+id/filter_system"
+                    android:title="@string/show_system" />
                 <item
-                        android:id="@+id/filter_non_system"
-                        android:title="@string/show_non_system" />
+                    android:id="@+id/filter_non_system"
+                    android:title="@string/show_non_system" />
             </group>
         </menu>
     </item>
     <item
-            android:id="@+id/action_filter_xposed_app"
-            android:orderInCategory="100"
-            android:title="@string/action_filter_xposed_app"
-            app:showAsAction="never">
+        android:id="@+id/action_filter_xposed_app"
+        android:orderInCategory="100"
+        android:title="@string/action_filter_xposed_app"
+        app:showAsAction="never">
         <menu>
             <group android:checkableBehavior="single">
                 <item
-                        android:id="@+id/disable_xposed"
-                        android:title="@string/disable" />
+                    android:id="@+id/disable_xposed"
+                    android:title="@string/disable" />
                 <item
-                        android:id="@+id/filter_xposed"
-                        android:title="@string/show_xposed" />
+                    android:id="@+id/filter_xposed"
+                    android:title="@string/show_xposed" />
                 <item
-                        android:id="@+id/filter_non_xposed"
-                        android:title="@string/show_non_xposed" />
+                    android:id="@+id/filter_non_xposed"
+                    android:title="@string/show_non_xposed" />
             </group>
         </menu>
 
     </item>
     <item
-            android:id="@+id/soft_reboot"
-            android:title="@string/soft_reboot"
-            app:showAsAction="never" />
+        android:id="@+id/soft_reboot"
+        android:title="@string/soft_reboot"
+        app:showAsAction="never" />
     <item
-            android:id="@+id/action_test"
-            android:orderInCategory="100"
-            android:title="@string/test"
-            app:showAsAction="never" />
+        android:id="@+id/action_test"
+        android:orderInCategory="100"
+        android:title="@string/test"
+        app:showAsAction="never" />
 </menu>

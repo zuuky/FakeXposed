@@ -24,8 +24,8 @@ plugins {
 def highHookModuleName = 'hookh'
 def lowHookModuleName = 'hookl'
 def hookModuleName = (rootProject.props['buildApi'] ?: rootProject.targetSdk) >= 24 ? highHookModuleName : lowHookModuleName
-def mVersionCode = 1600
-def mVersionName = "1.6"
+def mVersionCode = 2100
+def mVersionName = "2.1"
 def appType = rootProject.props['appType']
 android {
     compileSdk rootProject.targetSdk
@@ -78,10 +78,7 @@ android {
             }
         }
         debug {
-            debuggable true
             minifyEnabled false
-            jniDebuggable true
-            renderscriptDebuggable true
         }
     }
     compileOptions {
@@ -93,6 +90,9 @@ android {
             path "src/main/cpp/CMakeLists.txt"
         }
     }
+    packagingOptions {
+        pickFirst '**/*.so'
+    }
     buildToolsVersion '30.0.3'
     ndkVersion '24.0.8215888'
     applicationVariants.all { variant ->
@@ -101,7 +101,7 @@ android {
             it.jniLibs.srcDirs = ["src/main/jniLibs/${buildType}"]
         }
         variant.outputs.all {
-            outputFileName = "datafilter-${buildType}-${mVersionName}-${appType}.apk"
+            outputFileName = "october-${buildType}-${mVersionName}-${appType}.apk"
         }
     }
 }
@@ -111,26 +111,24 @@ tasks.whenTaskAdded { task ->
         task.doLast {
             it.outputs.files.files.each { File dir ->
                 dir.eachDir {
-                    if (appType == 'x86' && (it.name == 'armeabi-v7a' || it.name == 'arm64-v8a')) {
+                    if (appType == 'x86' && it.name.contains('64')) {
                         it.deleteDir()
-                    } else if (appType == 'arm' && (it.name == 'x86' || it.name == 'x86_64')) {
+                    } else if (appType == 'arm' && it.name.contains('x86')) {
                         it.deleteDir()
                     }
                 }
                 dir.eachFileRecurse {
-                    if (it.parentFile.name == 'x86_64' || it.parentFile.name == 'arm64-v8a') {
-                        if (!rootProject.props['mergeBuild'] && it.name == "lib${hookModuleName}64.so") {
-                            println "delete current build hook module: ${it.name}"
-                            it.delete()
-                        }
-                    } else if (it.name == "lib${hookModuleName}.so") {
-                        println "delete building library: ${it.absolutePath}"
+                    if (it.parentFile.name.contains('64') && !it.name.contains('64')) {
+                        println "delete current fake-linker version module: ${it.name}"
+                        it.delete()
+                    } else if (!it.parentFile.name.contains('64') && it.name.contains('64')) {
+                        println "delete current fake-linker version module: ${it.name}"
                         it.delete()
                     }
                 }
             }
         }
-    } else if (name == "shrinkReleaseRes") {
+    } else if (name.startsWith('shrink')) {
         finalizedBy resOptimize
     }
 }

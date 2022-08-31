@@ -2,14 +2,14 @@
 // Created by beich on 2020/11/18.
 //
 
-#include <string.h>
-#include <stdlib.h>
+#include <cstring>
+#include <cstdlib>
 #include <unistd.h>
 #include <sys/stat.h>
 #include <linux/fcntl.h>
 #include <syscall.h>
-#include <errno.h>
-#include <limits.h>
+#include <cerrno>
+#include <climits>
 #include <map>
 #include <fcntl.h>
 #include <libgen.h>

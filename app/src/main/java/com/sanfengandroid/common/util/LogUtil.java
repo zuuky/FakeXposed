@@ -21,21 +21,14 @@ import android.os.Parcelable;
 import android.util.Log;
 
 import com.alibaba.fastjson.JSONObject;
-import com.sanfengandroid.datafilter.BuildConfig;
 
 import java.io.Serializable;
 import java.util.Objects;
 
-/**
- * @author sanfengAndroid
- * @date 2020/10/07
- */
 public class LogUtil {
     private static final int MAX_LENGTH = 3 * 1024;
     private static final int STATE_NONE = 0;
     private static final LogCallback[] callbacks = new LogCallback[5];
-    private static final boolean STATES[] = new boolean[]{true, true, true, true, true, true, true,
-            true, true, true};
     public static String HEAD = "HookLog_";
     public static boolean ADD_HEAD = true;
     public static String DEFAULT_HEAD = "HookLog";
@@ -137,35 +130,33 @@ public class LogUtil {
         if (callbacks[level - Log.VERBOSE] != null) {
             callbacks[level - Log.VERBOSE].visit(state, level, tag, str, throwable);
         }
-        if (BuildConfig.DEBUG) {
-            String[] ret = splitMsg(str);
-            for (int i = 0; i < ret.length; i++) {
-                String head;
-                if (i == 0) {
-                    head = ADD_HEAD ? HEAD + tag : tag;
-                } else {
-                    head = ADD_HEAD ? HEAD + tag + i : tag + i;
-                    throwable = null;
-                }
-                switch (level) {
-                    case Log.VERBOSE:
-                        Log.v(head, ret[i], throwable);
-                        break;
-                    case Log.DEBUG:
-                        Log.d(head, ret[i], throwable);
-                        break;
-                    case Log.INFO:
-                        Log.i(head, ret[i], throwable);
-                        break;
-                    case Log.WARN:
-                        Log.w(head, ret[i], throwable);
-                        break;
-                    case Log.ERROR:
-                        Log.e(head, ret[i], throwable);
-                        break;
-                    default:
-                        break;
-                }
+        String[] ret = splitMsg(str);
+        for (int i = 0; i < ret.length; i++) {
+            String head;
+            if (i == 0) {
+                head = ADD_HEAD ? HEAD + tag : tag;
+            } else {
+                head = ADD_HEAD ? HEAD + tag + i : tag + i;
+                throwable = null;
+            }
+            switch (level) {
+                case Log.VERBOSE:
+                    Log.v(head, ret[i], throwable);
+                    break;
+                case Log.DEBUG:
+                    Log.d(head, ret[i], throwable);
+                    break;
+                case Log.INFO:
+                    Log.i(head, ret[i], throwable);
+                    break;
+                case Log.WARN:
+                    Log.w(head, ret[i], throwable);
+                    break;
+                case Log.ERROR:
+                    Log.e(head, ret[i], throwable);
+                    break;
+                default:
+                    break;
             }
         }
     }
@@ -225,17 +216,7 @@ public class LogUtil {
     }
 
     public static void addCallback(int level, LogCallback callback) {
-        if (level >= Log.VERBOSE && level <= Log.ERROR) {
-            callbacks[level - Log.VERBOSE] = callback;
-        }
-    }
-
-    public static void setStateNone(int state, boolean open) {
-        if (state > 10 || state < 0) {
-            Log.w(DEFAULT_HEAD, "state out of range: " + state + ", use 0 ~ 9");
-            return;
-        }
-        STATES[state] = open;
+        callbacks[level - Log.VERBOSE] = callback;
     }
 
     public static void setLogMode(LogMode mode) {

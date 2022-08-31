@@ -70,7 +70,7 @@ public:
      * 设置文件/目录的访问权限
      * 如果该文件是重定向文件则应该传入重定向后的路径
      * */
-    static bool AddFileAccess(const char *path, int uid, int gid,int port);
+    static bool AddFileAccess(const char *path, int uid, int gid, int port);
 
     static void RemoveFileAccess(const char *path);
 

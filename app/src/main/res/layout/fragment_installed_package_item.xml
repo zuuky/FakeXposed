@@ -16,64 +16,64 @@
   -->
 
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto"
-        android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:layout_margin="4dp"
-        android:id="@+id/list_item"
-        android:clickable="true"
-        android:focusable="true">
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/list_item"
+    android:layout_width="match_parent"
+    android:layout_height="60dp"
+    android:layout_margin="4dp"
+    android:clickable="true"
+    android:focusable="true">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:orientation="horizontal">
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:orientation="horizontal">
 
         <com.google.android.material.imageview.ShapeableImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:layout_marginStart="5dp"
-                android:id="@+id/installed_pkg_icon"
-                android:background="@mipmap/ic_launcher_foreground"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:layout_constraintBottom_toBottomOf="parent" />
+            android:id="@+id/installed_pkg_icon"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="5dp"
+            android:background="@mipmap/ic_launcher_foreground"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/installed_pkg_appname"
-                android:layout_width="wrap_content"
-                android:layout_height="30dp"
-                android:layout_marginStart="10dp"
-                android:layout_marginTop="5dp"
-                android:gravity="center"
-                android:textAppearance="?attr/textAppearanceListItem"
-                app:layout_constraintStart_toEndOf="@+id/installed_pkg_icon"
-                app:layout_constraintTop_toTopOf="parent"
-                android:text="@string/appname_empty" />
+            android:id="@+id/installed_pkg_appname"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="5dp"
+            android:gravity="center"
+            android:text="@string/appname_empty"
+            android:textAppearance="?attr/textAppearanceListItem"
+            app:layout_constraintStart_toEndOf="@+id/installed_pkg_icon"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/installed_pkg_version_name"
-                android:layout_width="wrap_content"
-                android:layout_height="30dp"
-                android:layout_marginTop="5dp"
-                android:layout_marginStart="15dp"
-                android:gravity="center"
-                android:textSize="14sp"
-                android:textAppearance="?attr/textAppearanceListItem"
-                app:layout_constraintLeft_toRightOf="@+id/installed_pkg_appname"
-                app:layout_constraintTop_toTopOf="parent" />
+            android:id="@+id/installed_pkg_version_name"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:layout_marginStart="15dp"
+            android:layout_marginTop="5dp"
+            android:gravity="center"
+            android:textAppearance="?attr/textAppearanceListItem"
+            android:textSize="14sp"
+            app:layout_constraintLeft_toRightOf="@+id/installed_pkg_appname"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <com.google.android.material.textview.MaterialTextView
-                android:id="@+id/installed_pkg_name"
-                android:layout_width="wrap_content"
-                android:layout_marginTop="5dp"
-                android:layout_height="20dp"
-                android:textSize="13sp"
-                android:text="@string/app_package"
-                android:gravity="center"
-                android:textAppearance="?attr/textAppearanceListItem"
-                app:layout_constraintStart_toStartOf="@+id/installed_pkg_appname"
-                app:layout_constraintTop_toBottomOf="@+id/installed_pkg_appname" />
+            android:id="@+id/installed_pkg_name"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:layout_marginTop="5dp"
+            android:gravity="center"
+            android:text="@string/app_package"
+            android:textAppearance="?attr/textAppearanceListItem"
+            android:textSize="13sp"
+            app:layout_constraintStart_toStartOf="@+id/installed_pkg_appname"
+            app:layout_constraintTop_toBottomOf="@+id/installed_pkg_appname" />
 
         <include layout="@layout/item_switch_layout" />
     </androidx.constraintlayout.widget.ConstraintLayout>

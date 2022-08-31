@@ -16,91 +16,96 @@
   -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
     <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center"
-            android:id="@+id/tv_plugin"
-            android:text="插件还未激活,请激活后再测试"/>
+        android:id="@+id/tv_plugin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="插件还未激活,请激活后再测试" />
 
     <Button
-            android:id="@+id/btn_local_load"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="本地加载HOOK模块"
-            android:visibility="gone"/>
-    <Button
-            android:id="@+id/btn_load_test"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="加载测试数据"
-            android:visibility="gone"/>
-    <Button
-            android:id="@+id/btn_test_maps"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="测试maps屏蔽效果" />
+        android:id="@+id/btn_local_load"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="本地加载HOOK模块"
+        android:visibility="gone" />
 
     <Button
-            android:id="@+id/btn_test_classloader"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="测试类加载" />
+        android:id="@+id/btn_load_test"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="加载测试数据"
+        android:visibility="gone" />
 
     <Button
-            android:id="@+id/btn_test_global"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="测试Debug检测" />
+        android:id="@+id/btn_test_maps"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="测试maps屏蔽效果" />
 
     <Button
-            android:id="@+id/btn_test_getenv"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="测试环境变量" />
+        android:id="@+id/btn_test_classloader"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="测试类加载" />
 
     <Button
-            android:id="@+id/btn_test_properties"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="测试SystemProperties属性" />
+        android:id="@+id/btn_test_global"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="测试Debug检测" />
 
     <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/btn_test_runtime_exec"
-            android:text="测试Runtime.exec执行" />
+        android:id="@+id/btn_test_getenv"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="测试环境变量" />
 
     <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/btn_test_file_hide"
-            android:text="测试文件隐藏" />
-    <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/btn_test_file_redirect"
-            android:text="测试文件重定向" />
-    <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/btn_test_file_access"
-            android:text="测试文件权限" />
+        android:id="@+id/btn_test_properties"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="测试SystemProperties属性" />
 
     <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/btn_test_register"
-            android:text="测试重注册Native"
-            android:visibility="gone"/>
+        android:id="@+id/btn_test_runtime_exec"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="测试Runtime.exec执行" />
 
     <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/btn_test_register1"
-            android:text="测试重注册调用"
-            android:visibility="gone"/>
+        android:id="@+id/btn_test_file_hide"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="测试文件隐藏" />
+
+    <Button
+        android:id="@+id/btn_test_file_redirect"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="测试文件重定向" />
+
+    <Button
+        android:id="@+id/btn_test_file_access"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="测试文件权限" />
+
+    <Button
+        android:id="@+id/btn_test_register"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="测试重注册Native"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/btn_test_register1"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="测试重注册调用"
+        android:visibility="gone" />
 </LinearLayout>

@@ -1,11 +1,13 @@
 static String getType(List allAbi) {
-    def type = 0
-    if (allAbi.contains('x86') || allAbi.contains('x86_64')) {
-        type = 1
-    } else if (allAbi.contains('armeabi-v7a') || allAbi.contains('arm64-v8a')) {
-        type = 2
+    if (allAbi.stream().anyMatch(a -> a.toString().contains('arm')) && allAbi.stream().anyMatch(a -> a.toString().contains('x86'))) {
+        return 'all'
     }
-    return type == 1 ? 'x86' : type == 2 ? 'arm' : 'all'
+    if (allAbi.stream().anyMatch(a -> a.toString().contains('x86'))) {
+        return 'x86'
+    }
+    if (allAbi.stream().anyMatch(a -> a.toString().contains('arm'))) {
+        return 'arm'
+    }
 }
 
 ext {

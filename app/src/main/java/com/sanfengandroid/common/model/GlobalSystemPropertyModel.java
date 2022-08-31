@@ -83,7 +83,7 @@ public class GlobalSystemPropertyModel extends BaseKeyValueModel {
                 XpApplication.getViewModel().setMessage(R.string.input_empty_content);
                 return;
             }
-            if (etValue.getText().toString().length() > 91){
+            if (etValue.getText().toString().length() > 91) {
                 XpApplication.getViewModel().setMessage(R.string.property_value_too_long);
                 return;
             }

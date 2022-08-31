@@ -31,10 +31,10 @@ import java.util.List;
  */
 public class DefaultLists {
 
-    //COMMON_KEYWORD
+    //COMMON_KEYWORD  ,"su", "ZygoteInit", "system" ,"self","root",
     public static final List<String> COMMON_KEYWORD_LIST = Arrays.asList("supersu", "daemonsu",
-            "root", "superuser", "zuperfakefile", "xposed", "lsposed", "magisk", "self",
-            "TracerPid", "XposedBridge", "ZygoteInit", "system");
+            "superuser", "zuperfakefile", "xposed", "lsposed", "magisk", "TracerPid",
+            "XposedBridge");
 
     public static final List<String> DEFAULT_APPS_LIST = Arrays.asList("org.lsposed.manager",
             "org.meowcat.edxposed.manager", "de.robv.android.xposed.installer");
