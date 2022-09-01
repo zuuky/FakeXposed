@@ -24,8 +24,6 @@ import android.os.Build;
 import android.text.TextUtils;
 import android.util.Log;
 
-import androidx.annotation.Keep;
-
 import com.sanfengandroid.common.reflection.ReflectUtil;
 import com.sanfengandroid.common.util.LogUtil;
 import com.sanfengandroid.datafilter.SPProvider;
@@ -37,6 +35,7 @@ import com.sanfengandroid.fakelinker.FileInstaller;
 import java.io.File;
 import java.util.List;
 
+import dalvik.system.PathClassLoader;
 import eu.chainfire.libsuperuser.Shell;
 
 /**
@@ -46,7 +45,6 @@ import eu.chainfire.libsuperuser.Shell;
  * 3. 调用{@link #startNativeHook()}开启NativeHook
  */
 @SuppressWarnings("JavaJniMissingFunction")
-@Keep
 public final class NativeHook {
     private static final String TAG = NativeHook.class.getSimpleName();
     public static String libraryPath = null;
@@ -68,6 +66,8 @@ public final class NativeHook {
     private static native int nativeSetHookOptionString(String name, String value);
 
     private static native void nativeClearBlackList(int type);
+
+    private static native void nativeSetLogLevel(int level);
 
     private static native void nativeClearAll();
 
@@ -560,6 +560,13 @@ public final class NativeHook {
         LogUtil.d(TAG, "initLibraryPath find library at: %s", libraryPath);
     }
 
+    public static void initLibrarySoPath(Context context, String soName) {
+        PathClassLoader classLoader = (PathClassLoader) context.getClassLoader();
+        libraryPath = classLoader.findLibrary(soName);
+        LogUtil.d(TAG, "initLibrarySoPath find library at: %s", libraryPath);
+    }
+
+
     public static void initLibraryPath(Context context, int targetSdk)
             throws PackageManager.NameNotFoundException {
         try {
@@ -596,7 +603,7 @@ public final class NativeHook {
         }
         File base = new File(apkPath.getParent(), "lib");
         File library = null;
-        if (FileInstaller.isRunning64Bit()) {
+        if (android.os.Process.is64Bit()) {
             library = new File(base, FileInstaller.isX86() ? "x86_64" : "arm64");
             if (!library.exists() || !library.isDirectory()) {
                 library = null;
@@ -609,7 +616,7 @@ public final class NativeHook {
     }
 
     public static String getDefaultHookModulePath() {
-        File hookModuleFile = new File(libraryPath, getSoFileName(libraryPath, com.sanfengandroid.datafilter.BuildConfig.HOOK_HIGH_MODULE_NAME));
+        File hookModuleFile = getSoFileName(com.sanfengandroid.datafilter.BuildConfig.HOOK_HIGH_MODULE_NAME);
         LogUtil.d(TAG, "defaultHookModulePath : %s", hookModuleFile.getAbsolutePath());
         // 文件不存在时复制过去
         runShell(hookModuleFile);
@@ -628,12 +635,11 @@ public final class NativeHook {
         if (file.exists()) {
             cmdLine = "chmod 755 " + path + "; chown system:system " + path;
         }
-        LogUtil.d(TAG, "cmd line : %s", cmdLine);
         try {
             List<String> result = Shell.SU.run(cmdLine);
-            LogUtil.d(TAG, "cmd line copy success: %s, path: %s", result, path);
+            LogUtil.d(TAG, "cmd runShell success: %s, path: %s", result, path);
         } catch (Exception e) {
-            LogUtil.d(TAG, "cmd line copy failed: %s", path, e);
+            LogUtil.d(TAG, "cmd runShell failed: %s", path, e);
         }
     }
 
@@ -642,18 +648,18 @@ public final class NativeHook {
     }
 
     public static File getDefaultFakeLinkerPath() {
-        File fakeLinkerFile = new File(libraryPath, getSoFileName(libraryPath, BuildConfig.LINKER_MODULE_NAME + Build.VERSION.SDK_INT));
+        File fakeLinkerFile = getSoFileName(BuildConfig.LINKER_MODULE_NAME + Build.VERSION.SDK_INT);
         LogUtil.d(TAG, "defaultFakeLinkerPath : %s", fakeLinkerFile.getAbsolutePath());
         runShell(fakeLinkerFile);
         return fakeLinkerFile;
     }
 
-    private static String getSoFileName(String libraryPath, String name) {
-        String suffix = libraryPath.substring(libraryPath.lastIndexOf("/") + 1);
-        if (suffix.contains("64")) {
-            return "lib" + name + "64.so";
+    private static File getSoFileName(String name) {
+        String so = "lib" + name + ".so";
+        if (android.os.Process.is64Bit()) {
+            so = "lib" + name + "64.so";
         }
-        return "lib" + name + ".so";
+        return new File(libraryPath + "/" + so);
     }
 
     public static void initFakeLinker(String cacheDir, String processName) {

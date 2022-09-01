@@ -70,17 +70,20 @@ android {
 
     buildTypes {
         release {
-            minifyEnabled false
-            shrinkResources false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            zipAlignEnabled true
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles 'proguard-rules.pro'
             if (rootProject.props['hasSign']) {
                 signingConfig signingConfigs.sign
             }
         }
         debug {
+            debuggable true
             minifyEnabled false
             shrinkResources false
-            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            zipAlignEnabled true
+            proguardFiles 'proguard-rules.pro'
             if (rootProject.props['hasSign']) {
                 signingConfig signingConfigs.sign
             }
@@ -116,21 +119,23 @@ tasks.whenTaskAdded { task ->
         task.doLast {
             it.outputs.files.files.each { File dir ->
                 dir.eachDir {
-                    if (appType == 'x86' && it.name.contains('64')) {
+                    if (appType == 'x86' && it.name.contains('arm')) {
+                        println "delete app dir1 current fake-linker version module: ${it.absolutePath}"
                         it.deleteDir()
                     } else if (appType == 'arm' && it.name.contains('x86')) {
+                        println "delete app dir2 current fake-linker version module: ${it.absolutePath}"
                         it.deleteDir()
                     }
                 }
-                dir.eachFileRecurse {
-                    if (it.parentFile.name.contains('64') && !it.name.contains('64')) {
-                        println "delete current fake-linker version module: ${it.name}"
-                        it.delete()
-                    } else if (!it.parentFile.name.contains('64') && it.name.contains('64')) {
-                        println "delete current fake-linker version module: ${it.name}"
-                        it.delete()
-                    }
-                }
+//                dir.eachFileRecurse {
+//                    if (it.parentFile.name.contains('64') && !it.name.contains('64')) {
+//                        println "delete current fake-linker version module: ${it.name}"
+//                        it.delete()
+//                    } else if (!it.parentFile.name.contains('64') && it.name.contains('64')) {
+//                        println "delete current fake-linker version module: ${it.name}"
+//                        it.delete()
+//                    }
+//                }
             }
         }
     } else if (name.startsWith('shrink')) {

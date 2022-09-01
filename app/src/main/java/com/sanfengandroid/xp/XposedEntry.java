@@ -57,14 +57,8 @@ public class XposedEntry implements IXposedHookLoadPackage {
                 XposedBridge.log(throwable);
             }
         });
-        LogUtil.addCallback(Log.WARN, (state, level, tag, msg, throwable) -> {
-            XposedBridge.log(tag + ": " + msg);
-            if (throwable != null) {
-                XposedBridge.log(throwable);
-            }
-        });
         LogUtil.setLogMode(LogUtil.LogMode.CALLBACK_AND_PRINT);
-        LogUtil.minLogLevel = Log.VERBOSE;
+        LogUtil.minLogLevel = BuildConfig.DEBUG ? Log.VERBOSE : Log.ERROR;
     }
 
 

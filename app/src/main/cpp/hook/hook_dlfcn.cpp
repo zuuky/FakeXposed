@@ -29,7 +29,7 @@ FUN_INTERCEPT API_PUBLIC void *dlsym(void *handle, const char *symbol) {
         return result;
     }
     if (FXHandler::SymbolIsBlacklisted(symbol)) {
-        LOGMV("hidden symbol caller: %p, handle: %p, symbol: %s", __builtin_return_address(0),
+        LOGV("hidden symbol caller: %p, handle: %p, symbol: %s", __builtin_return_address(0),
               handle, symbol);
         return result;
     }
@@ -85,7 +85,7 @@ FUN_INTERCEPT API_PUBLIC void *
 android_dlopen_ext(const char *filename, int flag, const android_dlextinfo *extinfo) {
     IS_BLACKLIST_FILE_RETURN(filename, nullptr);
     const char *path = IoRedirect::GetRedirectFile(filename);
-    LOGMV("filename: %s, flag: 0x%x, extinfo: %p", filename, flag, extinfo);
+    LOGV("filename: %s, flag: 0x%x, extinfo: %p", filename, flag, extinfo);
     void *result;
 #if __ANDROID_API__ >= __ANDROID_API_N__
     int error_code = 0;
@@ -110,7 +110,7 @@ android_create_namespace(const char *name, const char *ld_library_path,
                          const char *default_library_path, uint64_t type,
                          const char *permitted_when_isolated_path, /*struct android_namespace_t**/
                          void *parent) {
-    LOGMV("name: %s, ld library path: %s, default library path: %s, permitted path: %s", name,
+    LOGV("name: %s, ld library path: %s, default library path: %s, permitted path: %s", name,
           ld_library_path, default_library_path,
           permitted_when_isolated_path);
     return remote->CallCreateNamespaceImpl(name, IoRedirect::GetRedirectDirectory(ld_library_path),

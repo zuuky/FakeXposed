@@ -9,7 +9,7 @@
 #include "io_redirect.h"
 
 FUN_INTERCEPT HOOK_DEF(int, faccessat, int dirfd, const char *pathname, int mode, int flags) {
-    LOGMV("dirfd: %d path: %s, mode: %d\n", dirfd, pathname, mode);
+    LOGV("dirfd: %d path: %s, mode: %d\n", dirfd, pathname, mode);
     IS_BLACKLIST_FILE(pathname);
     const char *redirect = IoRedirect::GetRedirect(pathname);
     IoMask mask = IoRedirect::GetFileMask(redirect, mode);

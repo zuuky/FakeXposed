@@ -54,9 +54,8 @@ NATIVE_HOOK_DEF(jobjectArray, Throwable_nativeGetStackTrace, JNIEnv *env, jclass
         ScopedLocalRef<jstring> declaring_class(env, (jstring) env->GetObjectField(obj.get(),
                                                                                    java_cache.java_lang_StackTraceElement_declaringClass));
         ScopedUtfChars name(env, declaring_class.get());
-        LOGMD("Fake StackTrace name: %s", name.c_str());
         if (FXHandler::StackClassNameBlacklisted(name.c_str())) {
-            LOGMD("Fake StackTrace found black list name: %s", name.c_str());
+            LOGW("Fake StackTrace found black list name: %s", name.c_str());
             deletes.push_back(i);
         }
     }
@@ -82,9 +81,9 @@ NATIVE_HOOK_DEF(jobjectArray, Throwable_nativeGetStackTrace, JNIEnv *env, jclass
 NATIVE_HOOK_DEF(jclass, Class_classForName, JNIEnv *env, jclass clazz, jstring className,
                 jboolean shouldInitialize, jobject classLoader) {
     ScopedUtfChars name(env, className, false);
-    LOGMV("hook Class_classForName: %s", name.c_str());
+    LOGV("hook Class_classForName: %s", name.c_str());
     if (FXHandler::ClassNameBlacklisted(name.c_str())) {
-        LOGMV("Fake Class_classForName class: %s", name.c_str());
+        LOGW("Fake Class_classForName class: %s", name.c_str());
         std::string message = "Invalid name: ";
         message += name.c_str();
         env->ThrowNew(java_cache.java_lang_ClassNotFoundException, message.c_str());
@@ -98,9 +97,9 @@ NATIVE_HOOK_DEF(jclass, VMClassLoader_findLoadedClass, JNIEnv *env, jclass clazz
                 jobject classLoader,
                 jstring className) {
     ScopedUtfChars name(env, className, false);
-    LOGMV("hook VMClassLoader_findLoadedClass: %s", name.c_str());
+    LOGV("hook VMClassLoader_findLoadedClass: %s", name.c_str());
     if (FXHandler::ClassNameBlacklisted(name.c_str())) {
-        LOGMV("Fake VMClassLoader_findLoadedClass class: %s", name.c_str());
+        LOGW("Fake VMClassLoader_findLoadedClass class: %s", name.c_str());
         std::string message = "Invalid class: ";
         message += name.c_str();
         env->ThrowNew(java_cache.java_lang_ClassNotFoundException, message.c_str());
@@ -127,9 +126,9 @@ NATIVE_HOOK_DEF(jint, UNIXProcess_forkAndExec, JNIEnv *env, jobject process,
     const char *argv = reinterpret_cast<const char *>(env->GetByteArrayElements(argBlock, nullptr));
     const char *pargv[argc + 1];
     initVectorFromBlock(pargv, argv, argc);
-    LOGMV("runtime exec cmd: %s", cmd);
+    LOGV("runtime exec cmd: %s", cmd);
     for (int i = 0; i < argc; ++i) {
-        LOGMV("runtime exec cmd parameter %d: %s", i, pargv[i]);
+        LOGV("runtime exec cmd parameter %d: %s", i, pargv[i]);
     }
     jint pid;
     RuntimeBean *bean = FXHandler::FindRuntimeBean(cmd, pargv, argc);
@@ -142,7 +141,7 @@ NATIVE_HOOK_DEF(jint, UNIXProcess_forkAndExec, JNIEnv *env, jobject process,
         jint new_argc = argc;
         jsize block_length = 0;
         FXHandler::RuntimeReplaceCommandArgv(bean, &new_cmd, &new_argv, &block_length, &new_argc);
-        LOGMV("runtime exec new_cmd: %s, new_argc: %d,new_argv: %s", new_cmd, new_argc, new_argv);
+        LOGV("runtime exec new_cmd: %s, new_argc: %d,new_argv: %s", new_cmd, new_argc, new_argv);
         jbyteArray new_prog = prog;
         jbyteArray new_argBlock = argBlock;
         if (new_cmd != nullptr) {
@@ -208,7 +207,7 @@ NATIVE_HOOK_DEF(pid_t, ProcessManager_exec, JNIEnv *env, jclass clazz, jobjectAr
         array[i] = string;
     }
 
-    LOGMV("exec command: %s", array[0]);
+    LOGV("exec command: %s", array[0]);
     const char *old_argv = length > 1 ? array[1] : nullptr;
     RuntimeBean *bean = FXHandler::FindRuntimeBean(array[0], &old_argv, length - 1);
     if (bean == nullptr) {
@@ -335,14 +334,8 @@ bool JNHook::InitJavaNativeHook(JNIEnv *env) {
          RegisterNativeMethods(env, "java/lang/Class", &java_hooks.gClass, 1));
     LOGD("register VMClassLoader findLoadedClass result: %d",
          RegisterNativeMethods(env, "java/lang/VMClassLoader", &java_hooks.gVMClassLoader, 1));
-    if (FXHandler::Get()->api >= __ANDROID_API_N__) {
-        LOGD("register UNIXProcess result: %d",
-             RegisterNativeMethods(env, "java/lang/UNIXProcess", &java_hooks.gUNIXProcess, 1));
-    } else {
-        LOGD("register ProcessManager result: %d",
-             RegisterNativeMethods(env, "java/lang/ProcessManager", &java_hooks.gProcessManager,
-                                   1));
-    }
+    LOGD("register UNIXProcess result: %d",
+         RegisterNativeMethods(env, "java/lang/UNIXProcess", &java_hooks.gUNIXProcess, 1));
     return true;
 }
 

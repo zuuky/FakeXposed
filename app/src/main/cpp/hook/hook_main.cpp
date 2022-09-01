@@ -148,7 +148,7 @@ static inline int FindMapIndex(std::map<std::string, int> &map, const char *name
     }
     auto iter = map.find(name);
     if (iter != map.end()) {
-        LOGD("FindMapIndex finded name: %d ", iter->second);
+        LOGD("FindMapIndex found name: %d ", iter->second);
         return iter->second;
     }
     return NO_FOUND_INDEX;
@@ -170,7 +170,10 @@ static inline const char *strstrIgnore(const char *str, const char *subStr) {
 
 static bool HasIntMapKeyword(std::map<std::string, int> &map, const char *name) {
     return std::any_of(map.begin(), map.end(), [&](const auto &key) {
-        return strstrIgnore(name, key.first.c_str()) != nullptr;
+        auto re = strstrIgnore(name, key.first.c_str()) != nullptr;
+        LOGV("MapKeyword HasIntMapKeyword name: %s, key: %s ,result: %d", name, key.first.c_str(),
+             re);
+        return re;
     });
 }
 
@@ -180,7 +183,10 @@ static inline bool HasMapKey(std::map<std::string, std::string> &map, const char
 
 static inline bool HasMapKeyword(std::map<std::string, std::string> &map, const char *name) {
     return std::any_of(map.begin(), map.end(), [&](const auto &key) {
-        return strstrIgnore(name, key.first.c_str()) != nullptr;
+        auto re = strstrIgnore(name, key.first.c_str()) != nullptr;
+        LOGV("MapKeyword HasMapKeyword name: %s, key: %s ,result: %d", name, key.first.c_str(),
+             re);
+        return re;
     });
 }
 
@@ -623,7 +629,6 @@ static jint NativeHook_AddIntBlackLists(JNIEnv *env, jclass clazz, jint type, jo
     if (add) {
         env->ReleaseIntArrayElements(_values, values, 0);
     }
-    LOGD("add int blacklists type: %d", type);
     return kEJNo;
 }
 
@@ -710,6 +715,11 @@ static jint NativeHook_OpenJniMonitor(JNIEnv *env, jclass clazz, jboolean open) 
         return JNIInterfaceMonitor::Get()->InitHookJNIInterfaces() != 0 ? kErrorNo : kErrorExec;
     }
     return kErrorNo;
+}
+
+
+static void NativeHook_SetLogLevel(JNIEnv *env, jclass clazz, jint level) {
+    g_log_level = level;
 }
 
 static jint NativeHook_SetJniMonitorLib(JNIEnv *env, jclass clazz, jstring lib, jboolean contain,
@@ -849,7 +859,6 @@ NativeHook_SetRuntimeBlacklist(JNIEnv *env, jclass clazz, jstring old_cmd, jstri
 
 static void NativeHook_Test(JNIEnv *env, jclass clazz) {
     int ret = putenv((char *) "test_key=sanfengandroid");
-//    int xposed_status = get_xposed_status(env, android_get_device_api_level());
     LOGD("add environments blacklist test_key=sanfengandroid, result: %d, xposed_status: %d",
          ret, 0);
 }
@@ -906,6 +915,7 @@ static JNINativeMethod gMethods[] = {
         NATIVE_METHOD(NativeHook, RemoveFileAccess, "(Ljava/lang/String;)V"),
         NATIVE_METHOD(NativeHook, RelinkSpecialLibrary, "(Ljava/lang/String;)I"),
         NATIVE_METHOD(NativeHook, OpenJniMonitor, "(Z)I"),
+        NATIVE_METHOD(NativeHook, SetLogLevel, "(I)V"),
         NATIVE_METHOD(NativeHook, SetJniMonitorLib, "(Ljava/lang/String;ZZ)I"),
         NATIVE_METHOD(NativeHook, SetJniMonitorAddress, "(JJZZ)I"),
         NATIVE_METHOD(NativeHook, ClearAll, "()V"),

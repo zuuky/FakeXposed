@@ -133,24 +133,18 @@ fake_load_library_init(JNIEnv *env, void *fake_soinfo, const RemoteInvokeInterfa
 
 extern const RemoteInvokeInterface *remote;
 
-#define LOGMV(format, ...) LOGV("[Monitor %s] "#format, __FUNCTION__, __VA_ARGS__)
-#define LOGMD(format, ...) LOGD("[Monitor %s] "#format, __FUNCTION__, __VA_ARGS__)
-#define LOGMI(format, ...) LOGI("[Monitor %s] "#format, __FUNCTION__, __VA_ARGS__)
-#define LOGMW(format, ...) LOGW("[Monitor %s] "#format, __FUNCTION__, __VA_ARGS__)
-#define LOGME(format, ...) LOGE("[Monitor %s] "#format, __FUNCTION__, __VA_ARGS__)
-
 int force_O_LARGEFILE(int flags);
 
 #define IS_BLACKLIST_FILE(name)                                                         \
     if (FXHandler::FileNameIsBlacklisted(name)) {                                       \
-        LOGMW("Fake '%s': blacklist file %s",__FUNCTION__,  name);                \
+        LOGW("Fake '%s': blacklist file %s",__FUNCTION__,  name);                \
         errno = ENOENT;                                                                 \
         return -1;                                                                      \
     }
 
 #define IS_BLACKLIST_FILE_RETURN(name, ret) \
     if (FXHandler::FileNameIsBlacklisted(name)) {                                       \
-        LOGMW("Fake '%s': blacklist file %s",__FUNCTION__,  name);                \
+        LOGW("Fake '%s': blacklist file %s",__FUNCTION__,  name);                \
         errno = ENOENT;                                                                 \
         return ret;                                                                      \
     }

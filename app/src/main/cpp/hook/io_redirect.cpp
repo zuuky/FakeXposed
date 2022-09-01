@@ -439,7 +439,6 @@ char *IoRedirect::MatchMapsItem(char *line, MapsMode &mode) {
     }
     for (auto &maps_rule: FXHandler::Get()->maps_rules) {
         word = maps_rule.first.c_str();
-        LOGD("[maps] word: %s,rule: %d,line: %s,", word, maps_rule.second, line);
         switch (maps_rule.second) {
             case kMapsNone:
                 break;
@@ -449,7 +448,7 @@ char *IoRedirect::MatchMapsItem(char *line, MapsMode &mode) {
             case kMapsRemove:
                 if (strstr(line, word) != nullptr) {
                     mode = kMapsRemove;
-                    LOGD("[maps] word: delete : %s, line: %s", word, line);
+                    LOGD("[maps] word: %s [delete], line: %s", word, line);
                     return nullptr;
                 }
                 break;
@@ -467,7 +466,7 @@ char *IoRedirect::MatchMapsItem(char *line, MapsMode &mode) {
                 key[0] = '\0';
                 key++;
                 if (ReplaceString(replace_string_, names, key)) {
-                    LOGD("[maps] replace str:  %s,replaced: %s", word, key);
+                    LOGD("[maps] word replace str:  %s,replaced: %s", word, key);
                     mode = kMapsModify;
                 }
                 break;

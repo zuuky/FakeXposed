@@ -38,13 +38,13 @@ INTERCEPT_SYSCALL(openat, int fd, const char *pathname, int flags, int mode) {
     LOG("syscall fd: %d, path: %s, flags: %d, mode: %d", fd, pathname, flags, mode);
     IS_BLACKLIST_FILE(pathname);
     const char *fake_path = IoRedirect::RedirectMaps(pathname);
-    LOGMW("Fake 'maps': syscall, pathname: %s, path: %s", pathname,
+    LOGW("Fake 'maps': syscall, pathname: %s, path: %s", pathname,
          fake_path);
 
     if (fake_path != nullptr) {
         int fd_ = orig_syscall(__NR_openat, AT_FDCWD, fake_path, force_O_LARGEFILE(flags), mode);
         if (fd_ != -1) {
-            LOGMW("Fake 'maps': syscall fd: %d, path: %s", fd_, fake_path);
+            LOGW("Fake 'maps': syscall fd: %d, path: %s", fd_, fake_path);
             get_orig_unlink()(fake_path);
             return fd_;
         }

@@ -11,7 +11,7 @@ extern int g_log_level;
 
 #define _PRINT(v, format, ...) \
     do {                \
-        if(g_log_level <= (v)) __android_log_print(v, LOG_TAG, format, ##__VA_ARGS__); \
+        if(g_log_level <= v) __android_log_print(v, LOG_TAG, format, ##__VA_ARGS__); \
     }while(0)
 
 #define LOGV(format, ...) _PRINT(ANDROID_LOG_VERBOSE, format, ##__VA_ARGS__)

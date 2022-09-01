@@ -13,7 +13,7 @@
 // 返回属性值长度,不存在则返回0
 FUN_INTERCEPT HOOK_DEF(int, __system_property_get, const char *name, char *value) {
     int ret = get_orig___system_property_get()(name, value);
-    LOGMV("name: %s, value: %s", name, value);
+    LOGV("name: %s, value: %s", name, value);
     if (ret < 1) {
         return ret;
     }
@@ -34,7 +34,7 @@ FUN_INTERCEPT HOOK_DEF(const prop_info *, __system_property_find, const char *na
     const prop_info *ret = get_orig___system_property_find()(name);
     // 修复Android 7及以下 libcutil 出现的循环依赖问题，会递归查找
     if (FXHandler::Get()->api > __ANDROID_API_O__) {
-        LOGMV("name: %s, result: %p", name, ret);
+        LOGV("name: %s, result: %p", name, ret);
     }
     return ret != nullptr && FXHandler::PropertyIsBlacklisted(name) ? nullptr : ret;
 }
@@ -53,7 +53,7 @@ FUN_INTERCEPT HOOK_DEF(void, __system_property_read_callback,
                        void (*callback)(void *__cookie, const char *__name, const char *__value,
                                         uint32_t __serial),
                        void *cookie) __INTRODUCED_IN(26) {
-//    LOGMV("prop_info: %p, cookie: %p", pi, cookie);
+//    LOGV("prop_info: %p, cookie: %p", pi, cookie);
     if (cookie == nullptr) {
         get_orig___system_property_read_callback()(pi, callback, cookie);
         return;

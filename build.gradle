@@ -1,15 +1,3 @@
-static String getType(List allAbi) {
-    if (allAbi.stream().anyMatch(a -> a.toString().contains('arm')) && allAbi.stream().anyMatch(a -> a.toString().contains('x86'))) {
-        return 'all'
-    }
-    if (allAbi.stream().anyMatch(a -> a.toString().contains('x86'))) {
-        return 'x86'
-    }
-    if (allAbi.stream().anyMatch(a -> a.toString().contains('arm'))) {
-        return 'arm'
-    }
-}
-
 ext {
     props = new Properties()
     if (project.hasProperty('configPath')) {
@@ -17,20 +5,26 @@ ext {
     } else if (project.file('local.properties').exists()) {
         props.load(new FileInputStream(project.file('local.properties')))
     }
-    if (props['abis']) {
-        props['abis'] = props['abis']?.split(',')?.toList()
-    }
+
     project.hasProperty('buildApi') && (props['buildApi'] = buildApi.toInteger())
     project.hasProperty('mergeBuild') && (props['mergeBuild'] = mergeBuild)
-    project.hasProperty('abis') && (props['abis'] = abis.split(',').toList())
     project.hasProperty('logLevel') && (props['logLevel'] = logLevel.toInteger())
+
+    if (props['appType'] && props['appType'].toString().equals('x86')) {
+        props['abis'] = ['x86', 'x86_64']
+    } else if (props['appType'] && props['appType'].toString().equals('arm')) {
+        props['abis'] = ['armeabi-v7a', 'arm64-v8a']
+    } else {
+        props['appType'] = 'all'
+        props['abis'] = ['armeabi-v7a', 'x86', 'arm64-v8a', 'x86_64']
+    }
+
     props['hasSign'] = props['storeFile']?.trim() && props['storePassword']?.trim() && props['keyAlias']?.trim() && props['keyPassword']?.trim()
     targetSdk = props['targetSdk'].toInteger()
     props['buildApi'] = props['buildApi']
     props['buildApi'] = props['buildApi'].toInteger()
-    props['logLevel'] = props['logLevel'] ?: 2
+    props['logLevel'] = props['logLevel'] ?: 5
     props['logLevel'] = props['logLevel'].toInteger()
-    props['appType'] = getType(rootProject.props['abis'] ?: ['armeabi-v7a', 'x86', 'arm64-v8a', 'x86_64'])
     props['mergeBuild'] = props['mergeBuild'] ?: true
     props['mergeBuild'] = props['mergeBuild'].toBoolean()
     println props
