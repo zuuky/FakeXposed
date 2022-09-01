@@ -119,15 +119,17 @@ tasks.whenTaskAdded { task ->
         task.doLast {
             it.outputs.files.files.each { File dir ->
                 dir.eachDir {
+                    println 'appType: ' + appType + ', app1: ' + it.absolutePath
                     if (appType == 'x86' && it.name.contains('arm')) {
+                        it.deleteDir()
                         println "delete app dir1 current fake-linker version module: ${it.absolutePath}"
-                        it.deleteDir()
                     } else if (appType == 'arm' && it.name.contains('x86')) {
-                        println "delete app dir2 current fake-linker version module: ${it.absolutePath}"
                         it.deleteDir()
+                        println "delete app dir2 current fake-linker version module: ${it.absolutePath}"
                     }
                 }
 //                dir.eachFileRecurse {
+//                    println 'app2: ' + it.absolutePath
 //                    if (it.parentFile.name.contains('64') && !it.name.contains('64')) {
 //                        println "delete current fake-linker version module: ${it.name}"
 //                        it.delete()
