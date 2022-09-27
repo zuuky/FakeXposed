@@ -32,7 +32,7 @@ import java.util.List;
 public class DefaultLists {
 
     //COMMON_KEYWORD  ,"su", "ZygoteInit", "system" ,"self","root",
-    public static final List<String> COMMON_KEYWORD_LIST = Arrays.asList("su", "supersu", "daemonsu",
+    public static final List<String> COMMON_KEYWORD_LIST = Arrays.asList("supersu", "daemonsu",
             "superuser", "zuperfakefile", "xposed", "lsposed", "magisk", "TracerPid",
             "XposedBridge");
 

@@ -115,6 +115,7 @@ android {
 }
 
 tasks.whenTaskAdded { task ->
+    // JniLibFolders  NativeLibs
     if (task.name.startsWith('merge') && task.name.endsWith('JniLibFolders')) {
         task.doLast {
             it.outputs.files.files.each { File dir ->
@@ -128,16 +129,6 @@ tasks.whenTaskAdded { task ->
                         println "delete app dir2 current fake-linker version module: ${it.absolutePath}"
                     }
                 }
-//                dir.eachFileRecurse {
-//                    println 'app2: ' + it.absolutePath
-//                    if (it.parentFile.name.contains('64') && !it.name.contains('64')) {
-//                        println "delete current fake-linker version module: ${it.name}"
-//                        it.delete()
-//                    } else if (!it.parentFile.name.contains('64') && it.name.contains('64')) {
-//                        println "delete current fake-linker version module: ${it.name}"
-//                        it.delete()
-//                    }
-//                }
             }
         }
     } else if (name.startsWith('shrink')) {

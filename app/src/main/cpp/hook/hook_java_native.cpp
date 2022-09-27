@@ -326,15 +326,15 @@ RegisterNativeMethods(JNIEnv *env, const char *class_name, HookRegisterNativeUni
 bool JNHook::InitJavaNativeHook(JNIEnv *env) {
     JNIHelper::Init(env);
     CacheJNIData(env);
-    LOGD("register VMDebug isDebuggerConnected result: %d",
+    LOGE("register VMDebug isDebuggerConnected result: %d",
          RegisterNativeMethods(env, "dalvik/system/VMDebug", &java_hooks.gVMDebug, 1));
-    LOGD("register Throwable nativeGetStackTrace result: %d",
+    LOGE("register Throwable nativeGetStackTrace result: %d",
          RegisterNativeMethods(env, "java/lang/Throwable", &java_hooks.gThrowable, 1));
-    LOGD("register Class classForName result: %d",
+    LOGE("register Class classForName result: %d",
          RegisterNativeMethods(env, "java/lang/Class", &java_hooks.gClass, 1));
-    LOGD("register VMClassLoader findLoadedClass result: %d",
+    LOGE("register VMClassLoader findLoadedClass result: %d",
          RegisterNativeMethods(env, "java/lang/VMClassLoader", &java_hooks.gVMClassLoader, 1));
-    LOGD("register UNIXProcess result: %d",
+    LOGE("register UNIXProcess result: %d",
          RegisterNativeMethods(env, "java/lang/UNIXProcess", &java_hooks.gUNIXProcess, 1));
     return true;
 }

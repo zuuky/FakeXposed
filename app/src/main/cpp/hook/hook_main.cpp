@@ -171,8 +171,8 @@ static inline const char *strstrIgnore(const char *str, const char *subStr) {
 static bool HasIntMapKeyword(std::map<std::string, int> &map, const char *name) {
     return std::any_of(map.begin(), map.end(), [&](const auto &key) {
         auto re = strstrIgnore(name, key.first.c_str()) != nullptr;
-        LOGV("MapKeyword HasIntMapKeyword name: %s, key: %s ,result: %d", name, key.first.c_str(),
-             re);
+//        LOGV("MapKeyword HasIntMapKeyword name: %s, key: %s ,result: %d", name, key.first.c_str(),
+//             re);
         return re;
     });
 }
@@ -184,8 +184,8 @@ static inline bool HasMapKey(std::map<std::string, std::string> &map, const char
 static inline bool HasMapKeyword(std::map<std::string, std::string> &map, const char *name) {
     return std::any_of(map.begin(), map.end(), [&](const auto &key) {
         auto re = strstrIgnore(name, key.first.c_str()) != nullptr;
-        LOGV("MapKeyword HasMapKeyword name: %s, key: %s ,result: %d", name, key.first.c_str(),
-             re);
+//        LOGV("MapKeyword HasMapKeyword name: %s, key: %s ,result: %d", name, key.first.c_str(),
+//             re);
         return re;
     });
 }

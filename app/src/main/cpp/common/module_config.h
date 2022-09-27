@@ -1,4 +1,4 @@
 
-#define HOOK_LOG_LEVEL 2
+#define HOOK_LOG_LEVEL 6
 #define MODULE_VERSION 2100
 #define MODULE_VERSION_NAME "2.1"
